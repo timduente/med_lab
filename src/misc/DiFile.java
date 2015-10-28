@@ -38,6 +38,28 @@ public class DiFile {
 	 */
 	public void initFromFile(String file_name) throws Exception {
 		// exercise 1
+		System.out.println("Initializing File: " + file_name);
+		_file_name = file_name;
+		DiFileInputStream diFileInputStream = new DiFileInputStream(_file_name);
+		diFileInputStream.skipHeader();
+		
+		
+		boolean implicit = false;
+		while(diFileInputStream.available()> 0 ){
+			DiDataElement nextEle = new DiDataElement();
+			nextEle.setImplicit(implicit);
+			nextEle.readNext(diFileInputStream);	
+			
+			_data_elements.put(nextEle.getTag(), nextEle);
+			System.out.println(nextEle.toString());
+			if(DiDi.getTagDescr(nextEle.getTag()).equals("Transfer Syntax UID")){
+				if(nextEle.getValueAsString().equals("1.2.840.10008.1.2")){
+					implicit = true;
+				}
+			}
+		}
+		
+		
 	}
 
 	/**

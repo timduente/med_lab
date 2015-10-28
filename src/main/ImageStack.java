@@ -137,6 +137,7 @@ public class ImageStack extends Observable {
 			    	df = new DiFile();
 			    	try {
 			    		df.initFromFile(file_names[i]);
+			    	
 			    	} catch (Exception ex) {
 			    		System.out.println(getClass()+"::initFromDirectory -> failed to open "+file_names[i]);
 			    		System.out.println(ex);
