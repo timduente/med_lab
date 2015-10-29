@@ -3,10 +3,10 @@ package misc;
 import java.util.*;
 
 /**
- * Implements the internal representation of a DICOM file.
- * Stores all DataElements and makes them accessable via getDataElement(TagName).
- * Also stores the pixel data & important information for displaying the contained image in 
- * seperate variables with special access functions.
+ * Implements the internal representation of a DICOM file. Stores all
+ * DataElements and makes them accessable via getDataElement(TagName). Also
+ * stores the pixel data & important information for displaying the contained
+ * image in seperate variables with special access functions.
  * 
  * @author Karl-Ingo Friese
  */
@@ -22,18 +22,19 @@ public class DiFile {
 	/**
 	 * Default Construtor - creates an empty DicomFile.
 	 */
-	public DiFile () {
+	public DiFile() {
 		_w = _h = _bits_stored = _bits_allocated = _image_number = 0;
 		_data_elements = new Hashtable<Integer, DiDataElement>();
 		_file_name = null;
 	}
 
 	/**
-	 * Initializes the DicomFile from a file. Might throw an exception (unexpected
-	 * end of file, wrong data etc).
-	 * This method will be implemented in exercise 1.
+	 * Initializes the DicomFile from a file. Might throw an exception
+	 * (unexpected end of file, wrong data etc). This method will be implemented
+	 * in exercise 1.
 	 * 
-	 * @param file_name	a string containing the name of a valid dicom file
+	 * @param file_name
+	 *            a string containing the name of a valid dicom file
 	 * @throws Exception
 	 */
 	public void initFromFile(String file_name) throws Exception {
@@ -42,56 +43,70 @@ public class DiFile {
 		_file_name = file_name;
 		DiFileInputStream diFileInputStream = new DiFileInputStream(_file_name);
 		diFileInputStream.skipHeader();
-		
-		
+
 		boolean implicit = false;
-		while(diFileInputStream.available()> 0 ){
+		while (diFileInputStream.available() > 0) {
 			DiDataElement nextEle = new DiDataElement();
 			nextEle.setImplicit(implicit);
-			nextEle.readNext(diFileInputStream);	
-			
+			nextEle.readNext(diFileInputStream);
+
 			_data_elements.put(nextEle.getTag(), nextEle);
 			System.out.println(nextEle.toString());
-			if(DiDi.getTagDescr(nextEle.getTag()).equals("Transfer Syntax UID")){
-				if(nextEle.getValueAsString().equals("1.2.840.10008.1.2")){
+			if (DiDi.getTagDescr(nextEle.getTag())
+					.equals("Transfer Syntax UID")) {
+				if (nextEle.getValueAsString().equals("1.2.840.10008.1.2")) {
 					implicit = true;
+				}
+			} else if (nextEle.getGroupID() == 0x0028) {
+				if (nextEle.getElementID() == 0x0011) {
+					_w = nextEle.getValueAsInt();
+				} else if (nextEle.getElementID() == 0x0010) {
+					_h = nextEle.getValueAsInt();
+				} else if(nextEle.getElementID() == 0x0100){
+					_bits_allocated = nextEle.getValueAsInt();
+				} else if(nextEle.getElementID() == 0x0101){
+					_bits_stored = nextEle.getValueAsInt();
+				} 
+			}else if(nextEle.getGroupID() == 0x0020){
+				if(nextEle.getElementID() == 0x0013	){
+					_image_number = nextEle.getValueAsInt();
 				}
 			}
 		}
-		
-		
+
 	}
 
 	/**
 	 * Converts a dicom file into a human readable string info. Might be long.
 	 * Useful for debugging.
 	 * 
-	 * @return		a human readable string representation
+	 * @return a human readable string representation
 	 */
 	public String toString() {
 		String str = new String();
-		
-		str+=_file_name+"\n";
+
+		str += _file_name + "\n";
 		Enumeration<Integer> e = _data_elements.keys();
-   	  	List<String> l = new ArrayList<String>();
+		List<String> l = new ArrayList<String>();
 
-   	  	while(e.hasMoreElements()) {
-		  Integer tag  = e.nextElement();
-		  DiDataElement el = (DiDataElement)_data_elements.get(tag);
-		  l.add(el.toString());
+		while (e.hasMoreElements()) {
+			Integer tag = e.nextElement();
+			DiDataElement el = (DiDataElement) _data_elements.get(tag);
+			l.add(el.toString());
 		}
-		
-        Collections.sort(l);
-        Iterator<String> it = l.iterator();
-        while (it.hasNext()) {
-        	str += it.next();
-        }
 
-        return str;
+		Collections.sort(l);
+		Iterator<String> it = l.iterator();
+		while (it.hasNext()) {
+			str += it.next();
+		}
+
+		return str;
 	}
 
 	/**
 	 * Returns the number of allocated bits per pixel.
+	 * 
 	 * @return the number of allocated bits.
 	 */
 	public int getBitsAllocated() {
@@ -99,7 +114,9 @@ public class DiFile {
 	}
 
 	/**
-	 * Returns the number of bits per pixel that are actually used for color info.
+	 * Returns the number of bits per pixel that are actually used for color
+	 * info.
+	 * 
 	 * @return the number of stored bits.
 	 */
 	public int getBitsStored() {
@@ -108,6 +125,7 @@ public class DiFile {
 
 	/**
 	 * Allows access to the internal data element HashTable.
+	 * 
 	 * @return a reference to the data element HashTable
 	 * @see IntHashtable
 	 */
@@ -117,6 +135,7 @@ public class DiFile {
 
 	/**
 	 * Returns the DiDataElement with the given id. Can return null.
+	 * 
 	 * @param id
 	 * @return
 	 */
@@ -126,6 +145,7 @@ public class DiFile {
 
 	/**
 	 * Returns the image width of the contained dicom image.
+	 * 
 	 * @return the image width
 	 */
 	public int getImageWidth() {
@@ -134,6 +154,7 @@ public class DiFile {
 
 	/**
 	 * Returns the image height of the contained dicom image.
+	 * 
 	 * @return the image height
 	 */
 	public int getImageHeight() {
@@ -148,7 +169,7 @@ public class DiFile {
 	public String getFileName() {
 		return _file_name;
 	}
-	
+
 	/**
 	 * Returns the image number in the current dicom series.
 	 * 
