@@ -175,7 +175,7 @@ public class MenuBar extends JMenuBar {
 		int returnVal;
 		File file;
 		JFileChooser chooser;
-		String default_dir = new String("/usr/common/gdv/medic_data/public");
+		String default_dir = new String("");
 		
 		if (new File(default_dir).exists()) {
 			chooser = new JFileChooser(default_dir);

@@ -69,7 +69,8 @@ public class ImageStack extends Observable {
 			    		}				    	
 						candidate.close();
 		    		} catch (Exception ex) {
-						System.out.println("this will work after exercise 1");
+		    			ex.printStackTrace();
+						//System.out.println("this will work after exercise 1");
 		    			result = -1;
 		    		}
 				}

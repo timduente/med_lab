@@ -156,6 +156,11 @@ public class DiFileInputStream extends FileInputStream {
 
 		do {
 			de.readNext(this);
+			if(DiDi.getTagDescr(de.getTag()).equals("Transfer Syntax UID")){
+				if (de.getValueAsString().equals("1.2.840.10008.1.2")) {
+					de.setImplicit(true);
+				}
+			}
 		} while (de.getTag() < 0x00200013);
 
 		return de.getValueAsInt();
