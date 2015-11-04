@@ -30,15 +30,6 @@ public class DicomParserTest {
 		DiFile file  = new DiFile();
 		file.initFromFile("ct_head_im/CTHd001");
 	}
-	
-	@Test
-	public void byteToIntTest(){
-		int a = 0;
-		byte b = 12;
-		byte c = -2;
-		a = (( b & 0xFF) << 8) | c & 0xFF;
-		assertEquals(12 * (int)Math.pow(2, 8), a);
-	}
-	
+		
 	
 }

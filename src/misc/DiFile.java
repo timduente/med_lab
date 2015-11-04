@@ -1,6 +1,15 @@
 package misc;
 
-import java.util.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+
+import sun.text.IntHashtable;
 
 /**
  * Implements the internal representation of a DICOM file. Stores all
@@ -41,11 +50,16 @@ public class DiFile {
 		// exercise 1
 		System.out.println("Initializing File: " + file_name);
 		_file_name = file_name;
+		File f = new File(file_name);
+
 		DiFileInputStream diFileInputStream = new DiFileInputStream(_file_name);
-		diFileInputStream.skipHeader();
+		if(!diFileInputStream.skipHeader()){
+			diFileInputStream.close();
+			throw new IOException("False filetype");
+		}
 
 		boolean implicit = false;
-		while (diFileInputStream.available() > 0) {
+		while (diFileInputStream.get_location() < f.length()) {
 			DiDataElement nextEle = new DiDataElement();
 			nextEle.setImplicit(implicit);
 			nextEle.readNext(diFileInputStream);
@@ -73,6 +87,7 @@ public class DiFile {
 				}
 			}
 		}
+		diFileInputStream.close();
 
 	}
 

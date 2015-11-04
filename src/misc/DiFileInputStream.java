@@ -135,10 +135,10 @@ public class DiFileInputStream extends FileInputStream {
 	public boolean skipHeader() throws IOException {
 		// exercise 1 - skip header, return true if prefix = DICM.
 		// dont forget to set the _location attribute !
-		super.skip(128);
+		skip(128);
 		byte[] dicom = new byte[4];
 		this.read(dicom);
-		_location = _location + dicom.length;
+//		_location = _location + dicom.length;
 		return dicom[0] == 'D' && dicom[1] == 'I' && dicom[2] == 'C'
 				&& dicom[3] == 'M';
 	}
