@@ -13,25 +13,26 @@ import misc.DiFile;
 /**
  * Two dimensional viewport for viewing the DICOM images + segmentations.
  * 
- * @author  Karl-Ingo Friese
+ * @author Karl-Ingo Friese
  */
 @SuppressWarnings("serial")
 public class Viewport2d extends Viewport implements Observer {
-	// the background image needs a pixel array, an image object and a MemoryImageSource
+	// the background image needs a pixel array, an image object and a
+	// MemoryImageSource
 	private BufferedImage _bg_img;
 
 	// each segmentation image needs the same, those are stored in a hashtable
 	// and referenced by the segmentation name
 	private Hashtable<String, BufferedImage> _map_seg_name_to_img;
-	
-	// this is the gui element where we actualy draw the images	
+
+	// this is the gui element where we actualy draw the images
 	private Panel2d _panel2d;
-	
+
 	// the gui element that lets us choose which image we want to show and
 	// its data source (DefaultListModel)
 	private ImageSelector _img_sel;
 	private DefaultListModel<String> _slice_names;
-	
+
 	// width and heigth of our images. dont mix those with
 	// Viewport2D width / height or Panel2d width / height!
 	private int _w, _h;
@@ -43,37 +44,47 @@ public class Viewport2d extends Viewport implements Observer {
 	public class Panel2d extends JPanel implements MouseListener {
 		public Panel2d() {
 			super();
-			setMinimumSize(new Dimension(DEF_WIDTH,DEF_HEIGHT));
-			setMaximumSize(new Dimension(DEF_WIDTH,DEF_HEIGHT));
-			setPreferredSize(new Dimension(DEF_WIDTH,DEF_HEIGHT));
+			setMinimumSize(new Dimension(DEF_WIDTH, DEF_HEIGHT));
+			setMaximumSize(new Dimension(DEF_WIDTH, DEF_HEIGHT));
+			setPreferredSize(new Dimension(DEF_WIDTH, DEF_HEIGHT));
 			setBackground(Color.black);
-			this.addMouseListener( this );
+			this.addMouseListener(this);
 		}
 
-		public void mouseClicked ( java.awt.event.MouseEvent e ) { 
-			System.out.println("Panel2d::mouseClicked: x="+e.getX()+" y="+e.getY());
+		public void mouseClicked(java.awt.event.MouseEvent e) {
+			System.out.println("Panel2d::mouseClicked: x=" + e.getX() + " y="
+					+ e.getY());
 		}
-		public void mousePressed ( java.awt.event.MouseEvent e ) {}
-		public void mouseReleased( java.awt.event.MouseEvent e ) {}
-		public void mouseEntered ( java.awt.event.MouseEvent e ) {}
-		public void mouseExited  ( java.awt.event.MouseEvent e ) {}
-	
+
+		public void mousePressed(java.awt.event.MouseEvent e) {
+		}
+
+		public void mouseReleased(java.awt.event.MouseEvent e) {
+		}
+
+		public void mouseEntered(java.awt.event.MouseEvent e) {
+		}
+
+		public void mouseExited(java.awt.event.MouseEvent e) {
+		}
+
 		/**
 		 * paint should never be called directly but via the repaint() method.
 		 */
 		public void paint(Graphics g) {
 			g.drawImage(_bg_img, 0, 0, this.getWidth(), this.getHeight(), this);
-			
-			Enumeration<BufferedImage> segs = _map_seg_name_to_img.elements();	
+
+			Enumeration<BufferedImage> segs = _map_seg_name_to_img.elements();
 			while (segs.hasMoreElements()) {
-				g.drawImage(segs.nextElement(), 0, 0,  this.getWidth(), this.getHeight(), this);
+				g.drawImage(segs.nextElement(), 0, 0, this.getWidth(),
+						this.getHeight(), this);
 			}
 		}
 	}
-	
+
 	/**
-	 * Private class: The GUI element for selecting single DicomFiles in the View2D.
-	 * Stores two references: the ImageStack (containing the DicomFiles)
+	 * Private class: The GUI element for selecting single DicomFiles in the
+	 * View2D. Stores two references: the ImageStack (containing the DicomFiles)
 	 * and the View2D which is used to show them.
 	 * 
 	 * @author kif
@@ -81,90 +92,96 @@ public class Viewport2d extends Viewport implements Observer {
 	private class ImageSelector extends JPanel {
 		private JList<String> _jl_slices;
 		private JScrollPane _jsp_scroll;
-		
+
 		/**
-		 * Constructor with View2D and ImageStack reference.  
-		 * The ImageSelector needs to know where to find the images and where to display them
+		 * Constructor with View2D and ImageStack reference. The ImageSelector
+		 * needs to know where to find the images and where to display them
 		 */
 		public ImageSelector() {
 			_jl_slices = new JList<String>(_slice_names);
 
 			_jl_slices.setSelectedIndex(0);
 			_jl_slices.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-			_jl_slices.addListSelectionListener(new ListSelectionListener(){
+			_jl_slices.addListSelectionListener(new ListSelectionListener() {
 				/**
-				 * valueChanged is called when the list selection changes.   
+				 * valueChanged is called when the list selection changes.
 				 */
-			    public void valueChanged(ListSelectionEvent e) {
-			      	int slice_index = _jl_slices.getSelectedIndex();
-			      	 
-			       	if (slice_index>=0){
-			       		_slices.setActiveImage(slice_index);
-			       	}
-				 }
+				public void valueChanged(ListSelectionEvent e) {
+					int slice_index = _jl_slices.getSelectedIndex();
+
+					if (slice_index >= 0) {
+						_slices.setActiveImage(slice_index);
+					}
+				}
 			});
-			
-			_jsp_scroll = new JScrollPane(_jl_slices);			
-			_jsp_scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-			_jsp_scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-			
+
+			_jsp_scroll = new JScrollPane(_jl_slices);
+			_jsp_scroll
+					.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+			_jsp_scroll
+					.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+
 			setLayout(new BorderLayout());
 			add(_jsp_scroll, BorderLayout.CENTER);
 		}
 	}
-		
+
 	/**
 	 * Constructor, with a reference to the global image stack as argument.
-	 * @param slices a reference to the global image stack
+	 * 
+	 * @param slices
+	 *            a reference to the global image stack
 	 */
 	public Viewport2d() {
 		super();
-		
+
 		_slice_names = new DefaultListModel<String>();
 		_slice_names.addElement(" ----- ");
 
 		// create an empty 10x10 image as default
 		_bg_img = new BufferedImage(10, 10, BufferedImage.TYPE_INT_ARGB);
-		
+
 		_map_seg_name_to_img = new Hashtable<String, BufferedImage>();
 
 		// The image selector needs to know which images are to select
 		_img_sel = new ImageSelector();
 
-		setLayout( new BorderLayout() );
-		_panel2d = new Panel2d();		
-        add(_panel2d, BorderLayout.CENTER );        
-        add(_img_sel, BorderLayout.EAST );
-		setPreferredSize(new Dimension(DEF_WIDTH+50,DEF_HEIGHT));
+		setLayout(new BorderLayout());
+		_panel2d = new Panel2d();
+		add(_panel2d, BorderLayout.CENTER);
+		add(_img_sel, BorderLayout.EAST);
+		setPreferredSize(new Dimension(DEF_WIDTH + 50, DEF_HEIGHT));
 	}
 
-
 	/**
-	 * This is private method is called when the current image width + height don't
-	 * fit anymore (can happen after loading new DICOM series or switching viewmode).
-	 * (see e.g. exercise 2)
+	 * This is private method is called when the current image width + height
+	 * don't fit anymore (can happen after loading new DICOM series or switching
+	 * viewmode). (see e.g. exercise 2)
 	 */
 	private void reallocate() {
 		_w = _slices.getImageWidth();
 		_h = _slices.getImageHeight();
-		
+
 		// create background image
 		_bg_img = new BufferedImage(_w, _h, BufferedImage.TYPE_INT_ARGB);
 
 		// create image for segment layers
-		Enumeration<Segment> segs = _map_name_to_seg.elements();			
+		Enumeration<Segment> segs = _map_name_to_seg.elements();
 		while (segs.hasMoreElements()) {
 			Segment seg = segs.nextElement();
 			String name = seg.getName();
-			BufferedImage seg_img = new BufferedImage(_w, _h, BufferedImage.TYPE_INT_ARGB);
+			BufferedImage seg_img = new BufferedImage(_w, _h,
+					BufferedImage.TYPE_INT_ARGB);
 
 			_map_seg_name_to_img.put(name, seg_img);
 		}
 	}
-	
+
 	/*
-	 * Calculates the background image and segmentation layer images and forces a repaint.
-	 * This function will be needed for several exercises after the first one.
+	 * Calculates the background image and segmentation layer images and forces
+	 * a repaint. This function will be needed for several exercises after the
+	 * first one.
+	 * 
 	 * @see Viewport#update_view()
 	 */
 	public void update_view() {
@@ -172,11 +189,39 @@ public class Viewport2d extends Viewport implements Observer {
 			return;
 
 		// these are two variables you might need in exercise #2
-		// int active_img_id = _slices.getActiveImageID();
-		// DiFile active_file = _slices.getDiFile(active_img_id);
+		int active_img_id = _slices.getActiveImageID();
+		DiFile active_file = _slices.getDiFile(active_img_id);
+
+		_w = active_file.getImageWidth();
+		_h = active_file.getImageHeight();
+
+		int stored_bits = active_file.getBitsStored();
+		int allocated_bytes = active_file.getBitsAllocated() / 8;
+
+		System.out.println("allocated Bits: " + active_file.getBitsAllocated());
+		System.out.println("stored Bits: " + active_file.getBitsStored());
+		System.out.println("High Bit: "
+				+ active_file.getElement(0x00280102).getValueAsInt());
+		// System.out.println(active_file.get)
+		//
+		// System.out.println(active_file.getElement(0x00280004)
+		// .getValueAsString());
+		// System.out.println(active_file.getElement(0x00280101)
+		// .getValueAsString());
+
+		byte[] picture_data = active_file.getElement(0x7FE00010).getValues();
+		System.out.println(Integer.toBinaryString((picture_data[0] & 0xff))
+				+ " " + Integer.toBinaryString((picture_data[1] & 0xff)));
+
+		if (!(active_file.getElement(0x00280004).getValueAsString().trim()
+				.equals("MONOCHROME2"))) {
+			System.err.println("False picture format. Not MONOCHROME2.");
+			return;
+		}
 
 		// _w and _h need to be initialized BEFORE filling the image array !
-		if (_bg_img==null || _bg_img.getWidth(null)!=_w || _bg_img.getHeight(null)!=_h) {
+		if (_bg_img == null || _bg_img.getWidth(null) != _w
+				|| _bg_img.getHeight(null) != _h) {
 			reallocate();
 		}
 
@@ -187,12 +232,31 @@ public class Viewport2d extends Viewport implements Observer {
 			//
 			// the easiest way to set a pixel of an image is the setRGB method
 			// example: _bg_img.setRGB(x,y, 0xff00ff00)
-			//                                AARRGGBB
+			// AARRGGBB
 			// the resulting image will be used in the Panel2d::paint() method
+			for (int i = 0; i < _w; i++) {
+				for (int j = 0; j < _h; j++) {
+					int raw = picture_data[i * allocated_bytes + j * _w
+							* allocated_bytes]
+							& 0xff
+							| ((picture_data[i * allocated_bytes + j * _w
+									* allocated_bytes + 1] & 0xff) << 8);
+					
+
+					int draw = raw >> stored_bits - 8;
+					if(draw > 255){
+						System.err.println("to big");
+					}
+					_bg_img.setRGB(i, j, (draw & 0xff) | 0xff000000
+							| (draw & 0xff) << 8 | (draw & 0xff) << 16);
+				}
+			}
+
 		} else {
 			// faster: access the data array directly (see below)
-			final int[] bg_pixels = ((DataBufferInt) _bg_img.getRaster().getDataBuffer()).getData();
-			for (int i=0; i<bg_pixels.length; i++) {
+			final int[] bg_pixels = ((DataBufferInt) _bg_img.getRaster()
+					.getDataBuffer()).getData();
+			for (int i = 0; i < bg_pixels.length; i++) {
 				bg_pixels[i] = 0xff000000;
 			}
 		}
@@ -215,63 +279,65 @@ public class Viewport2d extends Viewport implements Observer {
 
 		repaint();
 	}
-	
 
 	/**
-	 * Implements the observer function update. Updates can be triggered by the global
-	 * image stack.
+	 * Implements the observer function update. Updates can be triggered by the
+	 * global image stack.
 	 */
-	public void update(final Observable o, final Object obj ) {
+	public void update(final Observable o, final Object obj) {
 		if (!EventQueue.isDispatchThread()) {
-			// all swing thingies must be done in the AWT-EventQueue 
+			// all swing thingies must be done in the AWT-EventQueue
 			EventQueue.invokeLater(new Runnable() {
 				public void run() {
-					update(o,obj);
+					update(o, obj);
 				}
 			});
 			return;
 		}
 
 		// boolean update_needed = false;
-		Message m = (Message)obj;
-		
+		Message m = (Message) obj;
+
 		if (m._type == Message.M_CLEAR) {
 			// clear all slice info
 			_slice_names.clear();
 		}
-		
+
 		if (m._type == Message.M_NEW_IMAGE_LOADED) {
 			// a new image was loaded and needs an entry in the ImageSelector's
 			// DefaultListModel _slice_names
 			String name = new String();
-			int num = _slice_names.getSize();				
-	    	name = ""+num;
-			if (num<10) name = " "+name;				
-			if (num<100) name = " "+name;		
+			int num = _slice_names.getSize();
+			name = "" + num;
+			if (num < 10)
+				name = " " + name;
+			if (num < 100)
+				name = " " + name;
 			_slice_names.addElement(name);
-			
-			if (num==0) {
-				// if the new image was the first image in the stack, make it active
+
+			if (num == 0) {
+				// if the new image was the first image in the stack, make it
+				// active
 				// (display it).
 				reallocate();
 				_slices.setActiveImage(0);
-			}			
+			}
 		}
-		
+
 		if (m._type == Message.M_NEW_ACTIVE_IMAGE) {
-			update_view();			
+			update_view();
 		}
-		
+
 		if (m._type == Message.M_SEG_CHANGED) {
-			String seg_name = ((Segment)m._obj).getName();
+			String seg_name = ((Segment) m._obj).getName();
 			boolean update_needed = _map_name_to_seg.containsKey(seg_name);
 			if (update_needed) {
 				update_view();
 			}
 		}
-	  }
+	}
 
-    /**
+	/**
 	 * Returns the current file.
 	 * 
 	 * @return the currently displayed dicom file
@@ -286,29 +352,31 @@ public class Viewport2d extends Viewport implements Observer {
 	public boolean toggleSeg(Segment seg) {
 		String name = seg.getName();
 		boolean gotcha = _map_name_to_seg.containsKey(name);
-		
+
 		if (!gotcha) {
 			// if a segmentation is shown, we need to allocate memory for pixels
-			BufferedImage seg_img = new BufferedImage(_w, _h, BufferedImage.TYPE_INT_ARGB);
+			BufferedImage seg_img = new BufferedImage(_w, _h,
+					BufferedImage.TYPE_INT_ARGB);
 			_map_seg_name_to_img.put(name, seg_img);
 		} else {
 			_map_seg_name_to_img.remove(name);
 		}
-		
+
 		// most of the buerocracy is done by the parent viewport class
 		super.toggleSeg(seg);
-		
+
 		return gotcha;
 	}
-	
+
 	/**
-	 * Sets the view mode (transversal, sagittal, frontal).
-	 * This method will be implemented in exercise 2.
+	 * Sets the view mode (transversal, sagittal, frontal). This method will be
+	 * implemented in exercise 2.
 	 * 
-	 * @param mode the new viewmode
+	 * @param mode
+	 *            the new viewmode
 	 */
 	public void setViewMode(int mode) {
 		// you should do something with the new viewmode here
-		System.out.println("Viewmode "+mode);
+		System.out.println("Viewmode " + mode);
 	}
 }
