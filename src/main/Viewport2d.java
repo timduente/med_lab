@@ -38,8 +38,7 @@ public class Viewport2d extends Viewport implements Observer {
 	private int _w, _h;
 
 	/**
-	 * Private class, implementing the GUI element for displaying the 2d data.
-	 * Implements the MouseListener Interface.
+	 * Private class, implementing the GUI element for displaying the 2d data. Implements the MouseListener Interface.
 	 */
 	public class Panel2d extends JPanel implements MouseListener {
 		public Panel2d() {
@@ -52,8 +51,7 @@ public class Viewport2d extends Viewport implements Observer {
 		}
 
 		public void mouseClicked(java.awt.event.MouseEvent e) {
-			System.out.println("Panel2d::mouseClicked: x=" + e.getX() + " y="
-					+ e.getY());
+			System.out.println("Panel2d::mouseClicked: x=" + e.getX() + " y=" + e.getY());
 		}
 
 		public void mousePressed(java.awt.event.MouseEvent e) {
@@ -76,16 +74,13 @@ public class Viewport2d extends Viewport implements Observer {
 
 			Enumeration<BufferedImage> segs = _map_seg_name_to_img.elements();
 			while (segs.hasMoreElements()) {
-				g.drawImage(segs.nextElement(), 0, 0, this.getWidth(),
-						this.getHeight(), this);
+				g.drawImage(segs.nextElement(), 0, 0, this.getWidth(), this.getHeight(), this);
 			}
 		}
 	}
 
 	/**
-	 * Private class: The GUI element for selecting single DicomFiles in the
-	 * View2D. Stores two references: the ImageStack (containing the DicomFiles)
-	 * and the View2D which is used to show them.
+	 * Private class: The GUI element for selecting single DicomFiles in the View2D. Stores two references: the ImageStack (containing the DicomFiles) and the View2D which is used to show them.
 	 * 
 	 * @author kif
 	 */
@@ -94,8 +89,7 @@ public class Viewport2d extends Viewport implements Observer {
 		private JScrollPane _jsp_scroll;
 
 		/**
-		 * Constructor with View2D and ImageStack reference. The ImageSelector
-		 * needs to know where to find the images and where to display them
+		 * Constructor with View2D and ImageStack reference. The ImageSelector needs to know where to find the images and where to display them
 		 */
 		public ImageSelector() {
 			_jl_slices = new JList<String>(_slice_names);
@@ -116,10 +110,8 @@ public class Viewport2d extends Viewport implements Observer {
 			});
 
 			_jsp_scroll = new JScrollPane(_jl_slices);
-			_jsp_scroll
-					.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-			_jsp_scroll
-					.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+			_jsp_scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+			_jsp_scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 
 			setLayout(new BorderLayout());
 			add(_jsp_scroll, BorderLayout.CENTER);
@@ -154,9 +146,7 @@ public class Viewport2d extends Viewport implements Observer {
 	}
 
 	/**
-	 * This is private method is called when the current image width + height
-	 * don't fit anymore (can happen after loading new DICOM series or switching
-	 * viewmode). (see e.g. exercise 2)
+	 * This is private method is called when the current image width + height don't fit anymore (can happen after loading new DICOM series or switching viewmode). (see e.g. exercise 2)
 	 */
 	private void reallocate() {
 		_w = _slices.getImageWidth();
@@ -170,17 +160,14 @@ public class Viewport2d extends Viewport implements Observer {
 		while (segs.hasMoreElements()) {
 			Segment seg = segs.nextElement();
 			String name = seg.getName();
-			BufferedImage seg_img = new BufferedImage(_w, _h,
-					BufferedImage.TYPE_INT_ARGB);
+			BufferedImage seg_img = new BufferedImage(_w, _h, BufferedImage.TYPE_INT_ARGB);
 
 			_map_seg_name_to_img.put(name, seg_img);
 		}
 	}
 
 	/*
-	 * Calculates the background image and segmentation layer images and forces
-	 * a repaint. This function will be needed for several exercises after the
-	 * first one.
+	 * Calculates the background image and segmentation layer images and forces a repaint. This function will be needed for several exercises after the first one.
 	 * 
 	 * @see Viewport#update_view()
 	 */
@@ -188,7 +175,6 @@ public class Viewport2d extends Viewport implements Observer {
 		if (_slices.getNumberOfImages() == 0)
 			return;
 
-		// these are two variables you might need in exercise #2
 		int active_img_id = _slices.getActiveImageID();
 		DiFile active_file = _slices.getDiFile(active_img_id);
 
@@ -200,8 +186,7 @@ public class Viewport2d extends Viewport implements Observer {
 
 		System.out.println("allocated Bits: " + active_file.getBitsAllocated());
 		System.out.println("stored Bits: " + active_file.getBitsStored());
-		System.out.println("High Bit: "
-				+ active_file.getElement(0x00280102).getValueAsInt());
+		System.out.println("High Bit: " + active_file.getElement(0x00280102).getValueAsInt());
 		// System.out.println(active_file.get)
 		//
 		// System.out.println(active_file.getElement(0x00280004)
@@ -210,23 +195,52 @@ public class Viewport2d extends Viewport implements Observer {
 		// .getValueAsString());
 
 		byte[] picture_data = active_file.getElement(0x7FE00010).getValues();
-		System.out.println(Integer.toBinaryString((picture_data[0] & 0xff))
-				+ " " + Integer.toBinaryString((picture_data[1] & 0xff)));
+		System.out.println(Integer.toBinaryString((picture_data[0] & 0xff)) + " " + Integer.toBinaryString((picture_data[1] & 0xff)));
 
-		if (!(active_file.getElement(0x00280004).getValueAsString().trim()
-				.equals("MONOCHROME2"))) {
+		if (!(active_file.getElement(0x00280004).getValueAsString().trim().equals("MONOCHROME2"))) {
 			System.err.println("False picture format. Not MONOCHROME2.");
 			return;
 		}
 
 		// _w and _h need to be initialized BEFORE filling the image array !
-		if (_bg_img == null || _bg_img.getWidth(null) != _w
-				|| _bg_img.getHeight(null) != _h) {
+		if (_bg_img == null || _bg_img.getWidth(null) != _w || _bg_img.getHeight(null) != _h) {
 			reallocate();
 		}
 
+		/* START DRAFT ONE PART ONE : First draft on how to display pixel data */
+//		int temp_min = 100000;
+//		int temp_max = -100000;
+//		if (active_file.getElement(0x00281051) == null) {
+//			System.out.println("Window Width not given");
+//			if (active_file.getElement(0x00281050) == null) {
+//				System.out.println("Window Center not given");
+//				if (active_file.getElement(0x00281052) == null) {
+//					System.out.println("Rescale Intercept not given");
+//				}
+//				if (active_file.getElement(0x00281053) == null) {
+//					System.out.println("Rescale Slope not given");
+//				}
+//
+//				System.out.println("Going through pixel data to get window min and window max...");
+//				for (int i = 0; i < _w; i++) {
+//					for (int j = 0; j < _h; j++) {
+//						int raw = picture_data[i * allocated_bytes + j * _w * allocated_bytes] & 0xff | ((picture_data[i * allocated_bytes + j * _w * allocated_bytes + 1] & 0xff) << 8);
+//						int draw = raw >> stored_bits - 8;
+//
+//						if (draw > temp_max)
+//							temp_max = draw;
+//						if (draw < temp_min)
+//							temp_min = draw;
+//					}
+//				}
+//				System.out.println("min:" + temp_min + "; max: " + temp_max);
+//			}
+//		}
+		/* END DRAFT ONE PART ONE : - additional code in the if(showbg) for adjusting the values ... */
+
 		// rendering the background picture
 		if (_show_bg) {
+			System.out.println("--------------------------------------------ShowBG");
 			// this is the place for the code displaying a single DICOM image
 			// in the 2d viewport (exercise 2)
 			//
@@ -234,28 +248,35 @@ public class Viewport2d extends Viewport implements Observer {
 			// example: _bg_img.setRGB(x,y, 0xff00ff00)
 			// AARRGGBB
 			// the resulting image will be used in the Panel2d::paint() method
+
 			for (int i = 0; i < _w; i++) {
 				for (int j = 0; j < _h; j++) {
-					int raw = picture_data[i * allocated_bytes + j * _w
-							* allocated_bytes]
-							& 0xff
-							| ((picture_data[i * allocated_bytes + j * _w
-									* allocated_bytes + 1] & 0xff) << 8);
-					
+					int raw = picture_data[i * allocated_bytes + j * _w * allocated_bytes] & 0xff | ((picture_data[i * allocated_bytes + j * _w * allocated_bytes + 1] & 0xff) << 8);
 
 					int draw = raw >> stored_bits - 8;
-					if(draw > 255){
+
+					/* START DRAFT ONE PART 2 : Manually change the pixel values to represent the full spectrum of 0-255 */
+//					System.out.println("Draw before: "+draw);
+//					draw = (int) ((float) ((draw - temp_min) * 255) / (temp_max - temp_min));
+//					System.out.println("Draw after : "+draw);
+//					/* END DRAFT ONE PART 2 */
+//					if(draw == 255) System.out.println("Good thing: 255 reached");
+//					if(draw == 0) System.out.println("Good thing: 0 reached");
+					if (draw > 255) {
 						System.err.println("to big");
+//						System.out.println("To big");
+//					} else if(draw < 0)	{
+//						System.err.println("to small");
+//						System.out.println("To small");
 					}
-					_bg_img.setRGB(i, j, (draw & 0xff) | 0xff000000
-							| (draw & 0xff) << 8 | (draw & 0xff) << 16);
+					_bg_img.setRGB(i, j, (draw & 0xff) | 0xff000000 | (draw & 0xff) << 8 | (draw & 0xff) << 16);
 				}
 			}
 
 		} else {
+			System.out.println("--------------------------------------------Else");
 			// faster: access the data array directly (see below)
-			final int[] bg_pixels = ((DataBufferInt) _bg_img.getRaster()
-					.getDataBuffer()).getData();
+			final int[] bg_pixels = ((DataBufferInt) _bg_img.getRaster().getDataBuffer()).getData();
 			for (int i = 0; i < bg_pixels.length; i++) {
 				bg_pixels[i] = 0xff000000;
 			}
@@ -281,8 +302,7 @@ public class Viewport2d extends Viewport implements Observer {
 	}
 
 	/**
-	 * Implements the observer function update. Updates can be triggered by the
-	 * global image stack.
+	 * Implements the observer function update. Updates can be triggered by the global image stack.
 	 */
 	public void update(final Observable o, final Object obj) {
 		if (!EventQueue.isDispatchThread()) {
@@ -355,8 +375,7 @@ public class Viewport2d extends Viewport implements Observer {
 
 		if (!gotcha) {
 			// if a segmentation is shown, we need to allocate memory for pixels
-			BufferedImage seg_img = new BufferedImage(_w, _h,
-					BufferedImage.TYPE_INT_ARGB);
+			BufferedImage seg_img = new BufferedImage(_w, _h, BufferedImage.TYPE_INT_ARGB);
 			_map_seg_name_to_img.put(name, seg_img);
 		} else {
 			_map_seg_name_to_img.remove(name);
@@ -369,8 +388,7 @@ public class Viewport2d extends Viewport implements Observer {
 	}
 
 	/**
-	 * Sets the view mode (transversal, sagittal, frontal). This method will be
-	 * implemented in exercise 2.
+	 * Sets the view mode (transversal, sagittal, frontal). This method will be implemented in exercise 2.
 	 * 
 	 * @param mode
 	 *            the new viewmode
