@@ -37,9 +37,10 @@ public class Viewport2d extends Viewport implements Observer {
 	// Viewport2D width / height or Panel2d width / height!
 	private int _w, _h;
 
+	private int viewMode = 0;
+
 	/**
-	 * Private class, implementing the GUI element for displaying the 2d data.
-	 * Implements the MouseListener Interface.
+	 * Private class, implementing the GUI element for displaying the 2d data. Implements the MouseListener Interface.
 	 */
 	public class Panel2d extends JPanel implements MouseListener {
 		public Panel2d() {
@@ -189,32 +190,23 @@ public class Viewport2d extends Viewport implements Observer {
 			return;
 
 		// these are two variables you might need in exercise #2
-		int active_img_id = _slices.getActiveImageID();
-		DiFile active_file = _slices.getDiFile(active_img_id);
+		// int active_img_id = _slices.getActiveImageID();
+		// DiFile active_file = _slices.getDiFile(active_img_id);
 
-		_w = active_file.getImageWidth();
-		_h = active_file.getImageHeight();
+		_w = _slices.getImageWidth();
+		_h = _slices.getImageHeight();
 
-		int stored_bits = active_file.getBitsStored();
-		int allocated_bytes = active_file.getBitsAllocated() / 8;
+		int stored_bits = _slices.getBitsStored();
+		int allocated_bytes = _slices.getBytesPerPixel();
 
-		System.out.println("allocated Bits: " + active_file.getBitsAllocated());
-		System.out.println("stored Bits: " + active_file.getBitsStored());
-		System.out.println("High Bit: "
-				+ active_file.getElement(0x00280102).getValueAsInt());
-		// System.out.println(active_file.get)
-		//
-		// System.out.println(active_file.getElement(0x00280004)
-		// .getValueAsString());
-		// System.out.println(active_file.getElement(0x00280101)
-		// .getValueAsString());
+		System.out.println("allocated Bytes: " + allocated_bytes);
+		System.out.println("stored Bits: " + stored_bits);
 
-		byte[] picture_data = active_file.getElement(0x7FE00010).getValues();
+		byte[] picture_data = _slices.getPictureData();
 		System.out.println(Integer.toBinaryString((picture_data[0] & 0xff))
 				+ " " + Integer.toBinaryString((picture_data[1] & 0xff)));
 
-		if (!(active_file.getElement(0x00280004).getValueAsString().trim()
-				.equals("MONOCHROME2"))) {
+		if (!(_slices.getPixelDataFormat().equals("MONOCHROME2"))) {
 			System.err.println("False picture format. Not MONOCHROME2.");
 			return;
 		}
@@ -234,18 +226,26 @@ public class Viewport2d extends Viewport implements Observer {
 			// example: _bg_img.setRGB(x,y, 0xff00ff00)
 			// AARRGGBB
 			// the resulting image will be used in the Panel2d::paint() method
+
+			System.out.println("Array Groeße: " + picture_data.length
+					+ ", Breite: " + _w + ", Höhe: " + _h + "Pixel *2 : " + _h
+					* _w * 2);
+			System.out.println("Picture Größe " + _bg_img.getHeight()
+					* _bg_img.getWidth());
 			for (int i = 0; i < _w; i++) {
 				for (int j = 0; j < _h; j++) {
-					int raw = picture_data[i * allocated_bytes + j * _w
-							* allocated_bytes]
-							& 0xff
+					int raw = (picture_data[i * allocated_bytes + j * _w
+							* allocated_bytes] & 0xff)
 							| ((picture_data[i * allocated_bytes + j * _w
 									* allocated_bytes + 1] & 0xff) << 8);
-					
 
 					int draw = raw >> stored_bits - 8;
-					if(draw > 255){
-						System.err.println("to big");
+					if (draw > 255) {
+						// System.err.println("to big");
+						draw = 255;
+					} else if (draw < 0) {
+						draw = 0;
+						// System.err.println
 					}
 					_bg_img.setRGB(i, j, (draw & 0xff) | 0xff000000
 							| (draw & 0xff) << 8 | (draw & 0xff) << 16);
@@ -306,21 +306,41 @@ public class Viewport2d extends Viewport implements Observer {
 		if (m._type == Message.M_NEW_IMAGE_LOADED) {
 			// a new image was loaded and needs an entry in the ImageSelector's
 			// DefaultListModel _slice_names
-			String name = new String();
-			int num = _slice_names.getSize();
-			name = "" + num;
-			if (num < 10)
-				name = " " + name;
-			if (num < 100)
-				name = " " + name;
-			_slice_names.addElement(name);
 
-			if (num == 0) {
-				// if the new image was the first image in the stack, make it
-				// active
-				// (display it).
+			if (m._obj != null) {
+				_slice_names.clear();
+				Integer integer = (Integer) m._obj;
+				int pictureCount = integer.intValue();
+				for (int i = 0; i < pictureCount; i++) {
+					String name = new String();
+					int num = _slice_names.getSize();
+					name = "" + num;
+					if (num < 10)
+						name = " " + name;
+					if (num < 100)
+						name = " " + name;
+					_slice_names.addElement(name);
+				}
 				reallocate();
 				_slices.setActiveImage(0);
+			} else {
+				String name = new String();
+				int num = _slice_names.getSize();
+				name = "" + num;
+				if (num < 10)
+					name = " " + name;
+				if (num < 100)
+					name = " " + name;
+				_slice_names.addElement(name);
+
+				if (num == 0) {
+					// if the new image was the first image in the stack, make
+					// it
+					// active
+					// (display it).
+					reallocate();
+					_slices.setActiveImage(0);
+				}
 			}
 		}
 
@@ -375,8 +395,19 @@ public class Viewport2d extends Viewport implements Observer {
 	 * @param mode
 	 *            the new viewmode
 	 */
-	public void setViewMode(int mode) {
+	public boolean setViewMode(int mode) {
 		// you should do something with the new viewmode here
+
+		if (_slices.getNumberOfImages() == 0) {
+			return false;
+		}
+
+		viewMode = mode;
+		_slices.setMode(mode);
+
 		System.out.println("Viewmode " + mode);
+
+		repaint();
+		return true;
 	}
 }

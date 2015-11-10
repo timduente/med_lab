@@ -9,7 +9,7 @@ import java.io.*;
 /**
  * This class represents the main menu of YaDiV (lab version).
  * 
- * @author  Karl-Ingo Friese
+ * @author Karl-Ingo Friese
  */
 @SuppressWarnings("serial")
 public class MenuBar extends JMenuBar {
@@ -21,19 +21,29 @@ public class MenuBar extends JMenuBar {
 	private JMenuItem _no_entries3d;
 	private InfoWindow _info_frame;
 	private ToolPane _tools;
-	
+
 	private Viewport2d _v2d;
 	private Viewport3d _v3d;
 	private MainWindow _win;
+
+	private JMenuItem item;
+
+	private JRadioButtonMenuItem rbMenuItemT;
+	private JRadioButtonMenuItem rbMenuItemS;
+	private JRadioButtonMenuItem rbMenuItemF;
 
 	/**
 	 * Constructor. Needs many references, since the MenuBar has to trigger a
 	 * lot of functions.
 	 * 
-	 * @param slices	the global image stack reference
-	 * @param v2d		the Viewport2d reference
-	 * @param v3d		the Viewport3d reference
-	 * @param tools		the ToolPane reference
+	 * @param slices
+	 *            the global image stack reference
+	 * @param v2d
+	 *            the Viewport2d reference
+	 * @param v3d
+	 *            the Viewport3d reference
+	 * @param tools
+	 *            the ToolPane reference
 	 */
 	public MenuBar(Viewport2d v2d, Viewport3d v3d, ToolPane tools) {
 		JMenuItem item;
@@ -41,12 +51,12 @@ public class MenuBar extends JMenuBar {
 		_v2d = v2d;
 		_v3d = v3d;
 		_tools = tools;
-		
+
 		_menuFile = new JMenu("File");
 		_menu2d = new JMenu("2D View");
 		_menu3d = new JMenu("3D View");
 		_menuTools = new JMenu("Tools");
-		_info_frame = null;		
+		_info_frame = null;
 
 		// -------------------------------------------------------------------------------------
 
@@ -63,7 +73,7 @@ public class MenuBar extends JMenuBar {
 		item.addActionListener(saveAsListener);
 		item.setEnabled(false);
 		_menuFile.add(item);
-		
+
 		item = new JMenuItem(new String("Quit"), 'Q');
 		item.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent event) {
@@ -74,55 +84,53 @@ public class MenuBar extends JMenuBar {
 
 		// -------------------------------------------------------------------------------------
 
-		item = new JMenuItem(new String("DICOM Info"));		
+		item = new JMenuItem(new String("DICOM Info"));
 		item.addActionListener(showInfoListener);
 		_menu2d.add(item);
 
-		_menu2d.addSeparator();		
-		item = new JCheckBoxMenuItem(new String("Show original data"), true);		
-		item.addActionListener(toggleBGListener2d);		
+		_menu2d.addSeparator();
+		item = new JCheckBoxMenuItem(new String("Show original data"), true);
+		item.addActionListener(toggleBGListener2d);
 		_menu2d.add(item);
-		
-		JRadioButtonMenuItem rbMenuItem;
+
 		ButtonGroup group = new ButtonGroup();
 
-		rbMenuItem = new JRadioButtonMenuItem("Transversal");
-		rbMenuItem.addActionListener(setViewModeListener);
-		group.add(rbMenuItem);
-		_menu2d.add(rbMenuItem);
-		rbMenuItem.setSelected(true);
+		rbMenuItemT = new JRadioButtonMenuItem("Transversal");
+		rbMenuItemT.addActionListener(setViewModeListener);
+		group.add(rbMenuItemT);
+		_menu2d.add(rbMenuItemT);
+		rbMenuItemT.setSelected(true);
 
-		rbMenuItem = new JRadioButtonMenuItem("Sagittal");
-		rbMenuItem.addActionListener(setViewModeListener);
-		group.add(rbMenuItem);
-		_menu2d.add(rbMenuItem);
+		rbMenuItemS = new JRadioButtonMenuItem("Sagittal");
+		rbMenuItemS.addActionListener(setViewModeListener);
+		group.add(rbMenuItemS);
+		_menu2d.add(rbMenuItemS);
 
-		rbMenuItem = new JRadioButtonMenuItem("Frontal");
-		rbMenuItem.addActionListener(setViewModeListener);
-		group.add(rbMenuItem);
-		_menu2d.add(rbMenuItem);
+		rbMenuItemF = new JRadioButtonMenuItem("Frontal");
+		rbMenuItemF.addActionListener(setViewModeListener);
+		group.add(rbMenuItemF);
+		_menu2d.add(rbMenuItemF);
 
-		_menu2d.addSeparator();		
+		_menu2d.addSeparator();
 
 		_no_entries2d = new JMenuItem(new String("no segmentations yet"));
 		_no_entries2d.setEnabled(false);
 		_menu2d.add(_no_entries2d);
-		
-		
+
 		// -------------------------------------------------------------------------------------
 
 		item = new JMenuItem(new String("3d Item 1"));
 		// item.addActionListener(...);
-		item = new JCheckBoxMenuItem(new String("Show original Data"), false);		
-		item.addActionListener(toggleBGListener3d);		
+		item = new JCheckBoxMenuItem(new String("Show original Data"), false);
+		item.addActionListener(toggleBGListener3d);
 		_menu3d.add(item);
 
-		_menu3d.addSeparator();		
+		_menu3d.addSeparator();
 
 		_no_entries3d = new JMenuItem(new String("no segmentations yet"));
 		_no_entries3d.setEnabled(false);
 		_menu3d.add(_no_entries3d);
-		
+
 		// -------------------------------------------------------------------------------------
 
 		item = new JMenuItem(new String("Neue Segmentierung"));
@@ -154,7 +162,7 @@ public class MenuBar extends JMenuBar {
 			// saveFile(...);
 		}
 	};
-	
+
 	/**
 	 * This function is called when someone chooses to save the current project
 	 * under a new name.
@@ -165,18 +173,18 @@ public class MenuBar extends JMenuBar {
 		}
 	};
 
-
 	/**
 	 * Opens a file chooser dialog with a DICOM file filter and directory.
 	 * 
-	 * @param save	true if the dialog should be a save file dialog, false if not
+	 * @param save
+	 *            true if the dialog should be a save file dialog, false if not
 	 */
 	private void openDialog(boolean save) {
 		int returnVal;
 		File file;
 		JFileChooser chooser;
 		String default_dir = new String("");
-		
+
 		if (new File(default_dir).exists()) {
 			chooser = new JFileChooser(default_dir);
 		} else {
@@ -186,7 +194,7 @@ public class MenuBar extends JMenuBar {
 		DiFileFilter filter = new DiFileFilter();
 		filter.setDescription("Dicom Image Files");
 		chooser.setFileFilter(filter);
-		
+
 		if (save) {
 			returnVal = chooser.showSaveDialog(null);
 			if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -196,9 +204,9 @@ public class MenuBar extends JMenuBar {
 					return;
 				}
 				// saveFile(file);
-			}		
+			}
 		} else {
-			returnVal = chooser.showOpenDialog(null);			
+			returnVal = chooser.showOpenDialog(null);
 			if (returnVal == JFileChooser.APPROVE_OPTION) {
 				file = chooser.getSelectedFile();
 				if (!file.canRead()) {
@@ -207,22 +215,21 @@ public class MenuBar extends JMenuBar {
 				}
 				System.out.println(file.getParent());
 				LabMed.get_is().initFromDirectory(file.getParent());
-			}		
+			}
 		}
-		
-	}	
-	
+
+	}
+
 	/**
 	 * This function is called when someone wants to see the dicome file info
 	 * window.
 	 */
 	ActionListener showInfoListener = new ActionListener() {
 		public void actionPerformed(ActionEvent event) {
-			if (_v2d.currentFile()==null) {
+			if (_v2d.currentFile() == null) {
 				JOptionPane.showMessageDialog(null,
-					    "Fehler: Keine DICOM Datei geöffnet",
-					    "Inane error",
-					    JOptionPane.ERROR_MESSAGE);
+						"Fehler: Keine DICOM Datei geöffnet", "Inane error",
+						JOptionPane.ERROR_MESSAGE);
 				return;
 			}
 
@@ -230,12 +237,12 @@ public class MenuBar extends JMenuBar {
 				_info_frame = new InfoWindow();
 				LabMed.get_is().addObserver(_info_frame);
 			}
-			
+
 			if (!_info_frame.isVisible()) {
 				_info_frame.setVisible(true);
 			}
-			
-			_info_frame.showInfo(_v2d.currentFile());		
+
+			_info_frame.showInfo(_v2d.currentFile());
 
 		}
 	};
@@ -244,15 +251,22 @@ public class MenuBar extends JMenuBar {
 	 * Actionlistener for changing the 2d viewmode.
 	 */
 	ActionListener setViewModeListener = new ActionListener() {
-		public void actionPerformed(ActionEvent event) {			
+		public void actionPerformed(ActionEvent event) {
 			String name = event.getActionCommand();
+			int mode = 0;
 			if (name.equals("Transversal")) {
-				_v2d.setViewMode(0);
+				mode = 0;
 			} else if (name.equals("Sagittal")) {
-				_v2d.setViewMode(1);
+				mode = 1;
 			} else if (name.equals("Frontal")) {
-				_v2d.setViewMode(2);
+				mode = 2;
 			}
+			if (!_v2d.setViewMode(mode)) {
+				rbMenuItemF.setSelected(false);
+				rbMenuItemS.setSelected(false);
+				rbMenuItemT.setSelected(true);
+			}
+
 		}
 	};
 
@@ -294,25 +308,27 @@ public class MenuBar extends JMenuBar {
 		}
 	};
 
-
 	/**
 	 * ActionListener for adding a new segmentation to the global image stack.
 	 */
-	ActionListener newSegmentListener = new ActionListener() {		
+	ActionListener newSegmentListener = new ActionListener() {
 		public void actionPerformed(ActionEvent event) {
 			ImageStack is = LabMed.get_is();
-			if (is.getNumberOfImages()==0) {
-				JOptionPane.showMessageDialog(_win,
-					    "Segmentierung ohne geöffneten DICOM Datensatz nicht möglich.",
-					    "Inane error",
-					    JOptionPane.ERROR_MESSAGE);
-			} else if (is.getSegmentNumber()==3) {
-					JOptionPane.showMessageDialog(_win,
-						    "In der Laborversion werden nicht mehr als drei Segmentierungen benötigt.",
-						    "Inane error",
-						    JOptionPane.ERROR_MESSAGE);
+			if (is.getNumberOfImages() == 0) {
+				JOptionPane
+						.showMessageDialog(
+								_win,
+								"Segmentierung ohne geöffneten DICOM Datensatz nicht möglich.",
+								"Inane error", JOptionPane.ERROR_MESSAGE);
+			} else if (is.getSegmentNumber() == 3) {
+				JOptionPane
+						.showMessageDialog(
+								_win,
+								"In der Laborversion werden nicht mehr als drei Segmentierungen benötigt.",
+								"Inane error", JOptionPane.ERROR_MESSAGE);
 			} else {
-				String name = JOptionPane.showInputDialog(_win, "Name der Segmentierung");
+				String name = JOptionPane.showInputDialog(_win,
+						"Name der Segmentierung");
 				if (name != null) {
 					_no_entries2d.setVisible(false);
 					_no_entries3d.setVisible(false);
