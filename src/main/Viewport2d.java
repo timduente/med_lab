@@ -38,7 +38,6 @@ public class Viewport2d extends Viewport implements Observer {
 	private int _w, _h;
 
 	private int viewMode = 0;
-
 	/**
 	 * Private class, implementing the GUI element for displaying the 2d data. Implements the MouseListener Interface.
 	 */
@@ -217,6 +216,37 @@ public class Viewport2d extends Viewport implements Observer {
 			reallocate();
 		}
 
+		/* START DRAFT ONE PART ONE : First draft on how to display pixel data */
+//		int temp_min = 100000;
+//		int temp_max = -100000;
+//		if (active_file.getElement(0x00281051) == null) {
+//			System.out.println("Window Width not given");
+//			if (active_file.getElement(0x00281050) == null) {
+//				System.out.println("Window Center not given");
+//				if (active_file.getElement(0x00281052) == null) {
+//					System.out.println("Rescale Intercept not given");
+//				}
+//				if (active_file.getElement(0x00281053) == null) {
+//					System.out.println("Rescale Slope not given");
+//				}
+//
+//				System.out.println("Going through pixel data to get window min and window max...");
+//				for (int i = 0; i < _w; i++) {
+//					for (int j = 0; j < _h; j++) {
+//						int raw = picture_data[i * allocated_bytes + j * _w * allocated_bytes] & 0xff | ((picture_data[i * allocated_bytes + j * _w * allocated_bytes + 1] & 0xff) << 8);
+//						int draw = raw >> stored_bits - 8;
+//
+//						if (draw > temp_max)
+//							temp_max = draw;
+//						if (draw < temp_min)
+//							temp_min = draw;
+//					}
+//				}
+//				System.out.println("min:" + temp_min + "; max: " + temp_max);
+//			}
+//		}
+		/* END DRAFT ONE PART ONE : - additional code in the if(showbg) for adjusting the values ... */
+
 		// rendering the background picture
 		if (_show_bg) {
 			// this is the place for the code displaying a single DICOM image
@@ -232,6 +262,7 @@ public class Viewport2d extends Viewport implements Observer {
 					* _w * 2);
 			System.out.println("Picture Größe " + _bg_img.getHeight()
 					* _bg_img.getWidth());
+
 			for (int i = 0; i < _w; i++) {
 				for (int j = 0; j < _h; j++) {
 					int raw = (picture_data[i * allocated_bytes + j * _w
