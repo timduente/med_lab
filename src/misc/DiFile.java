@@ -133,11 +133,13 @@ public class DiFile {
 						draw = 0;
 						 System.err.println("to small"); 
 					}
-					/** TODO: Translate int back to byte data... **/ 
+					/** TODO: Translate int back to byte data... 
+					 * This may be a bad ansatz. Translate draw back to byte. Append to a new byte[] and setValues OUTSIDE of the for loop... **/ 
 //					byte[] the_new_pixel_data = ....; 
-//					this.getElement(0x7FE00010).setValues(the_new_pixel_data);
+
 				}
 			}
+//			this.getElement(0x7FE00010).setValues(the_new_pixel_data);
 		}
 	}
 
