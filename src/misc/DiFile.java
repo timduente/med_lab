@@ -105,12 +105,13 @@ public class DiFile {
 			int stored_bits = this.getElement(0x00280101).getValueAsInt();
 			int allocated_bytes = this.getElement(0x00280100).getValueAsInt()/8;
 			byte[] picture_data = this.getElement(0x7FE00010).getValues();
+			byte[] rescaled_data = new byte[picture_data.length]; 
 			
 			for (int i = 0; i < _w; i++) {
 				for (int j = 0; j < _h; j++) {
 										
 					int raw = (picture_data[i * allocated_bytes + j * _w * allocated_bytes] & 0xff) | ((picture_data[i * allocated_bytes + j * _w * allocated_bytes + 1] & 0xff) << 8);
-					int draw = raw >> stored_bits - 8;
+					int draw = raw >> stored_bits - 8;			
 					
 					/** Apply rescaling like in the appendix of excercise sheet 2 page 699 **/ 
 					if(rescale_intercept != Integer.MAX_VALUE && rescale_slope != Integer.MAX_VALUE)	{
@@ -124,7 +125,9 @@ public class DiFile {
 						} else	{
 							draw = (int) (((draw -(window_center - 0.5))/(window_width-1)+0.5)*(255));
 						}
-					}			
+					} else	if(true /* Here maybe some sort of switch if auto-adpeting to 0-255 is acceptable*/){
+						
+					}
 					//Check for consistency... May be removed anytime (after it works ;-) ) 
 					if (draw > 255) {
 						 System.err.println("to big");
@@ -132,14 +135,16 @@ public class DiFile {
 					} else if (draw < 0) {
 						draw = 0;
 						 System.err.println("to small"); 
-					}
+					} 
+//					rescaled_data[]
 					/** TODO: Translate int back to byte data... 
 					 * This may be a bad ansatz. Translate draw back to byte. Append to a new byte[] and setValues OUTSIDE of the for loop... **/ 
 //					byte[] the_new_pixel_data = ....; 
-
+					rescaled_data[i * allocated_bytes + j * _w * allocated_bytes] = (byte) draw; 
 				}
 			}
-//			this.getElement(0x7FE00010).setValues(the_new_pixel_data);
+			System.out.println("...................... Laenge neues Array: "+rescaled_data.length);
+			this.getElement(0x7FE00010).setValues(rescaled_data);
 		}
 	}
 
