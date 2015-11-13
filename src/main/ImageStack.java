@@ -10,9 +10,7 @@ import misc.DiFile;
 import misc.DiFileInputStream;
 
 /**
- * The ImageStack class represents all DicomFiles of a series and its segments.
- * It is the global data structure in YaDiV. This class is implemented as
- * singleton, meaning the constructor is private. Use getInstance() instead.
+ * The ImageStack class represents all DicomFiles of a series and its segments. It is the global data structure in YaDiV. This class is implemented as singleton, meaning the constructor is private. Use getInstance() instead.
  * 
  * @author Karl-Ingo Friese
  */
@@ -57,11 +55,10 @@ public class ImageStack extends Observable {
 	}
 
 	/**
-	 * Reads all DICOM files from the given directory. All files are checked for
-	 * correctness before loading. The load process is implemented as a thread.
+	 * Reads all DICOM files from the given directory. All files are checked for correctness before loading. The load process is implemented as a thread.
 	 * 
 	 * @param dir_name
-	 *            string contaning the directory name.
+	 *            string containing the directory name.
 	 */
 	public void initFromDirectory(String dir_name) {
 		_dir_name = dir_name;
@@ -79,8 +76,7 @@ public class ImageStack extends Observable {
 
 				if (!file.isDirectory()) {
 					try {
-						DiFileInputStream candidate = new DiFileInputStream(
-								file);
+						DiFileInputStream candidate = new DiFileInputStream(file);
 
 						if (candidate.skipHeader()) {
 							result = candidate.quickscan_for_image_number();
@@ -118,20 +114,15 @@ public class ImageStack extends Observable {
 				progress_win.add(progress_bar);
 				progress_win.pack();
 				// progress_bar.setIndeterminate(true);
-				int main_width = (int) (LabMed.get_window().getSize()
-						.getWidth());
-				int main_height = (int) (LabMed.get_window().getSize()
-						.getHeight());
-				progress_win.setLocation(
-						(main_width - progress_win.getSize().width) / 2,
-						(main_height - progress_win.getSize().height) / 2);
+				int main_width = (int) (LabMed.get_window().getSize().getWidth());
+				int main_height = (int) (LabMed.get_window().getSize().getHeight());
+				progress_win.setLocation((main_width - progress_win.getSize().width) / 2, (main_height - progress_win.getSize().height) / 2);
 				progress_win.setVisible(true);
 
 				for (int i = 0; i < files_unchecked.length; i++) {
 					int num = check_file(files_unchecked[i]);
 					if (num >= 0) {
-						map_number_to_difile_name.put(new Integer(num),
-								files_unchecked[i].getAbsolutePath());
+						map_number_to_difile_name.put(new Integer(num), files_unchecked[i].getAbsolutePath());
 					}
 					progress_bar.setValue(i + 1);
 				}
@@ -149,8 +140,7 @@ public class ImageStack extends Observable {
 				Iterator<Integer> it = l.iterator();
 				int file_counter = 0;
 				while (it.hasNext()) {
-					file_names[file_counter++] = map_number_to_difile_name
-							.get(it.next());
+					file_names[file_counter++] = map_number_to_difile_name.get(it.next());
 				}
 
 				progress_bar.setMaximum(file_names.length);
@@ -165,9 +155,7 @@ public class ImageStack extends Observable {
 						df.initFromFile(file_names[i]);
 
 					} catch (Exception ex) {
-						System.out.println(getClass()
-								+ "::initFromDirectory -> failed to open "
-								+ file_names[i]);
+						System.out.println(getClass() + "::initFromDirectory -> failed to open " + file_names[i]);
 						System.out.println(ex);
 						System.exit(0);
 					}
@@ -183,8 +171,7 @@ public class ImageStack extends Observable {
 
 					bitsStored = df.getBitsStored();
 					bytesPerPixel = df.getBitsAllocated() / 8;
-					pixelDataFormat = df.getElement(0x00280004)
-							.getValueAsString().trim();
+					pixelDataFormat = df.getElement(0x00280004).getValueAsString().trim();
 
 					setChanged();
 					notifyObservers(new Message(Message.M_NEW_IMAGE_LOADED));
@@ -338,14 +325,11 @@ public class ImageStack extends Observable {
 
 		setChanged();
 		if (mode == 0) {
-			notifyObservers(new Message(Message.M_NEW_IMAGE_LOADED,
-					new Integer(_dicom_files.size())));
+			notifyObservers(new Message(Message.M_NEW_IMAGE_LOADED, new Integer(_dicom_files.size())));
 		} else if (mode == 1) {
-			notifyObservers(new Message(Message.M_NEW_IMAGE_LOADED,
-					new Integer(_w)));
+			notifyObservers(new Message(Message.M_NEW_IMAGE_LOADED, new Integer(_w)));
 		} else if (mode == 2) {
-			notifyObservers(new Message(Message.M_NEW_IMAGE_LOADED,
-					new Integer(_h)));
+			notifyObservers(new Message(Message.M_NEW_IMAGE_LOADED, new Integer(_h)));
 		}
 
 	}
@@ -358,36 +342,31 @@ public class ImageStack extends Observable {
 		if (mode == 0) {
 			return _dicom_files.get(_active).getElement(0x7FE00010).getValues();
 		} else if (mode == 1) {
-			byte[] sagitalPictureData = new byte[_h * _dicom_files.size()
-					* bytesPerPixel];
-			
+			byte[] sagitalPictureData = new byte[_h * _dicom_files.size() * bytesPerPixel];
+
 			for (int i = 0; i < _dicom_files.size(); i++) {
 				DiFile diFile = _dicom_files.get(i);
 				byte[] pictureData = diFile.getElement(0x7FE00010).getValues();
-				
+
 				for (int j = 0; j < _h; j++) {
 
 					byte b = pictureData[j * bytesPerPixel * _w + _active * bytesPerPixel];
 					byte b1 = pictureData[j * bytesPerPixel * _w + _active * bytesPerPixel + 1];
 
-						sagitalPictureData[j * bytesPerPixel + i * _h
-								* bytesPerPixel] = b;
-						sagitalPictureData[j * bytesPerPixel + i * _h
-								* bytesPerPixel + 1] = b1;
+					sagitalPictureData[j * bytesPerPixel + i * _h * bytesPerPixel] = b;
+					sagitalPictureData[j * bytesPerPixel + i * _h * bytesPerPixel + 1] = b1;
 
 				}
 
 			}
 			return sagitalPictureData;
 		} else if (mode == 2) {
-			byte[] frontalPictureData = new byte[_w * _dicom_files.size()
-					* bytesPerPixel];
+			byte[] frontalPictureData = new byte[_w * _dicom_files.size() * bytesPerPixel];
 			for (int i = 0; i < _dicom_files.size(); i++) {
 				DiFile diFile = _dicom_files.get(i);
 				byte[] pictureData = diFile.getElement(0x7FE00010).getValues();
 				for (int j = 0; j < _h * bytesPerPixel; j++) {
-					frontalPictureData[j + i * _h * bytesPerPixel] = pictureData[_active
-							* bytesPerPixel * _w + j];
+					frontalPictureData[j + i * _h * bytesPerPixel] = pictureData[_active * bytesPerPixel * _w + j];
 				}
 
 			}
