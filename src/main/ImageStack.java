@@ -170,7 +170,7 @@ public class ImageStack extends Observable {
 					_h = df.getImageHeight();
 
 					bitsStored = df.getBitsStored();
-					bytesPerPixel = df.getBitsAllocated() / 8;
+					bytesPerPixel = 1; // bitsStroe/8;
 					pixelDataFormat = df.getElement(0x00280004).getValueAsString().trim();
 
 					setChanged();
@@ -351,10 +351,10 @@ public class ImageStack extends Observable {
 				for (int j = 0; j < _h; j++) {
 
 					byte b = pictureData[j * bytesPerPixel * _w + _active * bytesPerPixel];
-					byte b1 = pictureData[j * bytesPerPixel * _w + _active * bytesPerPixel + 1];
+					//byte b1 = pictureData[j * bytesPerPixel * _w + _active * bytesPerPixel + 1];
 
 					sagitalPictureData[j * bytesPerPixel + i * _h * bytesPerPixel] = b;
-					sagitalPictureData[j * bytesPerPixel + i * _h * bytesPerPixel + 1] = b1;
+					//sagitalPictureData[j * bytesPerPixel + i * _h * bytesPerPixel + 1] = b1;
 
 				}
 

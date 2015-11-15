@@ -90,13 +90,15 @@ public class DiFile {
 		/** Apply window width/center & rescale slope/intercept on every pixel **/
 		// Ternary Operators incoming: DiDataElement may be uninitialised
 		DiDataElement w_center = this.getElement(0x00281050);
-		int window_center = (w_center == null) ? Integer.MAX_VALUE : w_center.getValueAsInt();
+		int window_center = (w_center == null) ? (int) Math.pow(2, this._bits_stored-1) : w_center.getValueAsInt();
 		DiDataElement w_width = this.getElement(0x00281051);
-		int window_width = (w_width == null) ? Integer.MAX_VALUE : w_width.getValueAsInt();
-		DiDataElement r_slope = this.getElement(0x00281052);
+		int window_width = (w_width == null) ? (int) Math.pow(2, this._bits_stored) : w_width.getValueAsInt();
+		
+		DiDataElement r_slope = this.getElement(0x00281053);
 		int rescale_slope = (r_slope == null) ? Integer.MAX_VALUE : r_slope.getValueAsInt();
-		DiDataElement r_intercept = this.getElement(0x00281050);
+		DiDataElement r_intercept = this.getElement(0x00281052);
 		int rescale_intercept = (r_intercept == null) ? Integer.MAX_VALUE : r_intercept.getValueAsInt();
+		System.out.println("W-Center: " + window_center + " Window width: " + window_width);
 
 		if (window_center == -1 && window_width == -1 && rescale_intercept == -1 && rescale_slope == -1) {
 			//Not the droids were looking for...
@@ -105,42 +107,38 @@ public class DiFile {
 			int stored_bits = this.getElement(0x00280101).getValueAsInt();
 			int allocated_bytes = this.getElement(0x00280100).getValueAsInt()/8;
 			byte[] picture_data = this.getElement(0x7FE00010).getValues();
-			byte[] rescaled_data = new byte[picture_data.length]; 
+			byte[] rescaled_data = new byte[_w * _h]; 
+			System.out.println("Intercept: "+ rescale_intercept + "; Slope: " + rescale_slope);
 			
 			for (int i = 0; i < _w; i++) {
 				for (int j = 0; j < _h; j++) {
 										
-					int raw = (picture_data[i * allocated_bytes + j * _w * allocated_bytes] & 0xff) | ((picture_data[i * allocated_bytes + j * _w * allocated_bytes + 1] & 0xff) << 8);
-					int draw = raw >> stored_bits - 8;			
+					int draw = (picture_data[i * allocated_bytes + j * _w * allocated_bytes] & 0xff) | ((picture_data[i * allocated_bytes + j * _w * allocated_bytes + 1] & 0xff) << 8);			
 					
 					/** Apply rescaling like in the appendix of excercise sheet 2 page 699 **/ 
 					if(rescale_intercept != Integer.MAX_VALUE && rescale_slope != Integer.MAX_VALUE)	{
 						draw = rescale_slope * draw + rescale_intercept;
 					} 
-					if(window_center != Integer.MAX_VALUE && window_width != Integer.MAX_VALUE)	{
-						if(draw <= window_center - 0.5 - (window_width-1.0f)/2)	{	
-							draw = 0;	//y_min
-						} else if(draw > window_center - 0.5 + (window_width-1.0f)/2)	{
-							draw = 255; 
-						} else	{
-							draw = (int) (((draw -(window_center - 0.5))/(window_width-1)+0.5)*(255));
-						}
-					} else	if(true /* Here maybe some sort of switch if auto-adpeting to 0-255 is acceptable*/){
+					
+					//if(window_center != Integer.MAX_VALUE && window_width != Integer.MAX_VALUE)	{
+						int low = window_center - (window_width >> 1);
+						int high = window_center + (window_width >> 1);
+						draw = draw - low;
+						draw = (int)((draw * 255.0f) / window_width);
 						
-					}
-					//Check for consistency... May be removed anytime (after it works ;-) ) 
-					if (draw > 255) {
-						 System.err.println("to big");
-						draw = 255;
-					} else if (draw < 0) {
-						draw = 0;
-						 System.err.println("to small"); 
-					} 
+						if(draw <= low ){    //window_center - 0.5 - (window_width-1.0f)/2)	{	
+							draw = 0;	//y_min
+						} else if(draw >= high){  //window_center - 0.5 + (window_width-1.0f)/2)	{
+							draw = 255; 
+						} 
+							//draw = (int) (((draw -(window_center - 0.5))/(window_width-1)+0.5)*(255));
+					//}
+
 //					rescaled_data[]
 					/** TODO: Translate int back to byte data... 
 					 * This may be a bad ansatz. Translate draw back to byte. Append to a new byte[] and setValues OUTSIDE of the for loop... **/ 
 //					byte[] the_new_pixel_data = ....; 
-					rescaled_data[i * allocated_bytes + j * _w * allocated_bytes] = (byte) draw; 
+					rescaled_data[i  + j * _w ] = (byte) draw; 
 				}
 			}
 			System.out.println("...................... Laenge neues Array: "+rescaled_data.length);

@@ -220,9 +220,9 @@ public class Viewport2d extends Viewport implements Observer {
 
 			for (int i = 0; i < _w; i++) {
 				for (int j = 0; j < _h; j++) {
-					int raw = (picture_data[i * allocated_bytes + j * _w * allocated_bytes] & 0xff) | ((picture_data[i * allocated_bytes + j * _w * allocated_bytes + 1] & 0xff) << 8);
+					int draw = (picture_data[i  + j * _w ] & 0xff) ;
 
-					int draw = raw >> stored_bits - 8;
+					//int draw = raw >> stored_bits - 8;
 					if (draw > 255) {
 						// System.err.println("to big");
 						draw = 255;
