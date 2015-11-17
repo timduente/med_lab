@@ -110,6 +110,8 @@ public class DiFile {
 			byte[] rescaled_data = new byte[_w * _h]; 
 			System.out.println("Intercept: "+ rescale_intercept + "; Slope: " + rescale_slope);
 			
+			int low = window_center - (window_width >> 1);
+			int high = window_center + (window_width >> 1);
 			for (int i = 0; i < _w; i++) {
 				for (int j = 0; j < _h; j++) {
 										
@@ -121,16 +123,17 @@ public class DiFile {
 					} 
 					
 					//if(window_center != Integer.MAX_VALUE && window_width != Integer.MAX_VALUE)	{
-						int low = window_center - (window_width >> 1);
-						int high = window_center + (window_width >> 1);
-						draw = draw - low;
-						draw = (int)((draw * 255.0f) / window_width);
 						
-						if(draw <= low ){    //window_center - 0.5 - (window_width-1.0f)/2)	{	
+//						draw = draw - low;
+//						draw = (int)((draw * 255.0f) / window_width);
+						
+						if(draw <=     window_center - 0.5 - (window_width-1.0f)/2)	{	
 							draw = 0;	//y_min
-						} else if(draw >= high){  //window_center - 0.5 + (window_width-1.0f)/2)	{
+						} else if(draw >= window_center - 0.5 + (window_width-1.0f)/2)	{
 							draw = 255; 
-						} 
+						}else{
+							draw = (int) (((draw -(window_center - 0.5))/(window_width-1)+0.5)*(255));
+						}
 							//draw = (int) (((draw -(window_center - 0.5))/(window_width-1)+0.5)*(255));
 					//}
 
