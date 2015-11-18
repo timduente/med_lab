@@ -340,13 +340,13 @@ public class ImageStack extends Observable {
 		}
 
 		if (mode == 0) {
-			return _dicom_files.get(_active).getElement(0x7FE00010).getValues();
+			return _dicom_files.get(_active).get_scaled_data();
 		} else if (mode == 1) {
 			byte[] sagitalPictureData = new byte[_h * _dicom_files.size() * bytesPerPixel];
 
 			for (int i = 0; i < _dicom_files.size(); i++) {
 				DiFile diFile = _dicom_files.get(i);
-				byte[] pictureData = diFile.getElement(0x7FE00010).getValues();
+				byte[] pictureData = diFile.get_scaled_data();
 
 				for (int j = 0; j < _h; j++) {
 
@@ -364,7 +364,7 @@ public class ImageStack extends Observable {
 			byte[] frontalPictureData = new byte[_w * _dicom_files.size() * bytesPerPixel];
 			for (int i = 0; i < _dicom_files.size(); i++) {
 				DiFile diFile = _dicom_files.get(i);
-				byte[] pictureData = diFile.getElement(0x7FE00010).getValues();
+				byte[] pictureData = diFile.get_scaled_data();
 				for (int j = 0; j < _h * bytesPerPixel; j++) {
 					frontalPictureData[j + i * _h * bytesPerPixel] = pictureData[_active * bytesPerPixel * _w + j];
 				}

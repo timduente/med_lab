@@ -1,11 +1,23 @@
 package main;
 
-import java.util.*;
-import java.awt.*;
-import java.awt.image.*;
-import java.awt.event.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.EventQueue;
+import java.awt.Graphics;
+import java.awt.event.MouseListener;
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferInt;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Observable;
+import java.util.Observer;
 
-import javax.swing.*;
+import javax.swing.DefaultListModel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -222,14 +234,14 @@ public class Viewport2d extends Viewport implements Observer {
 				for (int j = 0; j < _h; j++) {
 					int draw = (picture_data[i  + j * _w ] & 0xff) ;
 
-					//int draw = raw >> stored_bits - 8;
-					if (draw > 255) {
-						// System.err.println("to big");
-						draw = 255;
-					} else if (draw < 0) {
-						draw = 0;
-						// System.err.println
-					}
+//					//int draw = raw >> stored_bits - 8;
+//					if (draw > 255) {
+//						// System.err.println("to big");
+//						draw = 255;
+//					} else if (draw < 0) {
+//						draw = 0;
+//						// System.err.println
+//					}
 					_bg_img.setRGB(i, j, (draw & 0xff) | 0xff000000 | (draw & 0xff) << 8 | (draw & 0xff) << 16);
 				}
 			}
@@ -245,15 +257,36 @@ public class Viewport2d extends Viewport implements Observer {
 		// rendering the segmentations. each segmentation is rendered in a
 		// different image.
 		Enumeration<Segment> segs = _map_name_to_seg.elements();
+		Enumeration<BufferedImage> seg_images = _map_seg_name_to_img.elements();
+		
 		while (segs.hasMoreElements()) {
+			BufferedImage seg_image; 
+			if(seg_images.hasMoreElements()){
+				seg_image = seg_images.nextElement();
+			} else {	
+				System.out.println("No Next Element in Viewport2D::update_view::while");
+				break; 
+			}
 			// here should be the code for displaying the segmentation data
 			// (exercise 3)
 
-			// Segmentation seg = (Segmentation)(segs.nextElement());
-			// String name = seg.getName();
-			// int[] seg_pixels = ((DataBufferInt)
-			// _bg_img.getRaster().getDataBuffer()).getData();
-
+			 Segment seg = (Segment)(segs.nextElement());
+			 String name = seg.getName();
+			 
+			 int[] seg_pixels = ((DataBufferInt) seg_image.getRaster().getDataBuffer()).getData();
+			
+			 for (int i = 0; i < seg_pixels.length; i++) {
+//				 if()
+				 seg_pixels[i] = 0x80ff0100;
+				}
+//			 int index = 0; 
+//			 for(int w = 0; w < _w; w++)	{
+//				 for(int h = 0; h < _h; h++)	{
+//					 int color = seg.getColor();
+//					 _bg_img.setRGB(i, j, (draw & 0xff) | 0xff000000 | (draw & 0xff) << 8 | (draw & 0xff) << 16);_ 
+//				 }
+//			 }
+			 
 			// to drawn a segmentation image, fill the pixel array seg_pixels
 			// with ARGB values similar to exercise 2
 		}

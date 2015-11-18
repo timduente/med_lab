@@ -22,6 +22,7 @@ public class DiFile {
 	private int _bits_stored;
 	private int _bits_allocated;
 	private Hashtable<Integer, DiDataElement> _data_elements;
+	private byte[] scaled_data; 
 	private int _image_number;
 	String _file_name;
 
@@ -107,7 +108,7 @@ public class DiFile {
 			int stored_bits = this.getElement(0x00280101).getValueAsInt();
 			int allocated_bytes = this.getElement(0x00280100).getValueAsInt()/8;
 			byte[] picture_data = this.getElement(0x7FE00010).getValues();
-			byte[] rescaled_data = new byte[_w * _h]; 
+			scaled_data = new byte[_w * _h]; 
 			System.out.println("Intercept: "+ rescale_intercept + "; Slope: " + rescale_slope);
 			
 			int low = window_center - (window_width >> 1);
@@ -134,19 +135,15 @@ public class DiFile {
 						}else{
 							draw = (int) (((draw -(window_center - 0.5))/(window_width-1)+0.5)*(255));
 						}
-							//draw = (int) (((draw -(window_center - 0.5))/(window_width-1)+0.5)*(255));
-					//}
-
-//					rescaled_data[]
-					/** TODO: Translate int back to byte data... 
-					 * This may be a bad ansatz. Translate draw back to byte. Append to a new byte[] and setValues OUTSIDE of the for loop... **/ 
-//					byte[] the_new_pixel_data = ....; 
-					rescaled_data[i  + j * _w ] = (byte) draw; 
+					scaled_data[i  + j * _w ] = (byte) draw; 
 				}
 			}
-			System.out.println("...................... Laenge neues Array: "+rescaled_data.length);
-			this.getElement(0x7FE00010).setValues(rescaled_data);
+//			System.out.println("...................... Laenge neues Array: "+scaled_data.length);
 		}
+	}
+	
+	public byte[] get_scaled_data()	{
+		return this.scaled_data; 
 	}
 
 	/**

@@ -48,6 +48,7 @@ public class Segment {
 	public void create_range_seg(int min, int max, ImageStack slices)	{
 		int pixel_value; 
 		for(int i = 0; i < slices.getNumberOfImages(); i++)	{
+			System.out.println(i);
 			//Next line: Get pixel data of image i...
 			byte[] pixel_data = slices.getDiFile(i).getElement(0x7fe00010).getValues();
 			for(int w = 0; w < _w; w++)	{
