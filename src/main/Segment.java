@@ -1,6 +1,7 @@
 package main;
 
 import misc.BitMask;
+import misc.DiFile;
 
 /**
  * This class represents a segment. Simply spoken, a segment has a unique name,
@@ -38,6 +39,29 @@ public class Segment {
 		}
 	}
 
+	/**
+	 * Fill the BitMask of this segment with the min-max-segmentation
+	 * @param min minimum value
+	 * @param max maximum value
+	 * @param slices ImageStack
+	 */
+	public void create_range_seg(int min, int max, ImageStack slices)	{
+		int pixel_value; 
+		for(int i = 0; i < slices.getNumberOfImages(); i++)	{
+			//Next line: Get pixel data of image i...
+			byte[] pixel_data = slices.getDiFile(i).getElement(0x7fe00010).getValues();
+			for(int w = 0; w < _w; w++)	{
+				for(int h = 0; h < _h; h++)	{
+					pixel_value = (pixel_data[w  + h * _w ] & 0xff) ;
+					if(pixel_value > min && pixel_value < max)	{
+						_layers[i].set(w, h, true);
+					} else	{
+						_layers[i].set(w, h, false);
+					}
+				}
+			}
+		}
+	}
 	/**
 	 * Returns the number of bitmasks contained in this segment.
 	 * 

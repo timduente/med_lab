@@ -64,7 +64,7 @@ public class MainWindow extends JFrame implements ComponentListener {
 		c.gridwidth = 2;
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.gridx = 0; c.gridy = 2; add(tools, c);
-
+		
 		// now the menu ...
 		MenuBar menu_bar = new MenuBar(v2d, v3d, tools);
 		setJMenuBar(menu_bar);

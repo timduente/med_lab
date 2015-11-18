@@ -333,6 +333,7 @@ public class MenuBar extends JMenuBar {
 					_no_entries2d.setVisible(false);
 					_no_entries3d.setVisible(false);
 					Segment seg = is.addSegment(name);
+					seg.create_range_seg(50, 100, _v2d._slices);
 					_v2d.toggleSeg(seg);
 					JMenuItem item = new JCheckBoxMenuItem(name, true);
 					item.addActionListener(toggleSegListener2d);
