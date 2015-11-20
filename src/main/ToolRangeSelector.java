@@ -71,6 +71,7 @@ public class ToolRangeSelector extends JPanel  {
 				if (source.getValueIsAdjusting()) {
 					_min = (int)source.getValue();
 					System.out.println("_min_slider stateChanged: "+_min);
+					changeRange(_min, _max, slices, _seg);
 				}
 			}
 		});		
@@ -82,6 +83,7 @@ public class ToolRangeSelector extends JPanel  {
 				if (source.getValueIsAdjusting()) {
 					_max = (int)source.getValue();
 					System.out.println("_max_slider stateChanged: "+_max);
+					changeRange(_min, _max, slices, _seg);
 				}
 			}
 		});
@@ -111,4 +113,7 @@ public class ToolRangeSelector extends JPanel  {
 		
 		// setBackground(Color.blue);
 	}	
+	private void changeRange(int min, int max, ImageStack slices, Segment seg)	{
+		seg.create_range_seg(min, max, slices);
+	}
 }

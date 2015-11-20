@@ -21,6 +21,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import misc.BitMask;
 import misc.DiFile;
 
 /**
@@ -200,12 +201,12 @@ public class Viewport2d extends Viewport implements Observer {
 		int stored_bits = _slices.getBitsStored();
 		int allocated_bytes = _slices.getBytesPerPixel();
 
-		System.out.println("allocated Bytes: " + allocated_bytes);
-		System.out.println("stored Bits: " + stored_bits);
+//		System.out.println("allocated Bytes: " + allocated_bytes);
+//		System.out.println("stored Bits: " + stored_bits);
 
 		byte[] picture_data = _slices.getPictureData();
-		System.out.println(Integer.toBinaryString((picture_data[0] & 0xff)) + " " + Integer.toBinaryString((picture_data[1] & 0xff)));
-		System.out.println(".............. Laenge: "+picture_data.length);
+//		System.out.println(Integer.toBinaryString((picture_data[0] & 0xff)) + " " + Integer.toBinaryString((picture_data[1] & 0xff)));
+//		System.out.println(".............. Laenge: "+picture_data.length);
 
 		if (!(_slices.getPixelDataFormat().equals("MONOCHROME2"))) {
 			System.err.println("False picture format. Not MONOCHROME2.");
@@ -274,18 +275,26 @@ public class Viewport2d extends Viewport implements Observer {
 			 String name = seg.getName();
 			 
 			 int[] seg_pixels = ((DataBufferInt) seg_image.getRaster().getDataBuffer()).getData();
+			 System.out.println("Seg Pixel: "+seg_pixels.length);
+			 System.out.println("Seg Mask: "+ _slices.getActiveImageID());
+			BitMask seg_bitmask = seg.getMask(_slices.getActiveImageID());
+//			System.out.println(seg_bitmask.toString());
 			
-			 for (int i = 0; i < seg_pixels.length; i++) {
-//				 if()
-				 seg_pixels[i] = 0x80ff0100;
-				}
+//			 for (int i = 0; i < seg_pixels.length; i++) {
+//				 if(seg_bitmask.get(x, y))
+//				 seg_pixels[i] = 0x80ff0100;
+//				}
 //			 int index = 0; 
-//			 for(int w = 0; w < _w; w++)	{
-//				 for(int h = 0; h < _h; h++)	{
-//					 int color = seg.getColor();
-//					 _bg_img.setRGB(i, j, (draw & 0xff) | 0xff000000 | (draw & 0xff) << 8 | (draw & 0xff) << 16);_ 
-//				 }
-//			 }
+			 int color = seg.getColor();
+			 for(int w = 0; w < _w; w++)	{
+				 for(int h = 0; h < _h; h++)	{
+					 if(seg_bitmask.get(w, h)){
+//					 seg_pixels[index] = 0x80000000 | color;	} 
+					 _bg_img.setRGB(w, h, 0x80000000 | color | 0x000000ff);
+					 }
+//					 index++; 
+				 }
+			 }
 			 
 			// to drawn a segmentation image, fill the pixel array seg_pixels
 			// with ARGB values similar to exercise 2

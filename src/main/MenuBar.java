@@ -334,7 +334,7 @@ public class MenuBar extends JMenuBar {
 					_no_entries3d.setVisible(false);
 					Segment seg = is.addSegment(name);
 					System.out.println("Vorher");
-					seg.create_range_seg(80, 100, _v2d._slices);
+					seg.create_range_seg(45, 55, _v2d._slices);
 					System.out.println("Nacher");
 					_v2d.toggleSeg(seg);
 					JMenuItem item = new JCheckBoxMenuItem(name, true);
