@@ -290,7 +290,8 @@ public class Viewport2d extends Viewport implements Observer {
 				 for(int h = 0; h < _h; h++)	{
 					 if(seg_bitmask.get(w, h)){
 //					 seg_pixels[index] = 0x80000000 | color;	} 
-						seg_image.setRGB(w, h, 0x80000000 | color);
+						seg_pixels[w  + h * _w ] = 0x80000000 | color;
+//						 seg_image.setRGB(w, h, 0x80000000 | color);
 					 }
 //					 index++; 
 				 }
