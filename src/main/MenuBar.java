@@ -333,9 +333,10 @@ public class MenuBar extends JMenuBar {
 					_no_entries2d.setVisible(false);
 					_no_entries3d.setVisible(false);
 					Segment seg = is.addSegment(name);
-					System.out.println("Vorher");
-					seg.create_range_seg(45, 55, _v2d._slices);
-					System.out.println("Nacher");
+					seg.addObserver(_v2d);
+//					System.out.println("Vorher");
+//					//seg.create_range_seg(45, 55, _v2d._slices);
+//					System.out.println("Nacher");
 					_v2d.toggleSeg(seg);
 					JMenuItem item = new JCheckBoxMenuItem(name, true);
 					item.addActionListener(toggleSegListener2d);
@@ -344,7 +345,7 @@ public class MenuBar extends JMenuBar {
 					item.addActionListener(toggleSegListener3d);
 					_menu3d.add(item);
 					_tools.showTool(new ToolRangeSelector(seg));
-					System.out.println("Ich bin am Ende der Name der Segmentierung");
+					//System.out.println("Ich bin am Ende der Name der Segmentierung");
 				}
 			}
 		}
