@@ -170,7 +170,7 @@ public class ImageStack extends Observable {
 					_h = df.getImageHeight();
 
 					bitsStored = df.getBitsStored();
-					bytesPerPixel = 1; // bitsStroe/8;
+					bytesPerPixel =  df.getBitsAllocated()/8;
 					pixelDataFormat = df.getElement(0x00280004).getValueAsString().trim();
 
 					setChanged();
@@ -342,7 +342,7 @@ public class ImageStack extends Observable {
 		if (mode == 0) {
 			return _dicom_files.get(_active).get_scaled_data();
 		} else if (mode == 1) {
-			byte[] sagitalPictureData = new byte[_h * _dicom_files.size() * bytesPerPixel];
+			byte[] sagitalPictureData = new byte[_h * _dicom_files.size() ];
 
 			for (int i = 0; i < _dicom_files.size(); i++) {
 				DiFile diFile = _dicom_files.get(i);
@@ -350,23 +350,19 @@ public class ImageStack extends Observable {
 
 				for (int j = 0; j < _h; j++) {
 
-					byte b = pictureData[j * bytesPerPixel * _w + _active * bytesPerPixel];
-					//byte b1 = pictureData[j * bytesPerPixel * _w + _active * bytesPerPixel + 1];
-
-					sagitalPictureData[j * bytesPerPixel + i * _h * bytesPerPixel] = b;
-					//sagitalPictureData[j * bytesPerPixel + i * _h * bytesPerPixel + 1] = b1;
-
+					byte b = pictureData[j  * _w + _active];
+					sagitalPictureData[j  + i * _h ] = b;
 				}
 
 			}
 			return sagitalPictureData;
 		} else if (mode == 2) {
-			byte[] frontalPictureData = new byte[_w * _dicom_files.size() * bytesPerPixel];
+			byte[] frontalPictureData = new byte[_w * _dicom_files.size()  ];
 			for (int i = 0; i < _dicom_files.size(); i++) {
 				DiFile diFile = _dicom_files.get(i);
 				byte[] pictureData = diFile.get_scaled_data();
-				for (int j = 0; j < _h * bytesPerPixel; j++) {
-					frontalPictureData[j + i * _h * bytesPerPixel] = pictureData[_active * bytesPerPixel * _w + j];
+				for (int j = 0; j < _h  ; j++) {
+					frontalPictureData[j + i * _h  ] = pictureData[_active *  _w + j];
 				}
 
 			}

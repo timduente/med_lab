@@ -59,42 +59,23 @@ public class Segment extends Observable {
 	public void create_range_seg(int min, int max, ImageStack slices) {
 		int pixel_value;
 
-		// START Approach #2 PART 1
-		// int stored_bits = slices.getBitsStored();
-		// int allocated_bytes = slices.getBytesPerPixel();
-		// END Approach #2 PART 1
-
 		for (int i = 0; i < slices.getNumberOfImages(); i++) {
-			// System.out.println(i);
+
 			// Next line: Get pixel data of image i...
 			byte[] pixel_data = slices.getDiFile(i).getElement(0x7fe00010)
 					.getValues();
-			System.out.println("segment pixel data: " + pixel_data.length);
 			for (int w = 0; w < _w; w++) {
 				for (int h = 0; h < _h; h++) {
-					// START Approach #2 PART 2
-					// int raw = pixel_data[w * allocated_bytes + h * _w *
-					// allocated_bytes] & 0xff | ((pixel_data[w *
-					// allocated_bytes + h * _w * allocated_bytes + 1] & 0xff)
-					// << 8);
-					// pixel_value = raw >> stored_bits - 8;
-					// START Approach #2 PART 2
-					/** Approach 1 or 2 makes no difference Oo **/
-					// START Approach #1
+			
 					pixel_value = (pixel_data[w * slices.getBytesPerPixel() + h
 							* _w * slices.getBytesPerPixel()] & 0xff)
 							| ((pixel_data[w * slices.getBytesPerPixel() + h
 									* _w * slices.getBytesPerPixel() + 1] & 0xff) << 8);
 
-					// END Approach #1
 
 					_layers[i].set(w, h,
 							(pixel_value >= min && pixel_value <= max));
-					// if(pixel_value > min && pixel_value < max) {
-					// _layers[i].set(w, h, true);
-					// } else {
-					// _layers[i].set(w, h, false);
-					// }
+
 				}
 			}
 		}

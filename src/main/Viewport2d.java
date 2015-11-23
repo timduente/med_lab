@@ -211,16 +211,9 @@ public class Viewport2d extends Viewport implements Observer {
 		_w = _slices.getImageWidth();
 		_h = _slices.getImageHeight();
 
-		int stored_bits = _slices.getBitsStored();
-		int allocated_bytes = _slices.getBytesPerPixel();
 
-		// System.out.println("allocated Bytes: " + allocated_bytes);
-		// System.out.println("stored Bits: " + stored_bits);
 
 		byte[] picture_data = _slices.getPictureData();
-		// System.out.println(Integer.toBinaryString((picture_data[0] & 0xff)) +
-		// " " + Integer.toBinaryString((picture_data[1] & 0xff)));
-		// System.out.println(".............. Laenge: "+picture_data.length);
 
 		if (!(_slices.getPixelDataFormat().equals("MONOCHROME2"))) {
 			System.err.println("False picture format. Not MONOCHROME2.");
@@ -294,32 +287,26 @@ public class Viewport2d extends Viewport implements Observer {
 
 			Segment seg = (Segment) (segs.nextElement());
 			String name = seg.getName();
+			System.out.println("Image Width:" + seg_image.getWidth());
+			System.out.println("image height: "+ seg_image.getHeight());
 
 			int[] seg_pixels = ((DataBufferInt) seg_image.getRaster()
 					.getDataBuffer()).getData();
 			
-//			System.out.println("Seg Pixel: " + seg_pixels.length);
+			System.out.println("Seg Pixel: " + seg_pixels.length);
 //			System.out.println("Seg Mask: " + _slices.getActiveImageID());
 			BitMask seg_bitmask = seg.getMask(_slices.getActiveImageID());
 
-
-			// for (int i = 0; i < seg_pixels.length; i++) {
-			// if(seg_bitmask.get(x, y))
-			// seg_pixels[i] = 0x80ff0100;
-			// }
-			// int index = 0;
 			int color = seg.getColor();
+			
 			for (int w = 0; w < _w; w++) {
 				for (int h = 0; h < _h; h++) {
 					
 					if (seg_bitmask.get(w, h)) {
-						// seg_pixels[index] = 0x80000000 | color; }
 						seg_pixels[w + h * _w] = 0x80000000 | color;
-						// seg_image.setRGB(w, h, 0x80000000 | color);
 					}else{
 						seg_pixels[w + h * _w] = 0x0;
 					}
-					// index++;
 				}
 			}
 

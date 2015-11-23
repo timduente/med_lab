@@ -32,6 +32,7 @@ public class BitMask {
 	 * @param value	the bit pixel value (true or false)
 	 */
 	public void set(int x, int y, boolean value) {
+		try{
 		int longnum = (x+y*_w)>>6;
 		int bitnum = (x+y*_w)%64;
 
@@ -40,6 +41,11 @@ public class BitMask {
 		} else {
 			_data[longnum] &= ~(((long)(1))<<bitnum);
 		}
+		}catch(Exception e){
+			e.printStackTrace();
+		
+		}
+		
 	}
 
 
