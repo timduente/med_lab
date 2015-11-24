@@ -68,8 +68,7 @@ public class Viewport2d extends Viewport implements Observer {
 		}
 
 		public void mouseClicked(java.awt.event.MouseEvent e) {
-			System.out.println("Panel2d::mouseClicked: x=" + e.getX() + " y="
-					+ e.getY());
+			System.out.println("Panel2d::mouseClicked: x=" + e.getX() + " y=" + e.getY());
 		}
 
 		public void mousePressed(java.awt.event.MouseEvent e) {
@@ -92,8 +91,7 @@ public class Viewport2d extends Viewport implements Observer {
 
 			Enumeration<BufferedImage> segs = _map_seg_name_to_img.elements();
 			while (segs.hasMoreElements()) {
-				g.drawImage(segs.nextElement(), 0, 0, this.getWidth(),
-						this.getHeight(), this);
+				g.drawImage(segs.nextElement(), 0, 0, this.getWidth(), this.getHeight(), this);
 			}
 		}
 	}
@@ -132,10 +130,8 @@ public class Viewport2d extends Viewport implements Observer {
 			});
 
 			_jsp_scroll = new JScrollPane(_jl_slices);
-			_jsp_scroll
-					.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-			_jsp_scroll
-					.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+			_jsp_scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+			_jsp_scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 
 			setLayout(new BorderLayout());
 			add(_jsp_scroll, BorderLayout.CENTER);
@@ -186,8 +182,7 @@ public class Viewport2d extends Viewport implements Observer {
 		while (segs.hasMoreElements()) {
 			Segment seg = segs.nextElement();
 			String name = seg.getName();
-			BufferedImage seg_img = new BufferedImage(_w, _h,
-					BufferedImage.TYPE_INT_ARGB);
+			BufferedImage seg_img = new BufferedImage(_w, _h, BufferedImage.TYPE_INT_ARGB);
 
 			_map_seg_name_to_img.put(name, seg_img);
 		}
@@ -204,14 +199,8 @@ public class Viewport2d extends Viewport implements Observer {
 		if (_slices.getNumberOfImages() == 0)
 			return;
 
-		// these are two variables you might need in exercise #2
-		// int active_img_id = _slices.getActiveImageID();
-		// DiFile active_file = _slices.getDiFile(active_img_id);
-
 		_w = _slices.getImageWidth();
 		_h = _slices.getImageHeight();
-
-
 
 		byte[] picture_data = _slices.getPictureData();
 
@@ -221,8 +210,7 @@ public class Viewport2d extends Viewport implements Observer {
 		}
 
 		// _w and _h need to be initialized BEFORE filling the image array !
-		if (_bg_img == null || _bg_img.getWidth(null) != _w
-				|| _bg_img.getHeight(null) != _h) {
+		if (_bg_img == null || _bg_img.getWidth(null) != _w || _bg_img.getHeight(null) != _h) {
 			reallocate();
 		}
 
@@ -236,33 +224,23 @@ public class Viewport2d extends Viewport implements Observer {
 			// AARRGGBB
 			// the resulting image will be used in the Panel2d::paint() method
 
-			System.out.println("Array Groeße: " + picture_data.length
-					+ ", Breite: " + _w + ", Höhe: " + _h + "Pixel *2 : " + _h
-					* _w * 2);
-			System.out.println("Picture Größe " + _bg_img.getHeight()
-					* _bg_img.getWidth());
+			// System.out.println("Array Groeße: " + picture_data.length
+			// + ", Breite: " + _w + ", Höhe: " + _h + "Pixel *2 : " + _h
+			// * _w * 2);
+			// System.out.println("Picture Größe " + _bg_img.getHeight()
+			// * _bg_img.getWidth());
 
 			for (int i = 0; i < _w; i++) {
 				for (int j = 0; j < _h; j++) {
 					int draw = (picture_data[i + j * _w] & 0xff);
 
-					// //int draw = raw >> stored_bits - 8;
-					// if (draw > 255) {
-					// // System.err.println("to big");
-					// draw = 255;
-					// } else if (draw < 0) {
-					// draw = 0;
-					// // System.err.println
-					// }
-					_bg_img.setRGB(i, j, (draw & 0xff) | 0xff000000
-							| (draw & 0xff) << 8 | (draw & 0xff) << 16);
+					_bg_img.setRGB(i, j, (draw & 0xff) | 0xff000000 | (draw & 0xff) << 8 | (draw & 0xff) << 16);
 				}
 			}
 
 		} else {
 			// faster: access the data array directly (see below)
-			final int[] bg_pixels = ((DataBufferInt) _bg_img.getRaster()
-					.getDataBuffer()).getData();
+			final int[] bg_pixels = ((DataBufferInt) _bg_img.getRaster().getDataBuffer()).getData();
 			for (int i = 0; i < bg_pixels.length; i++) {
 				bg_pixels[i] = 0xff000000;
 			}
@@ -278,40 +256,56 @@ public class Viewport2d extends Viewport implements Observer {
 			if (seg_images.hasMoreElements()) {
 				seg_image = seg_images.nextElement();
 			} else {
-				System.out
-						.println("No Next Element in Viewport2D::update_view::while");
+				System.out.println("No Next Element in Viewport2D::update_view::while");
 				break;
 			}
 			// here should be the code for displaying the segmentation data
 			// (exercise 3)
-
 			Segment seg = (Segment) (segs.nextElement());
-			String name = seg.getName();
-			System.out.println("Image Width:" + seg_image.getWidth());
-			System.out.println("image height: "+ seg_image.getHeight());
-
-			int[] seg_pixels = ((DataBufferInt) seg_image.getRaster()
-					.getDataBuffer()).getData();
-			
-			System.out.println("Seg Pixel: " + seg_pixels.length);
-//			System.out.println("Seg Mask: " + _slices.getActiveImageID());
-			BitMask seg_bitmask = seg.getMask(_slices.getActiveImageID());
-
+			int[] seg_pixels = ((DataBufferInt) seg_image.getRaster().getDataBuffer()).getData();
+			BitMask seg_bitmask;
 			int color = seg.getColor();
-			
-			for (int w = 0; w < _w; w++) {
-				for (int h = 0; h < _h; h++) {
-					
-					if (seg_bitmask.get(w, h)) {
-						seg_pixels[w + h * _w] = 0x80000000 | color;
-					}else{
-						seg_pixels[w + h * _w] = 0x0;
+
+			if (viewMode == 0) {
+				/** TRANSVERSAL **/
+				seg_bitmask = seg.getMask(_slices.getActiveImageID());
+				for (int w = 0; w < _w; w++) {
+					for (int h = 0; h < _h; h++) {
+
+						if (seg_bitmask.get(w, h)) {
+							seg_pixels[w + h * _w] = 0x80000000 | color;
+						} else {
+							seg_pixels[w + h * _w] = 0x0;
+						}
+					}
+				}
+			} else if (viewMode == 1) {
+				/** SAGITAL **/
+				/** Iterate over every bitmask **/
+				
+				for(int h = 0; h < _h; h++)	{
+					seg_bitmask = seg.getMask(h); 
+					for(int w = 0; w < _w; w++)	{
+						if(seg_bitmask.get(_slices.getActiveImageID(), w))	{
+							seg_pixels[w + h * _w] = 0x80000000 | color; 
+						} else	{
+							seg_pixels[w + h * _w] = 0x0; 
+						}
+					}
+				}
+			} else if (viewMode == 2) {
+				/** FRONTAL **/
+				for(int h = 0; h < _h; h++)	{
+					seg_bitmask = seg.getMask(h); 
+					for(int w = 0; w < _w; w++)	{
+						if(seg_bitmask.get(w, _slices.getActiveImageID()))	{
+							seg_pixels[w + h * _w] = 0x80000000 | color; 
+						} else	{
+							seg_pixels[w + h * _w] = 0x0; 
+						}
 					}
 				}
 			}
-
-			// to drawn a segmentation image, fill the pixel array seg_pixels
-			// with ARGB values similar to exercise 2
 		}
 
 		repaint();
@@ -412,8 +406,7 @@ public class Viewport2d extends Viewport implements Observer {
 
 		if (!gotcha) {
 			// if a segmentation is shown, we need to allocate memory for pixels
-			BufferedImage seg_img = new BufferedImage(_w, _h,
-					BufferedImage.TYPE_INT_ARGB);
+			BufferedImage seg_img = new BufferedImage(_w, _h, BufferedImage.TYPE_INT_ARGB);
 			_map_seg_name_to_img.put(name, seg_img);
 		} else {
 			_map_seg_name_to_img.remove(name);
