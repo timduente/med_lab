@@ -62,19 +62,14 @@ public class Segment extends Observable {
 		for (int i = 0; i < slices.getNumberOfImages(); i++) {
 
 			// Next line: Get pixel data of image i...
-			byte[] pixel_data = slices.getDiFile(i).getElement(0x7fe00010)
-					.getValues();
+			byte[] pixel_data = slices.getDiFile(i).getElement(0x7fe00010).getValues();
 			for (int w = 0; w < _w; w++) {
 				for (int h = 0; h < _h; h++) {
-			
-					pixel_value = (pixel_data[w * slices.getBytesPerPixel() + h
-							* _w * slices.getBytesPerPixel()] & 0xff)
-							| ((pixel_data[w * slices.getBytesPerPixel() + h
-									* _w * slices.getBytesPerPixel() + 1] & 0xff) << 8);
 
+					pixel_value = (pixel_data[w * slices.getBytesPerPixel() + h * _w * slices.getBytesPerPixel()] & 0xff)
+							| ((pixel_data[w * slices.getBytesPerPixel() + h * _w * slices.getBytesPerPixel() + 1] & 0xff) << 8);
 
-					_layers[i].set(w, h,
-							(pixel_value >= min && pixel_value <= max));
+					_layers[i].set(w, h, (pixel_value >= min && pixel_value <= max));
 
 				}
 			}

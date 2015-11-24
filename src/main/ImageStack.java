@@ -19,6 +19,8 @@ public class ImageStack extends Observable {
 	private Vector<DiFile> _dicom_files;
 	private DefaultListModel<String> _seg_names;
 	private Hashtable<String, Segment> _segment;
+	private DefaultListModel<String> _window_names;
+	private Hashtable<String, SelectWindow> _windows;
 	private String _dir_name;
 	private int _w, _h, _active;
 	private String pixelDataFormat;
@@ -42,6 +44,8 @@ public class ImageStack extends Observable {
 		_dicom_files = new Vector<DiFile>();
 		_segment = new Hashtable<String, Segment>();
 		_seg_names = new DefaultListModel<String>();
+		_windows = new Hashtable<String, SelectWindow>();
+		_window_names = new DefaultListModel<String>();		
 		_dir_name = new String();
 		_active = 0;
 		mode = 0;
@@ -209,6 +213,20 @@ public class ImageStack extends Observable {
 		}
 
 		return seg;
+	}
+	
+	public SelectWindow addSelectWindow(String name)	{
+		SelectWindow sel_win; 
+		
+		if(_windows.containsKey(name))	{
+			sel_win = null; 
+		} else	{
+			sel_win = new SelectWindow(name, 0, 255);
+			_windows.put(name, sel_win); 
+			_window_names.addElement(name);
+		}
+		
+		return sel_win; 
 	}
 
 	/**

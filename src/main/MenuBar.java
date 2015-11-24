@@ -136,6 +136,9 @@ public class MenuBar extends JMenuBar {
 		item = new JMenuItem(new String("Neue Segmentierung"));
 		item.addActionListener(newSegmentListener);
 		_menuTools.add(item);
+		item = new JMenuItem(new String("Neues Ansichtsfenster"));
+		item.addActionListener(newWindowListener); 
+		_menuTools.add(item);
 
 		// -------------------------------------------------------------------------------------
 
@@ -334,9 +337,6 @@ public class MenuBar extends JMenuBar {
 					_no_entries3d.setVisible(false);
 					Segment seg = is.addSegment(name);
 					seg.addObserver(_v2d);
-//					System.out.println("Vorher");
-//					//seg.create_range_seg(45, 55, _v2d._slices);
-//					System.out.println("Nacher");
 					_v2d.toggleSeg(seg);
 					JMenuItem item = new JCheckBoxMenuItem(name, true);
 					item.addActionListener(toggleSegListener2d);
@@ -346,6 +346,31 @@ public class MenuBar extends JMenuBar {
 					_menu3d.add(item);
 					_tools.showTool(new ToolRangeSelector(seg));
 					//System.out.println("Ich bin am Ende der Name der Segmentierung");
+				}
+			}
+		}
+	};
+	
+	/**
+	 * ActionListener for toggling a segmentation in the 3d viewport.
+	 */
+	ActionListener newWindowListener = new ActionListener() {
+		public void actionPerformed(ActionEvent event) {
+			ImageStack is = LabMed.get_is(); 
+			if (is.getNumberOfImages() == 0) {
+				JOptionPane
+						.showMessageDialog(
+								_win,
+								"Änderung der Ansicht ohne geöffneten DICOM Datensatz nicht mÃ¶glich.",
+								"Inane error", JOptionPane.ERROR_MESSAGE);
+			} else	{
+				String name = JOptionPane.showInputDialog(_win,
+						"Name der Segmentierung");
+				if (name != null) {
+					SelectWindow sel_win = is.addSelectWindow(name);
+					sel_win.addObserver(_v2d);
+
+					_tools.showTool(new ToolWindowSelector(sel_win));
 				}
 			}
 		}
