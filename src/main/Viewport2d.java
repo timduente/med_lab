@@ -386,6 +386,10 @@ public class Viewport2d extends Viewport implements Observer {
 				update_view();
 			}
 		}
+		
+		if (m._type == Message.M_WINDOW_CHANGED){
+			update_view();
+		}
 	}
 
 	/**

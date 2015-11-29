@@ -48,7 +48,11 @@ public class ToolRangeSelector extends JPanel {
 					_seg = slices.getSegment(name);
 					_range_sel_title.setText("Range Selector - "
 							+ _seg.getName());
-					// ...
+					
+					_min_slider.setValue(_seg.get_min());
+					_max_slider.setValue(_seg.get_max());
+					
+
 				}
 			}
 		});
@@ -77,7 +81,7 @@ public class ToolRangeSelector extends JPanel {
 				JSlider source = (JSlider) e.getSource();
 				if (source.getValueIsAdjusting()) {
 					_min = (int) source.getValue();
-					System.out.println("_min_slider stateChanged: " + _min);
+					//System.out.println("_min_slider stateChanged: " + _min);
 					changeRange(_min, _max, slices, _seg);
 				}
 			}

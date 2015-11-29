@@ -1,11 +1,19 @@
 package main;
 
-import java.util.*;
-import java.io.*;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Observable;
+import java.util.Vector;
 
-import javax.swing.*;
+import javax.swing.DefaultListModel;
+import javax.swing.JFrame;
+import javax.swing.JProgressBar;
 
-import lab_med.DicomParserTest;
 import misc.DiFile;
 import misc.DiFileInputStream;
 
@@ -36,6 +44,29 @@ public class ImageStack extends Observable {
 	}
 
 	private int mode;
+	
+	private int windowWidth;
+	public int getWindowWidth() {
+		return windowWidth;
+	}
+
+	public void setWindowWidth(int windowWidth) {
+		this.windowWidth = windowWidth;
+		setChanged();
+		notifyObservers(new Message(Message.M_WINDOW_CHANGED));
+	}
+
+	public int getWindowCenter() {
+		return windowCenter;
+	}
+
+	public void setWindowCenter(int windowCenter) {
+		this.windowCenter = windowCenter;
+		setChanged();
+		notifyObservers(new Message(Message.M_WINDOW_CHANGED));
+	}
+
+	private int windowCenter;
 
 	/**
 	 * Default Constructor.

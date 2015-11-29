@@ -2,10 +2,7 @@ package main;
 
 import java.util.Observable;
 
-import com.sun.org.apache.bcel.internal.generic.NEW;
-
 import misc.BitMask;
-import misc.DiFile;
 
 /**
  * This class represents a segment. Simply spoken, a segment has a unique name,
@@ -20,6 +17,17 @@ public class Segment extends Observable {
 	private int _w; // Bitmask width
 	private int _h; // Bitmask height
 	private BitMask[] _layers; // each segment contains an array of n bitmasks
+	
+	private int _min;
+	public int get_min() {
+		return _min;
+	}
+
+	public int get_max() {
+		return _max;
+	}
+
+	private int _max;
 
 	/**
 	 * Constructor for new segment objects.
@@ -57,6 +65,8 @@ public class Segment extends Observable {
 	 *            ImageStack
 	 */
 	public void create_range_seg(int min, int max, ImageStack slices) {
+		_min = min;
+		_max = max;
 		int pixel_value;
 
 		for (int i = 0; i < slices.getNumberOfImages(); i++) {

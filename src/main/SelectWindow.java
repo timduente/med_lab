@@ -2,8 +2,6 @@ package main;
 
 import java.util.Observable;
 
-import com.sun.org.apache.bcel.internal.generic.NEW;
-
 /**
  * 
  */

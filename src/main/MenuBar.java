@@ -26,7 +26,7 @@ public class MenuBar extends JMenuBar {
 	private Viewport3d _v3d;
 	private MainWindow _win;
 
-	private JMenuItem item;
+//	private JMenuItem item;
 
 	private JRadioButtonMenuItem rbMenuItemT;
 	private JRadioButtonMenuItem rbMenuItemS;
@@ -364,14 +364,14 @@ public class MenuBar extends JMenuBar {
 								"Änderung der Ansicht ohne geöffneten DICOM Datensatz nicht mÃ¶glich.",
 								"Inane error", JOptionPane.ERROR_MESSAGE);
 			} else	{
-				String name = JOptionPane.showInputDialog(_win,
-						"Name der Segmentierung");
-				if (name != null) {
-					SelectWindow sel_win = is.addSelectWindow(name);
+//				String name = JOptionPane.showInputDialog(_win,
+//						"Name der Segmentierung");
+//				if (name != null) {
+					SelectWindow sel_win = is.addSelectWindow("Window_Selection");
 					sel_win.addObserver(_v2d);
 
 					_tools.showTool(new ToolWindowSelector(sel_win));
-				}
+//				}
 			}
 		}
 	};
