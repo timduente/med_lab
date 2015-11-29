@@ -12,7 +12,10 @@ import java.util.List;
 import sun.text.IntHashtable;
 
 /**
- * Implements the internal representation of a DICOM file. Stores all DataElements and makes them accessable via getDataElement(TagName). Also stores the pixel data & important information for displaying the contained image in seperate variables with special access functions.
+ * Implements the internal representation of a DICOM file. Stores all
+ * DataElements and makes them accessable via getDataElement(TagName). Also
+ * stores the pixel data & important information for displaying the contained
+ * image in seperate variables with special access functions.
  * 
  * @author Karl-Ingo Friese
  */
@@ -22,8 +25,20 @@ public class DiFile {
 	private int _bits_stored;
 	private int _bits_allocated;
 	private Hashtable<Integer, DiDataElement> _data_elements;
-	private byte[] scaled_data; 
+	private byte[] scaled_data;
 	private int _image_number;
+	private int window_center, window_width;
+	int rescale_slope;
+	int rescale_intercept;
+
+	public int getWindow_center() {
+		return window_center;
+	}
+
+	public int getWindow_width() {
+		return window_width;
+	}
+
 	String _file_name;
 
 	/**
@@ -36,7 +51,9 @@ public class DiFile {
 	}
 
 	/**
-	 * Initializes the DicomFile from a file. Might throw an exception (unexpected end of file, wrong data etc). This method will be implemented in exercise 1.
+	 * Initializes the DicomFile from a file. Might throw an exception
+	 * (unexpected end of file, wrong data etc). This method will be implemented
+	 * in exercise 1.
 	 * 
 	 * @param file_name
 	 *            a string containing the name of a valid dicom file
@@ -62,8 +79,9 @@ public class DiFile {
 			nextEle.readNext(diFileInputStream);
 
 			_data_elements.put(nextEle.getTag(), nextEle);
-//			System.out.println(nextEle.toString());
-			if (DiDi.getTagDescr(nextEle.getTag()).equals("Transfer Syntax UID")) {
+			// System.out.println(nextEle.toString());
+			if (DiDi.getTagDescr(nextEle.getTag())
+					.equals("Transfer Syntax UID")) {
 				if (nextEle.getValueAsString().equals("1.2.840.10008.1.2")) {
 					implicit = true;
 				}
@@ -91,63 +109,81 @@ public class DiFile {
 		/** Apply window width/center & rescale slope/intercept on every pixel **/
 		// Ternary Operators incoming: DiDataElement may be uninitialised
 		DiDataElement w_center = this.getElement(0x00281050);
-		int window_center = (w_center == null) ? (int) Math.pow(2, this._bits_stored-1) : w_center.getValueAsInt();
+		window_center = (w_center == null) ? (int) Math.pow(2,
+				this._bits_stored - 1) : w_center.getValueAsInt();
 		DiDataElement w_width = this.getElement(0x00281051);
-		int window_width = (w_width == null) ? (int) Math.pow(2, this._bits_stored) : w_width.getValueAsInt();
-		
-		DiDataElement r_slope = this.getElement(0x00281053);
-		int rescale_slope = (r_slope == null) ? Integer.MAX_VALUE : r_slope.getValueAsInt();
-		DiDataElement r_intercept = this.getElement(0x00281052);
-		int rescale_intercept = (r_intercept == null) ? Integer.MAX_VALUE : r_intercept.getValueAsInt();
-		System.out.println("W-Center: " + window_center + " Window width: " + window_width);
+		window_width = (w_width == null) ? (int) Math.pow(2, this._bits_stored)
+				: w_width.getValueAsInt();
 
-		if (window_center == -1 && window_width == -1 && rescale_intercept == -1 && rescale_slope == -1) {
-			//Not the droids were looking for...
+		DiDataElement r_slope = this.getElement(0x00281053);
+		rescale_slope = (r_slope == null) ? Integer.MAX_VALUE : r_slope
+				.getValueAsInt();
+		DiDataElement r_intercept = this.getElement(0x00281052);
+		rescale_intercept = (r_intercept == null) ? Integer.MAX_VALUE
+				: r_intercept.getValueAsInt();
+
+		if (window_center == -1 && window_width == -1
+				&& rescale_intercept == -1 && rescale_slope == -1) {
+			// Not the droids were looking for...
 		} else {
 
-			int stored_bits = this.getElement(0x00280101).getValueAsInt();
-			int allocated_bytes = this.getElement(0x00280100).getValueAsInt()/8;
-			byte[] picture_data = this.getElement(0x7FE00010).getValues();
-			scaled_data = new byte[_w * _h]; 
-			System.out.println("Intercept: "+ rescale_intercept + "; Slope: " + rescale_slope);
+//			int stored_bits = this.getElement(0x00280101).getValueAsInt();
 			
-			int low = window_center - (window_width >> 1);
-			int high = window_center + (window_width >> 1);
-			for (int i = 0; i < _w; i++) {
-				for (int j = 0; j < _h; j++) {
-										
-					int draw = (picture_data[i * allocated_bytes + j * _w * allocated_bytes] & 0xff) | ((picture_data[i * allocated_bytes + j * _w * allocated_bytes + 1] & 0xff) << 8);			
-					
-					/** Apply rescaling like in the appendix of excercise sheet 2 page 699 **/ 
-					if(rescale_intercept != Integer.MAX_VALUE && rescale_slope != Integer.MAX_VALUE)	{
-						draw = rescale_slope * draw + rescale_intercept;
-					} 
-					
-					//if(window_center != Integer.MAX_VALUE && window_width != Integer.MAX_VALUE)	{
-						
-//						draw = draw - low;
-//						draw = (int)((draw * 255.0f) / window_width);
-						
-						if(draw <=     window_center - 0.5 - (window_width-1.0f)/2)	{	
-							draw = 0;	//y_min
-						} else if(draw >= window_center - 0.5 + (window_width-1.0f)/2)	{
-							draw = 255; 
-						}else{
-							draw = (int) (((draw -(window_center - 0.5))/(window_width-1)+0.5)*(255));
-						}
-					scaled_data[i  + j * _w ] = (byte) draw; 
+			scaled_data = new byte[_w * _h];
+
+        rescale(window_width, window_center);
+			
+	}
+	}
+	public void rescale(int window_width, int window_center){
+		byte[] picture_data = this.getElement(0x7FE00010).getValues();
+		int allocated_bytes = this.getElement(0x00280100).getValueAsInt() / 8;
+		for (int i = 0; i < _w; i++) {
+			for (int j = 0; j < _h; j++) {
+
+				int draw = (picture_data[i * allocated_bytes + j * _w
+						* allocated_bytes] & 0xff)
+						| ((picture_data[i * allocated_bytes + j * _w
+								* allocated_bytes + 1] & 0xff) << 8);
+
+				/**
+				 * Apply rescaling like in the appendix of excercise sheet 2
+				 * page 699
+				 **/
+				if (rescale_intercept != Integer.MAX_VALUE
+						&& rescale_slope != Integer.MAX_VALUE) {
+					draw = rescale_slope * draw + rescale_intercept;
 				}
+
+				// if(window_center != Integer.MAX_VALUE && window_width !=
+				// Integer.MAX_VALUE) {
+
+				// draw = draw - low;
+				// draw = (int)((draw * 255.0f) / window_width);
+
+				if (draw <= window_center - 0.5 - (window_width - 1.0f) / 2) {
+					draw = 0; // y_min
+				} else if (draw >= window_center - 0.5
+						+ (window_width - 1.0f) / 2) {
+					draw = 255;
+				} else {
+					draw = (int) (((draw - (window_center - 0.5))
+							/ (window_width - 1) + 0.5) * (255));
+				}
+				scaled_data[i + j * _w] = (byte) draw;
 			}
-//			System.out.println("...................... Laenge neues Array: "+scaled_data.length);
 		}
+		// System.out.println("...................... Laenge neues Array: "+scaled_data.length);
 	}
 	
-	public byte[] get_scaled_data()	{
-		return this.scaled_data; 
+
+	public byte[] get_scaled_data() {
+		return this.scaled_data;
 	}
 
 	/**
-	 * Converts a dicom file into a human readable string info. Might be long. Useful for debugging.
+	 * Converts a dicom file into a human readable string info. Might be long.
+	 * Useful for debugging.
 	 * 
 	 * @return a human readable string representation
 	 */
@@ -183,7 +219,8 @@ public class DiFile {
 	}
 
 	/**
-	 * Returns the number of bits per pixel that are actually used for color info.
+	 * Returns the number of bits per pixel that are actually used for color
+	 * info.
 	 * 
 	 * @return the number of stored bits.
 	 */
