@@ -62,9 +62,8 @@ public class ToolWindowSelector extends JPanel {
 		// range_max needs to be calculated from the bits_stored value
 		// in the current dicom series
 		int range_max = (int) Math.pow(2, slices.getBitsStored());
-		System.err.println(range_max);
-		_window = (int) Math.pow(2, slices.getBitsStored() - 1);
-		_center = (int) Math.pow(2, slices.getBitsStored() - 1);
+		_window = slices.getWindowWidth(); //(int) Math.pow(2, slices.getBitsStored() - 1);
+		_center = slices.getWindowCenter(); //(int) Math.pow(2, slices.getBitsStored() - 1);
 
 		_width_label = new JLabel("Window width:");
 		_center_label = new JLabel("Window center:");

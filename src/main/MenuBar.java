@@ -26,7 +26,10 @@ public class MenuBar extends JMenuBar {
 	private Viewport3d _v3d;
 	private MainWindow _win;
 
-//	private JMenuItem item;
+	private ToolRangeSelector toolRangeSelector;
+	private ToolWindowSelector toolWindowSelector;
+
+	// private JMenuItem item;
 
 	private JRadioButtonMenuItem rbMenuItemT;
 	private JRadioButtonMenuItem rbMenuItemS;
@@ -136,8 +139,14 @@ public class MenuBar extends JMenuBar {
 		item = new JMenuItem(new String("Neue Segmentierung"));
 		item.addActionListener(newSegmentListener);
 		_menuTools.add(item);
-		item = new JMenuItem(new String("Neues Ansichtsfenster"));
-		item.addActionListener(newWindowListener); 
+
+		item = new JMenuItem(new String("Zeige Segmentierungen"));
+		// item.setEnabled(false);
+		item.addActionListener(showSegmentListener);
+		_menuTools.add(item);
+
+		item = new JMenuItem(new String("Zeige Ansichtsfenster"));
+		item.addActionListener(newWindowListener);
 		_menuTools.add(item);
 
 		// -------------------------------------------------------------------------------------
@@ -311,6 +320,24 @@ public class MenuBar extends JMenuBar {
 		}
 	};
 
+	ActionListener showSegmentListener = new ActionListener() {
+		public void actionPerformed(ActionEvent event) {
+			ImageStack is = LabMed.get_is();
+			if (is.getNumberOfImages() == 0) {
+				JOptionPane
+						.showMessageDialog(
+								_win,
+								"Segmentierung ohne geÃ¶ffneten DICOM Datensatz nicht mÃ¶glich.",
+								"Inane error", JOptionPane.ERROR_MESSAGE);
+			} else {
+				if (is.getSegmentNumber() > 0)
+					_tools.showTool(toolRangeSelector);
+			}
+
+		}
+
+	};
+
 	/**
 	 * ActionListener for adding a new segmentation to the global image stack.
 	 */
@@ -344,34 +371,43 @@ public class MenuBar extends JMenuBar {
 					item = new JCheckBoxMenuItem(name, false);
 					item.addActionListener(toggleSegListener3d);
 					_menu3d.add(item);
-					_tools.showTool(new ToolRangeSelector(seg));
-					//System.out.println("Ich bin am Ende der Name der Segmentierung");
+
+					// if(toolRangeSelector == null){
+					toolRangeSelector = new ToolRangeSelector(seg);
+					// }else{
+					// toolRangeSelector
+					// }
+
+					_tools.showTool(toolRangeSelector);
 				}
 			}
 		}
 	};
-	
+
 	/**
 	 * ActionListener for toggling a segmentation in the 3d viewport.
 	 */
 	ActionListener newWindowListener = new ActionListener() {
 		public void actionPerformed(ActionEvent event) {
-			ImageStack is = LabMed.get_is(); 
+			ImageStack is = LabMed.get_is();
 			if (is.getNumberOfImages() == 0) {
 				JOptionPane
 						.showMessageDialog(
 								_win,
 								"Änderung der Ansicht ohne geöffneten DICOM Datensatz nicht mÃ¶glich.",
 								"Inane error", JOptionPane.ERROR_MESSAGE);
-			} else	{
-//				String name = JOptionPane.showInputDialog(_win,
-//						"Name der Segmentierung");
-//				if (name != null) {
-					SelectWindow sel_win = is.addSelectWindow("Window_Selection");
-					sel_win.addObserver(_v2d);
+			} else {
+				// String name = JOptionPane.showInputDialog(_win,
+				// "Name der Segmentierung");
+				// if (name != null) {
+				SelectWindow sel_win = is.addSelectWindow("Window_Selection");
 
-					_tools.showTool(new ToolWindowSelector(sel_win));
-//				}
+				if (toolWindowSelector == null) {
+					sel_win.addObserver(_v2d);
+					toolWindowSelector = new ToolWindowSelector(sel_win);
+				}
+				_tools.showTool(toolWindowSelector);
+				// }
 			}
 		}
 	};

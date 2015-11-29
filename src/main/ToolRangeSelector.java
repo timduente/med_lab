@@ -68,7 +68,6 @@ public class ToolRangeSelector extends JPanel {
 		// range_max needs to be calculated from the bits_stored value
 		// in the current dicom series
 		int range_max = (int) Math.pow(2, slices.getBitsStored());
-		System.err.println(range_max);
 		_min = (int) Math.pow(2, slices.getBitsStored() - 1);
 		_max = (int) Math.pow(2, slices.getBitsStored() - 1);
 
@@ -136,7 +135,6 @@ public class ToolRangeSelector extends JPanel {
 		c.gridy = 2;
 		this.add(_max_slider, c);
 
-		// setBackground(Color.blue);
 	}
 
 	private void changeRange(int min, int max, ImageStack slices, Segment seg) {

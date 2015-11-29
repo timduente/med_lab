@@ -62,7 +62,7 @@ public class DiFile {
 			nextEle.readNext(diFileInputStream);
 
 			_data_elements.put(nextEle.getTag(), nextEle);
-			System.out.println(nextEle.toString());
+//			System.out.println(nextEle.toString());
 			if (DiDi.getTagDescr(nextEle.getTag()).equals("Transfer Syntax UID")) {
 				if (nextEle.getValueAsString().equals("1.2.840.10008.1.2")) {
 					implicit = true;

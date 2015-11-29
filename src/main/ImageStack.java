@@ -211,6 +211,9 @@ public class ImageStack extends Observable {
 					setChanged();
 					notifyObservers(new Message(Message.M_NEW_IMAGE_LOADED));
 				}
+				
+//				windowCenter= 
+//				windowWidth=
 
 				progress_win.setVisible(false);
 			}
