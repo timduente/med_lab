@@ -69,6 +69,8 @@ public class Viewport2d extends Viewport implements Observer {
 
 		public void mouseClicked(java.awt.event.MouseEvent e) {
 			System.out.println("Panel2d::mouseClicked: x=" + e.getX() + " y=" + e.getY());
+			
+			//über Breite und Höhe des Bildes auf Koordinaten des Pixels umrechnen
 		}
 
 		public void mousePressed(java.awt.event.MouseEvent e) {

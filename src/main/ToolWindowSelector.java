@@ -6,16 +6,9 @@ import java.awt.Insets;
 import javax.swing.*;
 import javax.swing.event.*;
 
-/**
- * GUI for making min-max based range segmentations.
- * 
- * @author Karl-Ingo Friese
- *
- */
 @SuppressWarnings("serial")
 public class ToolWindowSelector extends JPanel {
 	private int _window, _center;
-	private JList<String> _seg_list;
 	private JSlider _width_slider, _center_slider;
 	private JLabel _window_sel_title, _width_label, _center_label;
 
@@ -29,42 +22,13 @@ public class ToolWindowSelector extends JPanel {
 	 *            the segmentation to be modified
 	 */
 	public ToolWindowSelector(SelectWindow sel_win) {
-//	
+		//
 		final ImageStack slices = ImageStack.getInstance();
 		_window_sel_title = new JLabel("Edit window parameters");
-//
-//		_seg_list = new JList<String>(slices.getSegNames());
-//		_seg_list.setSelectedIndex(slices.getSegNames().indexOf(seg.getName()));
-//		_seg_list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-//
-//		_seg_list.addListSelectionListener(new ListSelectionListener() {
-//			public void valueChanged(ListSelectionEvent e) {
-//				int seg_index = _seg_list.getSelectedIndex();
-//				String name = (String) (slices.getSegNames()
-//						.getElementAt(seg_index));
-//				if (!_seg.getName().equals(name)) {
-//					_seg = slices.getSegment(name);
-//					_window_sel_title.setText("Range Selector - "
-//							+ _seg.getName());
-//					// ...
-//				}
-//			}
-//		});
-//
-//		JScrollPane scrollPane = new JScrollPane(_seg_list);
-//		scrollPane
-//				.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-//		scrollPane
-//				.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 
-//		_window_sel_title = new JLabel("Range Selector - " + _seg.getName());
-
-		// range_max needs to be calculated from the bits_stored value
-		// in the current dicom series
 		int range_max = (int) Math.pow(2, slices.getBitsStored());
-		_window = slices.getWindowWidth(); //(int) Math.pow(2, slices.getBitsStored() - 1);
-		_center = slices.getWindowCenter(); //(int) Math.pow(2, slices.getBitsStored() - 1);
-
+		_window = slices.getWindowWidth(); 
+		_center = slices.getWindowCenter(); 
 		_width_label = new JLabel("Window width:");
 		_center_label = new JLabel("Window center:");
 
@@ -74,7 +38,8 @@ public class ToolWindowSelector extends JPanel {
 				JSlider source = (JSlider) e.getSource();
 				if (source.getValueIsAdjusting()) {
 					_window = (int) source.getValue();
-					System.out.println("_windowWidth_slider stateChanged: " + _window);
+					System.out.println("_windowWidth_slider stateChanged: "
+							+ _window);
 					slices.setWindowWidth(_window);
 				}
 			}
@@ -86,7 +51,8 @@ public class ToolWindowSelector extends JPanel {
 				JSlider source = (JSlider) e.getSource();
 				if (source.getValueIsAdjusting()) {
 					_center = (int) source.getValue();
-					System.out.println("_center_slider stateChanged: " + _center);
+					System.out.println("_center_slider stateChanged: "
+							+ _center);
 					slices.setWindowCenter(_center);
 				}
 			}
@@ -97,16 +63,7 @@ public class ToolWindowSelector extends JPanel {
 		c.weighty = 0.3;
 		c.fill = GridBagConstraints.BOTH;
 		c.insets = new Insets(2, 2, 2, 2); // top,left,bottom,right
-//		c.weightx = 0.1;
-//		c.gridx = 0;
-//		c.gridy = 0;
-//		//this.add(seg_sel_title, c);
-//
-//		c.gridheight = 2;
-//		c.gridx = 0;
-//		c.gridy = 1;
-//		this.add(scrollPane, c);
-//		c.gridheight = 1;
+
 
 		c.weightx = 0.9;
 		c.gridwidth = 2;
