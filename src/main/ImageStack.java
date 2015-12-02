@@ -70,12 +70,12 @@ public class ImageStack extends Observable {
 		setChanged();
 		notifyObservers(new Message(Message.M_WINDOW_CHANGED));
 	}
-	
-	private void rescalePictureData(){
-		for(int i = 0; i< _dicom_files.size(); i++){
+
+	private void rescalePictureData() {
+		for (int i = 0; i < _dicom_files.size(); i++) {
 			_dicom_files.get(i).rescale(windowWidth, windowCenter);
 		}
-		
+
 	}
 
 	private int windowCenter;
@@ -266,6 +266,21 @@ public class ImageStack extends Observable {
 			seg.setColor(def_colors[_segment.size()]);
 			_segment.put(name, seg);
 			_seg_names.addElement(name);
+		}
+
+		return seg;
+	}
+
+	public Segment addRegionGrowSegmenation() {
+		Segment seg;
+		String name = "regionGrow";
+		if (_segment.containsKey(name)) {
+			seg = _segment.get(name);
+		} else {
+			seg = new Segment(name, _w, _h, _dicom_files.size());
+			seg.setColor(0x91219E);
+
+			_segment.put(name, seg);
 		}
 
 		return seg;

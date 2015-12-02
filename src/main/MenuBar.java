@@ -428,7 +428,7 @@ public class MenuBar extends JMenuBar {
 
 				if (regionGrowSelector == null) {
 					sel_win.addObserver(_v2d);
-					regionGrowSelector = new ToolRegionGrowSelector(sel_win);
+					regionGrowSelector = new ToolRegionGrowSelector(sel_win, _v2d);
 				}
 				_tools.showTool(regionGrowSelector);
 			}

@@ -21,6 +21,9 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import com.sun.javafx.geom.Vec2d;
+import com.sun.javafx.geom.Vec3d;
+
 import misc.BitMask;
 import misc.DiFile;
 
@@ -68,9 +71,27 @@ public class Viewport2d extends Viewport implements Observer {
 		}
 
 		public void mouseClicked(java.awt.event.MouseEvent e) {
-			System.out.println("Panel2d::mouseClicked: x=" + e.getX() + " y=" + e.getY());
-			
-			//über Breite und Höhe des Bildes auf Koordinaten des Pixels umrechnen
+			System.out.println("Panel2d::mouseClicked: x=" + e.getX() + " y="
+					+ e.getY());
+
+			if (viewMode == 0) {
+				Voxel.vox.setXYZ(
+						e.getX() * _slices.getImageWidth() / this.getWidth(),
+						e.getY() * _slices.getImageHeight() / this.getHeight(),
+						_slices.getActiveImageID());
+			} else if (viewMode == 1) {
+
+				Voxel.vox.setXYZ(
+						_slices.getActiveImageID(),
+						e.getX() * _slices.getImageHeight() / this.getWidth(),
+						e.getY() * _slices.getNumberOfImages()
+								/ this.getHeight());
+			} else if (viewMode == 2) {
+				Voxel.vox.setXYZ(
+						e.getX() * _slices.getImageWidth() / this.getWidth(),
+						_slices.getActiveImageID(),
+						e.getY() * _slices.getNumberOfImages());
+			}
 		}
 
 		public void mousePressed(java.awt.event.MouseEvent e) {
@@ -93,7 +114,8 @@ public class Viewport2d extends Viewport implements Observer {
 
 			Enumeration<BufferedImage> segs = _map_seg_name_to_img.elements();
 			while (segs.hasMoreElements()) {
-				g.drawImage(segs.nextElement(), 0, 0, this.getWidth(), this.getHeight(), this);
+				g.drawImage(segs.nextElement(), 0, 0, this.getWidth(),
+						this.getHeight(), this);
 			}
 		}
 	}
@@ -132,8 +154,10 @@ public class Viewport2d extends Viewport implements Observer {
 			});
 
 			_jsp_scroll = new JScrollPane(_jl_slices);
-			_jsp_scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-			_jsp_scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+			_jsp_scroll
+					.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+			_jsp_scroll
+					.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 
 			setLayout(new BorderLayout());
 			add(_jsp_scroll, BorderLayout.CENTER);
@@ -184,7 +208,8 @@ public class Viewport2d extends Viewport implements Observer {
 		while (segs.hasMoreElements()) {
 			Segment seg = segs.nextElement();
 			String name = seg.getName();
-			BufferedImage seg_img = new BufferedImage(_w, _h, BufferedImage.TYPE_INT_ARGB);
+			BufferedImage seg_img = new BufferedImage(_w, _h,
+					BufferedImage.TYPE_INT_ARGB);
 
 			_map_seg_name_to_img.put(name, seg_img);
 		}
@@ -212,7 +237,8 @@ public class Viewport2d extends Viewport implements Observer {
 		}
 
 		// _w and _h need to be initialized BEFORE filling the image array !
-		if (_bg_img == null || _bg_img.getWidth(null) != _w || _bg_img.getHeight(null) != _h) {
+		if (_bg_img == null || _bg_img.getWidth(null) != _w
+				|| _bg_img.getHeight(null) != _h) {
 			reallocate();
 		}
 
@@ -236,13 +262,15 @@ public class Viewport2d extends Viewport implements Observer {
 				for (int j = 0; j < _h; j++) {
 					int draw = (picture_data[i + j * _w] & 0xff);
 
-					_bg_img.setRGB(i, j, (draw & 0xff) | 0xff000000 | (draw & 0xff) << 8 | (draw & 0xff) << 16);
+					_bg_img.setRGB(i, j, (draw & 0xff) | 0xff000000
+							| (draw & 0xff) << 8 | (draw & 0xff) << 16);
 				}
 			}
 
 		} else {
 			// faster: access the data array directly (see below)
-			final int[] bg_pixels = ((DataBufferInt) _bg_img.getRaster().getDataBuffer()).getData();
+			final int[] bg_pixels = ((DataBufferInt) _bg_img.getRaster()
+					.getDataBuffer()).getData();
 			for (int i = 0; i < bg_pixels.length; i++) {
 				bg_pixels[i] = 0xff000000;
 			}
@@ -258,13 +286,15 @@ public class Viewport2d extends Viewport implements Observer {
 			if (seg_images.hasMoreElements()) {
 				seg_image = seg_images.nextElement();
 			} else {
-				System.out.println("No Next Element in Viewport2D::update_view::while");
+				System.out
+						.println("No Next Element in Viewport2D::update_view::while");
 				break;
 			}
 			// here should be the code for displaying the segmentation data
 			// (exercise 3)
 			Segment seg = (Segment) (segs.nextElement());
-			int[] seg_pixels = ((DataBufferInt) seg_image.getRaster().getDataBuffer()).getData();
+			int[] seg_pixels = ((DataBufferInt) seg_image.getRaster()
+					.getDataBuffer()).getData();
 			BitMask seg_bitmask;
 			int color = seg.getColor();
 
@@ -284,30 +314,34 @@ public class Viewport2d extends Viewport implements Observer {
 			} else if (viewMode == 1) {
 				/** SAGITAL **/
 				/** Iterate over every bitmask **/
-				
-				for(int h = 0; h < _h; h++)	{
-					seg_bitmask = seg.getMask(h); 
-					for(int w = 0; w < _w; w++)	{
-						if(seg_bitmask.get(_slices.getActiveImageID(), w))	{
-							seg_pixels[w + h * _w] = 0x80000000 | color; 
-						} else	{
-							seg_pixels[w + h * _w] = 0x0; 
+
+				for (int h = 0; h < _h; h++) {
+					seg_bitmask = seg.getMask(h);
+					for (int w = 0; w < _w; w++) {
+						if (seg_bitmask.get(_slices.getActiveImageID(), w)) {
+							seg_pixels[w + h * _w] = 0x80000000 | color;
+						} else {
+							seg_pixels[w + h * _w] = 0x0;
 						}
 					}
 				}
 			} else if (viewMode == 2) {
 				/** FRONTAL **/
-				for(int h = 0; h < _h; h++)	{
-					seg_bitmask = seg.getMask(h); 
-					for(int w = 0; w < _w; w++)	{
-						if(seg_bitmask.get(w, _slices.getActiveImageID()))	{
-							seg_pixels[w + h * _w] = 0x80000000 | color; 
-						} else	{
-							seg_pixels[w + h * _w] = 0x0; 
+				for (int h = 0; h < _h; h++) {
+					seg_bitmask = seg.getMask(h);
+					for (int w = 0; w < _w; w++) {
+						if (seg_bitmask.get(w, _slices.getActiveImageID())) {
+							seg_pixels[w + h * _w] = 0x80000000 | color;
+						} else {
+							seg_pixels[w + h * _w] = 0x0;
 						}
 					}
 				}
 			}
+		}
+
+		if (Voxel.regionGrowEnabled) {
+
 		}
 
 		repaint();
@@ -388,9 +422,22 @@ public class Viewport2d extends Viewport implements Observer {
 				update_view();
 			}
 		}
-		
-		if (m._type == Message.M_WINDOW_CHANGED){
+
+		if (m._type == Message.M_WINDOW_CHANGED) {
 			update_view();
+		}
+
+		if (m._type == Message.M_REGION_GROW_SEG_CHANGED) {
+			// TODO: RegionGrow Segmentation has changed. Update the view. Make
+			// it visible
+			System.out.println("yeah View update");
+			this.toggleSeg((Segment)m._obj);
+
+			String seg_name = ((Segment) m._obj).getName();
+			boolean update_needed = _map_name_to_seg.containsKey(seg_name);
+			if (update_needed)
+				update_view();
+			// }
 		}
 	}
 
@@ -412,7 +459,8 @@ public class Viewport2d extends Viewport implements Observer {
 
 		if (!gotcha) {
 			// if a segmentation is shown, we need to allocate memory for pixels
-			BufferedImage seg_img = new BufferedImage(_w, _h, BufferedImage.TYPE_INT_ARGB);
+			BufferedImage seg_img = new BufferedImage(_w, _h,
+					BufferedImage.TYPE_INT_ARGB);
 			_map_seg_name_to_img.put(name, seg_img);
 		} else {
 			_map_seg_name_to_img.remove(name);
@@ -440,8 +488,6 @@ public class Viewport2d extends Viewport implements Observer {
 
 		viewMode = mode;
 		_slices.setMode(mode);
-
-		System.out.println("Viewmode " + mode);
 
 		repaint();
 		return true;

@@ -1,5 +1,6 @@
 package main;
 
+import java.util.ArrayList;
 import java.util.Observable;
 
 import misc.BitMask;
@@ -17,8 +18,9 @@ public class Segment extends Observable {
 	private int _w; // Bitmask width
 	private int _h; // Bitmask height
 	private BitMask[] _layers; // each segment contains an array of n bitmasks
-	
+
 	private int _min;
+
 	public int get_min() {
 		return _min;
 	}
@@ -72,20 +74,100 @@ public class Segment extends Observable {
 		for (int i = 0; i < slices.getNumberOfImages(); i++) {
 
 			// Next line: Get pixel data of image i...
-			byte[] pixel_data = slices.getDiFile(i).getElement(0x7fe00010).getValues();
+			byte[] pixel_data = slices.getDiFile(i).getElement(0x7fe00010)
+					.getValues();
 			for (int w = 0; w < _w; w++) {
 				for (int h = 0; h < _h; h++) {
 
-					pixel_value = (pixel_data[w * slices.getBytesPerPixel() + h * _w * slices.getBytesPerPixel()] & 0xff)
-							| ((pixel_data[w * slices.getBytesPerPixel() + h * _w * slices.getBytesPerPixel() + 1] & 0xff) << 8);
+					pixel_value = (pixel_data[w * slices.getBytesPerPixel() + h
+							* _w * slices.getBytesPerPixel()] & 0xff)
+							| ((pixel_data[w * slices.getBytesPerPixel() + h
+									* _w * slices.getBytesPerPixel() + 1] & 0xff) << 8);
 
-					_layers[i].set(w, h, (pixel_value >= min && pixel_value <= max));
+					_layers[i].set(w, h,
+							(pixel_value >= min && pixel_value <= max));
 
 				}
 			}
 		}
 		setChanged();
 		notifyObservers(new Message(Message.M_SEG_CHANGED, this));
+	}
+
+	public void create_regionGrow_seq(int v, int x, int y, int pictureNum,
+			ImageStack slices) {
+		// x and y between 0 and 1.
+
+		BitMask[] marked = new BitMask[_layers.length];
+
+		for (int i = 0; i < _layers.length; i++) {
+			marked[i] = new BitMask(_w, _h);
+		}
+
+		Voxel voxel = new Voxel(x, y, pictureNum);
+		int value = slices.getDiFile(pictureNum).getPixel(x, y);
+		int high = (int) (value * (((v + 100)) / 100.0f));
+		int low = (int) (value * (((100 - v)) / 100.0f));
+
+		System.out.println("Value: " + value + ", high " + high + ", low: "
+				+ low);
+
+		ArrayList<Voxel> queue = new ArrayList<Voxel>();
+		queue.add(voxel);
+
+		int voxelValue = 0;
+
+		while (!queue.isEmpty()) {
+			voxel = queue.remove(0);
+			voxelValue = slices.getDiFile(voxel.z).getPixel(voxel.x, voxel.y);
+
+			if (voxelValue >= low && voxelValue <= high) {
+				_layers[voxel.z].set(voxel.x, voxel.y, true);
+
+				if (proofMarked(voxel.x + 1, voxel.y, voxel.z, marked)) {
+					marked[voxel.z].set(voxel.x + 1, voxel.y, true);
+					queue.add(new Voxel(voxel.x + 1, voxel.y, voxel.z));
+				}
+
+				if (proofMarked(voxel.x, voxel.y + 1, voxel.z, marked)) {
+					marked[voxel.z].set(voxel.x, voxel.y + 1, true);
+					queue.add(new Voxel(voxel.x, voxel.y + 1, voxel.z));
+				}
+
+				if (proofMarked(voxel.x - 1, voxel.y, voxel.z, marked)) {
+					marked[voxel.z].set(voxel.x - 1, voxel.y, true);
+					queue.add(new Voxel(voxel.x - 1, voxel.y, voxel.z));
+				}
+
+				if (proofMarked(voxel.x, voxel.y, voxel.z + 1, marked)) {
+					marked[voxel.z + 1].set(voxel.x, voxel.y, true);
+					queue.add(new Voxel(voxel.x, voxel.y, voxel.z + 1));
+				}
+
+				if (proofMarked(voxel.x, voxel.y, voxel.z - 1, marked)) {
+					marked[voxel.z - 1].set(voxel.x, voxel.y, true);
+					queue.add(new Voxel(voxel.x, voxel.y, voxel.z - 1));
+				}
+
+				if (proofMarked(voxel.x, voxel.y - 1, voxel.z, marked)) {
+					marked[voxel.z].set(voxel.x, voxel.y - 1, true);
+					queue.add(new Voxel(voxel.x, voxel.y - 1, voxel.z));
+				}
+
+			}
+
+		}
+
+//		System.out.println(_layers[50].toString());
+
+		setChanged();
+		notifyObservers(new Message(Message.M_REGION_GROW_SEG_CHANGED, this));
+
+	}
+
+	private boolean proofMarked(int x, int y, int z, BitMask[] marked) {
+		return x >= 0 && x < _w && y >= 0 && y < _h && z >= 0
+				&& z < _layers.length && !marked[z].get(x, y);
 	}
 
 	/**

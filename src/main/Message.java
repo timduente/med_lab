@@ -14,6 +14,8 @@ public class Message {
 	public static final int M_NEW_SEGMENTATION = 300;
 	public static final int M_SEG_CHANGED = 301;
 	public static final int M_WINDOW_CHANGED = 400;
+	public static final int M_REGION_GROW_SEG_CHANGED = 500;
+	public static final int M_REGION_GROW_NEW_SEED = 501;
 
 	public int _type;
 	public Object _obj;

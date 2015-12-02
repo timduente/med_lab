@@ -127,15 +127,16 @@ public class DiFile {
 			// Not the droids were looking for...
 		} else {
 
-//			int stored_bits = this.getElement(0x00280101).getValueAsInt();
-			
+			// int stored_bits = this.getElement(0x00280101).getValueAsInt();
+
 			scaled_data = new byte[_w * _h];
 
-        rescale(window_width, window_center);
-			
+			rescale(window_width, window_center);
+
+		}
 	}
-	}
-	public void rescale(int window_width, int window_center){
+
+	public void rescale(int window_width, int window_center) {
 		byte[] picture_data = this.getElement(0x7FE00010).getValues();
 		int allocated_bytes = this.getElement(0x00280100).getValueAsInt() / 8;
 		for (int i = 0; i < _w; i++) {
@@ -163,8 +164,8 @@ public class DiFile {
 
 				if (draw <= window_center - 0.5 - (window_width - 1.0f) / 2) {
 					draw = 0; // y_min
-				} else if (draw >= window_center - 0.5
-						+ (window_width - 1.0f) / 2) {
+				} else if (draw >= window_center - 0.5 + (window_width - 1.0f)
+						/ 2) {
 					draw = 255;
 				} else {
 					draw = (int) (((draw - (window_center - 0.5))
@@ -175,7 +176,14 @@ public class DiFile {
 		}
 		// System.out.println("...................... Laenge neues Array: "+scaled_data.length);
 	}
-	
+
+	public int getPixel(int x, int y) {
+		int allocated_bytes = this.getElement(0x00280100).getValueAsInt() / 8;
+		byte[] picture_data = this.getElement(0x7FE00010).getValues();
+		return (picture_data[x * allocated_bytes + y * _w * allocated_bytes] & 0xff)
+				| ((picture_data[x * allocated_bytes + y * _w * allocated_bytes
+						+ 1] & 0xff) << 8);
+	}
 
 	public byte[] get_scaled_data() {
 		return this.scaled_data;
