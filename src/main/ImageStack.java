@@ -279,8 +279,8 @@ public class ImageStack extends Observable {
 		} else {
 			seg = new Segment(name, _w, _h, _dicom_files.size());
 			seg.setColor(0x91219E);
-
 			_segment.put(name, seg);
+			_seg_names.addElement(name);
 		}
 
 		return seg;

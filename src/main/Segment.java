@@ -102,9 +102,12 @@ public class Segment extends Observable {
 
 		for (int i = 0; i < _layers.length; i++) {
 			marked[i] = new BitMask(_w, _h);
+			_layers[i] = new BitMask(_w, _h);
 		}
 
 		Voxel voxel = new Voxel(x, y, pictureNum);
+		
+		System.out.println("x: " + x + " y: " + y + " z: "+ pictureNum);
 		int value = slices.getDiFile(pictureNum).getPixel(x, y);
 		int high = (int) (value * (((v + 100)) / 100.0f));
 		int low = (int) (value * (((100 - v)) / 100.0f));

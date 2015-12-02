@@ -21,9 +21,6 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import com.sun.javafx.geom.Vec2d;
-import com.sun.javafx.geom.Vec3d;
-
 import misc.BitMask;
 import misc.DiFile;
 
@@ -71,8 +68,8 @@ public class Viewport2d extends Viewport implements Observer {
 		}
 
 		public void mouseClicked(java.awt.event.MouseEvent e) {
-			System.out.println("Panel2d::mouseClicked: x=" + e.getX() + " y="
-					+ e.getY());
+//			System.out.println("Panel2d::mouseClicked: x=" + e.getX() + " y="
+//					+ e.getY());
 
 			if (viewMode == 0) {
 				Voxel.vox.setXYZ(
@@ -80,17 +77,20 @@ public class Viewport2d extends Viewport implements Observer {
 						e.getY() * _slices.getImageHeight() / this.getHeight(),
 						_slices.getActiveImageID());
 			} else if (viewMode == 1) {
-
+				
 				Voxel.vox.setXYZ(
 						_slices.getActiveImageID(),
-						e.getX() * _slices.getImageHeight() / this.getWidth(),
+						
+						e.getX() * _slices.getImageWidth() / this.getWidth(),
+						
 						e.getY() * _slices.getNumberOfImages()
 								/ this.getHeight());
 			} else if (viewMode == 2) {
 				Voxel.vox.setXYZ(
 						e.getX() * _slices.getImageWidth() / this.getWidth(),
 						_slices.getActiveImageID(),
-						e.getY() * _slices.getNumberOfImages());
+						e.getY() * _slices.getNumberOfImages()
+								/ this.getHeight());
 			}
 		}
 
@@ -340,10 +340,6 @@ public class Viewport2d extends Viewport implements Observer {
 			}
 		}
 
-		if (Voxel.regionGrowEnabled) {
-
-		}
-
 		repaint();
 	}
 
@@ -428,16 +424,15 @@ public class Viewport2d extends Viewport implements Observer {
 		}
 
 		if (m._type == Message.M_REGION_GROW_SEG_CHANGED) {
-			// TODO: RegionGrow Segmentation has changed. Update the view. Make
-			// it visible
-			System.out.println("yeah View update");
-			this.toggleSeg((Segment)m._obj);
+			boolean gotcha = _map_name_to_seg.containsKey(((Segment) m._obj)
+					.getName());
+			if (!gotcha)
+				this.toggleSeg((Segment) m._obj);
 
 			String seg_name = ((Segment) m._obj).getName();
 			boolean update_needed = _map_name_to_seg.containsKey(seg_name);
 			if (update_needed)
 				update_view();
-			// }
 		}
 	}
 
