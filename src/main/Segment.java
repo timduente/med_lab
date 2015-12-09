@@ -74,18 +74,15 @@ public class Segment extends Observable {
 		for (int i = 0; i < slices.getNumberOfImages(); i++) {
 
 			// Next line: Get pixel data of image i...
-			byte[] pixel_data = slices.getDiFile(i).getElement(0x7fe00010)
-					.getValues();
-			for (int w = 0; w < _w; w++) {
-				for (int h = 0; h < _h; h++) {
+			byte[] pixel_data = slices.getDiFile(i).getElement(0x7fe00010).getValues();
 
-					pixel_value = (pixel_data[w * slices.getBytesPerPixel() + h
-							* _w * slices.getBytesPerPixel()] & 0xff)
-							| ((pixel_data[w * slices.getBytesPerPixel() + h
-									* _w * slices.getBytesPerPixel() + 1] & 0xff) << 8);
+			for (int h = 0; h < _h; h++) {
+				for (int w = 0; w < _w; w++) {
 
-					_layers[i].set(w, h,
-							(pixel_value >= min && pixel_value <= max));
+					pixel_value = (pixel_data[w * slices.getBytesPerPixel() + h * _w * slices.getBytesPerPixel()] & 0xff)
+							| ((pixel_data[w * slices.getBytesPerPixel() + h * _w * slices.getBytesPerPixel() + 1] & 0xff) << 8);
+
+					if(pixel_value >= min && pixel_value <= max) _layers[i].set(w, h, true);
 
 				}
 			}
@@ -94,8 +91,7 @@ public class Segment extends Observable {
 		notifyObservers(new Message(Message.M_SEG_CHANGED, this));
 	}
 
-	public void create_regionGrow_seq(int v, int x, int y, int pictureNum,
-			ImageStack slices) {
+	public void create_regionGrow_seq(int v, int x, int y, int pictureNum, ImageStack slices) {
 		// x and y between 0 and 1.
 
 		BitMask[] marked = new BitMask[_layers.length];
@@ -106,14 +102,13 @@ public class Segment extends Observable {
 		}
 
 		Voxel voxel = new Voxel(x, y, pictureNum);
-		
-		System.out.println("x: " + x + " y: " + y + " z: "+ pictureNum);
+
+		System.out.println("x: " + x + " y: " + y + " z: " + pictureNum);
 		int value = slices.getDiFile(pictureNum).getPixel(x, y);
 		int high = (int) (value * (((v + 100)) / 100.0f));
 		int low = (int) (value * (((100 - v)) / 100.0f));
 
-		System.out.println("Value: " + value + ", high " + high + ", low: "
-				+ low);
+		System.out.println("Value: " + value + ", high " + high + ", low: " + low);
 
 		ArrayList<Voxel> queue = new ArrayList<Voxel>();
 		queue.add(voxel);
@@ -161,7 +156,7 @@ public class Segment extends Observable {
 
 		}
 
-//		System.out.println(_layers[50].toString());
+		// System.out.println(_layers[50].toString());
 
 		setChanged();
 		notifyObservers(new Message(Message.M_REGION_GROW_SEG_CHANGED, this));
@@ -169,8 +164,7 @@ public class Segment extends Observable {
 	}
 
 	private boolean proofMarked(int x, int y, int z, BitMask[] marked) {
-		return x >= 0 && x < _w && y >= 0 && y < _h && z >= 0
-				&& z < _layers.length && !marked[z].get(x, y);
+		return x >= 0 && x < _w && y >= 0 && y < _h && z >= 0 && z < _layers.length && !marked[z].get(x, y);
 	}
 
 	/**
