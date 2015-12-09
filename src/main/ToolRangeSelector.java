@@ -16,7 +16,7 @@ import javax.swing.event.*;
  * 
  */
 @SuppressWarnings("serial")
-public class ToolRangeSelector extends JPanel  implements Observer  {
+public class ToolRangeSelector extends JPanel implements Observer {
 	private int _min, _max, _variance;
 	private Segment _seg;
 	private JList<String> _seg_list;
@@ -46,13 +46,32 @@ public class ToolRangeSelector extends JPanel  implements Observer  {
 			public void valueChanged(ListSelectionEvent e) {
 				int seg_index = _seg_list.getSelectedIndex();
 				String name = (String) (slices.getSegNames().getElementAt(seg_index));
-				//TODO: Here needs to be set if variance or minmax slider should be put!
+				// TODO: Here needs to be set if variance or minmax slider
+				// should be put!
 				if (!_seg.getName().equals(name)) {
 					_seg = slices.getSegment(name);
-					_range_sel_title.setText("Range Selector - " + _seg.getName());
 
-					_min_slider.setValue(_seg.get_min());
-					_max_slider.setValue(_seg.get_max());
+					if (_seg.get_type().equals("range")) {
+						_range_sel_title.setText("Range Selector - " + _seg.getName());
+						int range_max = (int) Math.pow(2, slices.getBitsStored());
+						_min = (int) Math.pow(2, slices.getBitsStored() - 1);
+						_min_slider.setMaximum((int) Math.pow(2, slices.getBitsStored()));
+						_min_slider.setMinimum(0);
+						_min_slider.setValue(_seg.get_min());
+						_max_slider.setVisible(true);
+						_max_slider.setValue(_seg.get_max());
+					} else if (_seg.get_type().equals("region")) {
+						_range_sel_title.setText("Region Selector - " + _seg.getName());
+						_min_slider.setMaximum(100);
+						_min_slider.setMinimum(0);
+						_min_slider.setValue(_seg.get_min()); // Region Segment
+																// has its
+																// variance in
+																// _min
+						_max_slider.setVisible(false);
+					}
+					// _min_slider.setValue(_seg.get_min());
+					// _max_slider.setValue(_seg.get_max());
 
 				}
 			}
@@ -67,130 +86,139 @@ public class ToolRangeSelector extends JPanel  implements Observer  {
 		// range_max needs to be calculated from the bits_stored value
 		// in the current dicom series
 
-		if (_seg.get_type().equals("range")) {
-			int range_max = (int) Math.pow(2, slices.getBitsStored());
-			_min = (int) Math.pow(2, slices.getBitsStored() - 1);
-			_max = (int) Math.pow(2, slices.getBitsStored() - 1);
+		// if (_seg.get_type().equals("range")) {
+		int range_max = (int) Math.pow(2, slices.getBitsStored());
+		_min = (int) Math.pow(2, slices.getBitsStored() - 1);
+		_max = (int) Math.pow(2, slices.getBitsStored() - 1);
 
-			_min_label = new JLabel("Min:");
-			_max_label = new JLabel("Max:");
+		_min_label = new JLabel("Min:");
+		_max_label = new JLabel("Max:");
 
-			_min_slider = new JSlider(0, range_max, _min);
-			_min_slider.addChangeListener(new ChangeListener() {
-				public void stateChanged(ChangeEvent e) {
-					JSlider source = (JSlider) e.getSource();
-					if (source.getValueIsAdjusting()) {
-						_min = (int) source.getValue();
-						// System.out.println("_min_slider stateChanged: " +
-						// _min);
+		_min_slider = new JSlider(0, range_max, _min);
+		_min_slider.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+				JSlider source = (JSlider) e.getSource();
+				if (source.getValueIsAdjusting()) {
+					_min = (int) source.getValue();
+					// System.out.println("_min_slider stateChanged: " +
+					// _min);
+					if (_seg.get_type().equals("range")) {
 						changeRange(_min, _max, slices, _seg);
-					}
-				}
-			});
-
-			_max_slider = new JSlider(0, range_max, _max);
-			_max_slider.addChangeListener(new ChangeListener() {
-				public void stateChanged(ChangeEvent e) {
-					JSlider source = (JSlider) e.getSource();
-					if (source.getValueIsAdjusting()) {
-						_max = (int) source.getValue();
-						System.out.println("_max_slider stateChanged: " + _max);
-						changeRange(_min, _max, slices, _seg);
-					}
-				}
-			});
-
-			setLayout(new GridBagLayout());
-			GridBagConstraints c = new GridBagConstraints();
-			c.weighty = 0.3;
-			c.fill = GridBagConstraints.BOTH;
-			c.insets = new Insets(2, 2, 2, 2); // top,left,bottom,right
-			c.weightx = 0.1;
-			c.gridx = 0;
-			c.gridy = 0;
-			this.add(seg_sel_title, c);
-
-			c.gridheight = 2;
-			c.gridx = 0;
-			c.gridy = 1;
-			this.add(scrollPane, c);
-			c.gridheight = 1;
-
-			c.weightx = 0.9;
-			c.gridwidth = 2;
-			c.gridx = 1;
-			c.gridy = 0;
-			this.add(_range_sel_title, c);
-			c.gridwidth = 1;
-
-			c.weightx = 0;
-			c.gridx = 1;
-			c.gridy = 1;
-			this.add(_min_label, c);
-			c.gridx = 1;
-			c.gridy = 2;
-			this.add(_max_label, c);
-			c.gridx = 2;
-			c.gridy = 1;
-			this.add(_min_slider, c);
-			c.gridx = 2;
-			c.gridy = 2;
-			this.add(_max_slider, c);
-		} else if (_seg.get_type().equals("region")) {
-			Voxel.vox.addObserver(this);
-			
-			int range_max = 100;
-			_variance = 10;
-			_min_label = new JLabel("Variance");
-			_variance_slider = new JSlider(0, range_max, _variance);
-			_variance_slider.addChangeListener(new ChangeListener() {
-				public void stateChanged(ChangeEvent e) {
-					JSlider source = (JSlider) e.getSource();
-					if (source.getValueIsAdjusting()) {
-						_variance = (int) source.getValue();
+					} else {
 						changeRange(slices);
 					}
 				}
-			});
-			
-			setLayout(new GridBagLayout());
-			GridBagConstraints c = new GridBagConstraints();
-			c.weighty = 0.3;
-			c.fill = GridBagConstraints.BOTH;
-			c.insets = new Insets(2, 2, 2, 2); // top,left,bottom,right
+			}
+		});
 
-			c.gridheight = 1;
+		_max_slider = new JSlider(0, range_max, _max);
+		_max_slider.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+				JSlider source = (JSlider) e.getSource();
+				if (source.getValueIsAdjusting()) {
+					_max = (int) source.getValue();
+					System.out.println("_max_slider stateChanged: " + _max);
+					changeRange(_min, _max, slices, _seg);
+				}
+			}
+		});
 
-			c.weightx = 0.9;
-			c.gridwidth = 2;
-			c.gridx = 1;
-			c.gridy = 0;
-			this.add(_range_sel_title, c);
-			c.gridwidth = 1;
+		setLayout(new GridBagLayout());
+		GridBagConstraints c = new GridBagConstraints();
+		c.weighty = 0.3;
+		c.fill = GridBagConstraints.BOTH;
+		c.insets = new Insets(2, 2, 2, 2); // top,left,bottom,right
+		c.weightx = 0.1;
+		c.gridx = 0;
+		c.gridy = 0;
+		this.add(seg_sel_title, c);
 
-			c.weightx = 0;
-			c.gridx = 1;
-			c.gridy = 1;
-			this.add(_min_label, c);
+		c.gridheight = 2;
+		c.gridx = 0;
+		c.gridy = 1;
+		this.add(scrollPane, c);
+		c.gridheight = 1;
 
-			c.gridx = 2;
-			c.gridy = 1;
-			this.add(_variance_slider, c);
+		c.weightx = 0.9;
+		c.gridwidth = 2;
+		c.gridx = 1;
+		c.gridy = 0;
+		this.add(_range_sel_title, c);
+		c.gridwidth = 1;
 
-		} else {
-			System.out.println("Bad Segment Type... Should be range or region");
-		}
+		c.weightx = 0;
+		c.gridx = 1;
+		c.gridy = 1;
+		this.add(_min_label, c);
+		c.gridx = 1;
+		c.gridy = 2;
+		this.add(_max_label, c);
+		c.gridx = 2;
+		c.gridy = 1;
+		this.add(_min_slider, c);
+		c.gridx = 2;
+		c.gridy = 2;
+		this.add(_max_slider, c);
+		// }
+		// else if (_seg.get_type().equals("region")) {
+		// Voxel.vox.addObserver(this);
+		//
+		// int range_max = 100;
+		// _variance = 10;
+		// _min_label = new JLabel("Variance");
+		// _variance_slider = new JSlider(0, range_max, _variance);
+		// _variance_slider.addChangeListener(new ChangeListener() {
+		// public void stateChanged(ChangeEvent e) {
+		// JSlider source = (JSlider) e.getSource();
+		// if (source.getValueIsAdjusting()) {
+		// _variance = (int) source.getValue();
+		// changeRange(slices);
+		// }
+		// }
+		// });
+		//
+		// setLayout(new GridBagLayout());
+		// GridBagConstraints c = new GridBagConstraints();
+		// c.weighty = 0.3;
+		// c.fill = GridBagConstraints.BOTH;
+		// c.insets = new Insets(2, 2, 2, 2); // top,left,bottom,right
+		//
+		// c.gridheight = 1;
+		//
+		// c.weightx = 0.9;
+		// c.gridwidth = 2;
+		// c.gridx = 1;
+		// c.gridy = 0;
+		// this.add(_range_sel_title, c);
+		// c.gridwidth = 1;
+		//
+		// c.weightx = 0;
+		// c.gridx = 1;
+		// c.gridy = 1;
+		// this.add(_min_label, c);
+		//
+		// c.gridx = 2;
+		// c.gridy = 1;
+		// this.add(_variance_slider, c);
+		//
+		// } else {
+		// System.out.println("Bad Segment Type... Should be range or region");
+		// }
 	}
 
 	private void changeRange(int min, int max, ImageStack slices, Segment seg) {
-		seg.create_range_seg(min, max, slices);
+		if (seg.get_type().equals("range")) {
+			seg.create_range_seg(min, max, slices);
+		} else {
+			_seg.create_regionGrow_seq(_variance, Voxel.vox.x, Voxel.vox.y, Voxel.vox.z, slices);
+		}
 	}
 
 	private void changeRange(ImageStack slices) {
-//		if (_seg == null) {
-//			_seg = slices.addRegionGrowSegmenation();
-//			_seg.addObserver(v2d);
-//		}
+		// if (_seg == null) {
+		// _seg = slices.addRegionGrowSegmenation();
+		// _seg.addObserver(v2d);
+		// }
 
 		System.out.println("changeRange");
 		_seg.create_regionGrow_seq(_variance, Voxel.vox.x, Voxel.vox.y, Voxel.vox.z, slices);
@@ -202,6 +230,6 @@ public class ToolRangeSelector extends JPanel  implements Observer  {
 
 		if (m._type == Message.M_REGION_GROW_NEW_SEED) {
 			changeRange(ImageStack.getInstance());
-		}		
+		}
 	}
 }
