@@ -82,10 +82,10 @@ public class ToolRegionGrowSelector extends JPanel implements Observer {
 	}
 
 	private void changeRange() {
-		if (_seg == null) {
-			_seg = slices.addRegionGrowSegmenation();
-			_seg.addObserver(v2d);
-		}
+//		if (_seg == null) {
+//			_seg = slices.addRegionGrowSegmenation();
+//			_seg.addObserver(v2d);
+//		}
 
 		System.out.println("changeRange");
 		_seg.create_regionGrow_seq(_variance, Voxel.vox.x, Voxel.vox.y,

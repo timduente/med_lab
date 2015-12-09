@@ -262,7 +262,7 @@ public class ImageStack extends Observable {
 			seg = null;
 		} else {
 			int[] def_colors = { 0xff0000, 0x00ff00, 0x0000ff };
-			seg = new Segment(name, _w, _h, _dicom_files.size());
+			seg = new Segment(name, _w, _h, _dicom_files.size(), "range");
 			seg.setColor(def_colors[_segment.size()]);
 			_segment.put(name, seg);
 			_seg_names.addElement(name);
@@ -271,13 +271,12 @@ public class ImageStack extends Observable {
 		return seg;
 	}
 
-	public Segment addRegionGrowSegmenation() {
+	public Segment addRegionGrowSegmenation(String name) {
 		Segment seg;
-		String name = "regionGrow";
 		if (_segment.containsKey(name)) {
 			seg = _segment.get(name);
 		} else {
-			seg = new Segment(name, _w, _h, _dicom_files.size());
+			seg = new Segment(name, _w, _h, _dicom_files.size(), "region");
 			seg.setColor(0x91219E);
 			_segment.put(name, seg);
 			_seg_names.addElement(name);

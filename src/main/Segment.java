@@ -18,7 +18,11 @@ public class Segment extends Observable {
 	private int _w; // Bitmask width
 	private int _h; // Bitmask height
 	private BitMask[] _layers; // each segment contains an array of n bitmasks
-
+	private String _type; 
+	
+	public String get_type()	{
+		return _type; 
+	}
 	private int _min;
 
 	public int get_min() {
@@ -43,10 +47,12 @@ public class Segment extends Observable {
 	 * @param layer_num
 	 *            the total number of bitmasks
 	 */
-	public Segment(String name, int w, int h, int layer_num) {
+	public Segment(String name, int w, int h, int layer_num, String type) {
 		this._name = name;
 		this._w = w;
 		this._h = h;
+		this._type= type; 
+//		System.out.println("I am "+ type);
 
 		_color = 0xff00ff;
 		_layers = new BitMask[layer_num];
