@@ -61,14 +61,19 @@ public class ToolRangeSelector extends JPanel implements Observer {
 						_max_slider.setVisible(true);
 						_max_slider.setValue(_seg.get_max());
 					} else if (_seg.get_type().equals("region")) {
+						
 						_range_sel_title.setText("Region Selector - " + _seg.getName());
 						_min_slider.setMaximum(100);
 						_min_slider.setMinimum(0);
-						_min_slider.setValue(_seg.get_min()); // Region Segment
+//						System.out.println(_seg.get_min());
+						_min_slider.setValue((int) (_seg.get_min()*1.0f/100)); // Region Segment
 																// has its
 																// variance in
 																// _min
 						_max_slider.setVisible(false);
+						System.out.println("Min: " + _min_slider.getMinimum());
+						System.out.println("Max: " + _min_slider.getMaximum());
+						System.out.println("Val: " + _min_slider.getValue());
 					}
 					// _min_slider.setValue(_seg.get_min());
 					// _max_slider.setValue(_seg.get_max());
@@ -105,7 +110,7 @@ public class ToolRangeSelector extends JPanel implements Observer {
 					if (_seg.get_type().equals("range")) {
 						changeRange(_min, _max, slices, _seg);
 					} else {
-						changeRange(slices);
+						changeRange(_min, 0, slices, _seg);
 					}
 				}
 			}
@@ -210,7 +215,7 @@ public class ToolRangeSelector extends JPanel implements Observer {
 		if (seg.get_type().equals("range")) {
 			seg.create_range_seg(min, max, slices);
 		} else {
-			_seg.create_regionGrow_seq(_variance, Voxel.vox.x, Voxel.vox.y, Voxel.vox.z, slices);
+			_seg.create_regionGrow_seq(min, Voxel.vox.x, Voxel.vox.y, Voxel.vox.z, slices);
 		}
 	}
 
