@@ -24,8 +24,7 @@ public class ToolRangeSelector extends JPanel implements Observer {
 	private JLabel _range_sel_title, _min_label, _max_label;
 
 	/**
-	 * Default Constructor. Creates the GUI element and connects it to a
-	 * segmentation.
+	 * Default Constructor. Creates the GUI element and connects it to a segmentation.
 	 * 
 	 * @param slices
 	 *            the global image stack
@@ -61,15 +60,15 @@ public class ToolRangeSelector extends JPanel implements Observer {
 						_max_slider.setVisible(true);
 						_max_slider.setValue(_seg.get_max());
 					} else if (_seg.get_type().equals("region")) {
-						
+
 						_range_sel_title.setText("Region Selector - " + _seg.getName());
 						_min_slider.setMaximum(100);
 						_min_slider.setMinimum(0);
-//						System.out.println(_seg.get_min());
-						_min_slider.setValue((int) (_seg.get_min()*1.0f/100)); // Region Segment
-																// has its
-																// variance in
-																// _min
+						// System.out.println(_seg.get_min());
+						_min_slider.setValue((int) (_seg.get_min() * 1.0f / 100)); // Region Segment
+						// has its
+						// variance in
+						// _min
 						_max_slider.setVisible(false);
 						System.out.println("Min: " + _min_slider.getMinimum());
 						System.out.println("Max: " + _min_slider.getMaximum());
@@ -164,51 +163,18 @@ public class ToolRangeSelector extends JPanel implements Observer {
 		c.gridx = 2;
 		c.gridy = 2;
 		this.add(_max_slider, c);
-		// }
-		// else if (_seg.get_type().equals("region")) {
-		// Voxel.vox.addObserver(this);
-		//
-		// int range_max = 100;
-		// _variance = 10;
-		// _min_label = new JLabel("Variance");
-		// _variance_slider = new JSlider(0, range_max, _variance);
-		// _variance_slider.addChangeListener(new ChangeListener() {
-		// public void stateChanged(ChangeEvent e) {
-		// JSlider source = (JSlider) e.getSource();
-		// if (source.getValueIsAdjusting()) {
-		// _variance = (int) source.getValue();
-		// changeRange(slices);
-		// }
-		// }
-		// });
-		//
-		// setLayout(new GridBagLayout());
-		// GridBagConstraints c = new GridBagConstraints();
-		// c.weighty = 0.3;
-		// c.fill = GridBagConstraints.BOTH;
-		// c.insets = new Insets(2, 2, 2, 2); // top,left,bottom,right
-		//
-		// c.gridheight = 1;
-		//
-		// c.weightx = 0.9;
-		// c.gridwidth = 2;
-		// c.gridx = 1;
-		// c.gridy = 0;
-		// this.add(_range_sel_title, c);
-		// c.gridwidth = 1;
-		//
-		// c.weightx = 0;
-		// c.gridx = 1;
-		// c.gridy = 1;
-		// this.add(_min_label, c);
-		//
-		// c.gridx = 2;
-		// c.gridy = 1;
-		// this.add(_variance_slider, c);
-		//
-		// } else {
-		// System.out.println("Bad Segment Type... Should be range or region");
-		// }
+		
+		
+		/** Ugly Hack following... **/
+		if (_seg.get_type().equals("region")) {
+
+			_range_sel_title.setText("Region Selector - " + _seg.getName());
+			_min_slider.setMaximum(100);
+			_min_slider.setMinimum(0);
+			// System.out.println(_seg.get_min());
+			_min_slider.setValue((int) (_seg.get_min() * 1.0f / 100)); // Region Segment has its variance in _min
+			_max_slider.setVisible(false);
+		}
 	}
 
 	private void changeRange(int min, int max, ImageStack slices, Segment seg) {
