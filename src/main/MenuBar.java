@@ -29,6 +29,8 @@ public class MenuBar extends JMenuBar {
 	private ToolRangeSelector toolRangeSelector;
 	private ToolWindowSelector toolWindowSelector;
 	private ToolRegionGrowSelector regionGrowSelector;
+	private ToolChangeN changeN;
+	
 
 	// private JMenuItem item;
 
@@ -152,6 +154,10 @@ public class MenuBar extends JMenuBar {
 
 		item = new JMenuItem(new String("Ändere Skalierung"));
 		item.addActionListener(newWindowListener);
+		_menuTools.add(item);
+		
+		item = new JMenuItem(new String("Ändere Raumgitter"));
+		item.addActionListener(changeNListener);
 		_menuTools.add(item);
 
 		// -------------------------------------------------------------------------------------
@@ -355,7 +361,9 @@ public class MenuBar extends JMenuBar {
 					_no_entries3d.setVisible(false);
 					Segment seg = is.addSegment(name);
 					seg.addObserver(_v2d);
+					seg.addObserver(_v3d);
 					_v2d.toggleSeg(seg);
+					_v3d.toggleSeg(seg);
 					JMenuItem item = new JCheckBoxMenuItem(name, true);
 					item.addActionListener(toggleSegListener2d);
 					_menu2d.add(item);
@@ -448,6 +456,24 @@ public class MenuBar extends JMenuBar {
 					toolWindowSelector = new ToolWindowSelector(sel_win);
 				}
 				_tools.showTool(toolWindowSelector);
+			}
+		}
+	};
+	
+	ActionListener changeNListener = new ActionListener() {
+		public void actionPerformed(ActionEvent event) {
+			ImageStack is = LabMed.get_is();
+			if (is.getNumberOfImages() == 0) {
+				JOptionPane.showMessageDialog(_win, "Änderung der Ansicht ohne geöffneten DICOM Datensatz nicht möglich.", "Inane error",
+						JOptionPane.ERROR_MESSAGE);
+			} else {
+//				SelectWindow sel_win = is.addSelectWindow("Window_Selection");
+
+				if (changeN == null) {
+//					sel_win.addObserver(_v2d);
+					changeN = new ToolChangeN(_v3d);
+				}
+				_tools.showTool(changeN);
 			}
 		}
 	};

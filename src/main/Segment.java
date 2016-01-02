@@ -73,8 +73,8 @@ public class Segment extends Observable {
 	 *            ImageStack
 	 */
 	public void create_range_seg(int min, int max, ImageStack slices) {
-		System.out.println("Range Creation: Min " + min);
-		System.out.println("Range Creation: Max " + max);
+//		System.out.println("Range Creation: Min " + min);
+//		System.out.println("Range Creation: Max " + max);
 		_min = min;
 		_max = max;
 		int pixel_value;

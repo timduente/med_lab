@@ -1,8 +1,8 @@
 package misc;
 
 /**
- * A two dimensional BitMask class (used for segmentations), optimized
- * for speed & low mem usage.
+ * A two dimensional BitMask class (used for segmentations), optimized for speed
+ * & low mem usage.
  * 
  * @author Karl-Ingo Friese
  */
@@ -14,80 +14,93 @@ public class BitMask {
 	/**
 	 * Default Constructor with width and height.
 	 * 
-	 * @param w	width
-	 * @param h	heigth
+	 * @param w
+	 *            width
+	 * @param h
+	 *            heigth
 	 */
 	public BitMask(int w, int h) {
 		_w = w;
 		_h = h;
-		_data = new long[((w*h)/64)+1];
+		_data = new long[((w * h) / 64) + 1];
 		clear();
 	}
 
 	/**
 	 * Sets or unsets a bit pixel.
-	 *  
-	 * @param x		the horizontal position
-	 * @param y		the vertical position
-	 * @param value	the bit pixel value (true or false)
+	 * 
+	 * @param x
+	 *            the horizontal position
+	 * @param y
+	 *            the vertical position
+	 * @param value
+	 *            the bit pixel value (true or false)
 	 */
 	public void set(int x, int y, boolean value) {
-		try{
-		int longnum = (x+y*_w)>>6;
-		int bitnum = (x+y*_w)%64;
+		try {
+			int longnum = (x + y * _w) >> 6;
+			int bitnum = (x + y * _w) % 64;
 
-		if (value) {
-			_data[longnum] |= ((long)(1))<<bitnum;
-		} else {
-			_data[longnum] &= ~(((long)(1))<<bitnum);
-		}
-		}catch(Exception e){
+			if (value) {
+				_data[longnum] |= ((long) (1)) << bitnum;
+			} else {
+				_data[longnum] &= ~(((long) (1)) << bitnum);
+			}
+		} catch (Exception e) {
 			e.printStackTrace();
-		
+
 		}
-		
+
 	}
 
+	public int getWidth() {
+		return _w;
+	}
+
+	public int getHeight() {
+		return _h;
+	}
 
 	/**
-	 * Returns true if a bit pixel is set. 
+	 * Returns true if a bit pixel is set.
 	 * 
-	 * @param x		the horizontal position
-	 * @param y		the vertical position
-	 * @return		true if the bit pixel is set, false if it isnt.
+	 * @param x
+	 *            the horizontal position
+	 * @param y
+	 *            the vertical position
+	 * @return true if the bit pixel is set, false if it isnt.
 	 */
 	public boolean get(int x, int y) {
-		int longnum = (x+y*_w)>>6;
-		int bitnum = (x+y*_w)%64;
+		int longnum = (x + y * _w) >> 6;
+		int bitnum = (x + y * _w) % 64;
 
-		return (_data[longnum] & ((long)(1))<<bitnum) != 0;
+		return (_data[longnum] & ((long) (1)) << bitnum) != 0;
 	}
 
-
 	/**
-	 * Converts the bitmask into a string (useful for debugging). 
-	 * @return		a human readable string representation. might not be human readable
-	 *              for very large bitmasks.
+	 * Converts the bitmask into a string (useful for debugging).
+	 * 
+	 * @return a human readable string representation. might not be human
+	 *         readable for very large bitmasks.
 	 */
 	public String toString() {
-		StringBuffer str = new StringBuffer(_data.length+_h);
+		StringBuffer str = new StringBuffer(_data.length + _h);
 
-		for (int i=0; i<_h; i++) {
-			for (int j=0; j<_w; j++) {
-				str.append(get(j,i) ? "1" : "0");
+		for (int i = 0; i < _h; i++) {
+			for (int j = 0; j < _w; j++) {
+				str.append(get(j, i) ? "1" : "0");
 			}
 			str.append("\n");
 		}
-		
+
 		return str.toString();
 	}
-
 
 	/**
 	 * Unsets every bit in the BitMask.
 	 */
 	public void clear() {
-		for (int i=0; i<_data.length; i++) {
+		for (int i = 0; i < _data.length; i++) {
 			_data[i] = 0;
 		}
 	}
