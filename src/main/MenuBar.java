@@ -390,7 +390,7 @@ public class MenuBar extends JMenuBar {
 		public void actionPerformed(ActionEvent event) {
 			ImageStack is = LabMed.get_is();
 			if (is.getNumberOfImages() == 0) {
-				JOptionPane.showMessageDialog(_win, "Segmentierung ohne geÃ¶ffneten DICOM Datensatz nicht möglich.", "Inane error", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(_win, "Segmentierung ohne geoeffneten DICOM Datensatz nicht möglich.", "Inane error", JOptionPane.ERROR_MESSAGE);
 			} else if (is.getSegmentNumber() == 3) {
 				JOptionPane.showMessageDialog(_win, "In der Laborversion werden nicht mehr als drei Segmentierungen benötigt.", "Inane error",
 						JOptionPane.ERROR_MESSAGE);
@@ -401,7 +401,9 @@ public class MenuBar extends JMenuBar {
 					_no_entries3d.setVisible(false);
 					Segment seg = is.addRegionGrowSegmenation(name);
 					seg.addObserver(_v2d);
+					seg.addObserver(_v3d);
 					_v2d.toggleSeg(seg);
+					_v3d.toggleSeg(seg);
 					JMenuItem item = new JCheckBoxMenuItem(name, true);
 					item.addActionListener(toggleSegListener2d);
 					_menu2d.add(item);

@@ -26,7 +26,7 @@ public class ToolChangeN extends JPanel{
 		_n_label = new JLabel("N");
 
 		_n = 5;
-		_n_slider = new JSlider(0, 50, _n);
+		_n_slider = new JSlider(0, 20, _n);
 		_n_slider.addChangeListener(new ChangeListener() {
 			
 			public void stateChanged(ChangeEvent e) {

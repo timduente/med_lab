@@ -1,17 +1,13 @@
 package main;
 
-import java.awt.AWTEvent;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.GraphicsConfiguration;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.Hashtable;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -23,7 +19,6 @@ import javax.media.j3d.ColoringAttributes;
 import javax.media.j3d.PointArray;
 import javax.media.j3d.PointAttributes;
 import javax.media.j3d.Shape3D;
-import javax.media.j3d.Transform3D;
 import javax.media.j3d.TransformGroup;
 import javax.vecmath.Color3f;
 import javax.vecmath.Point3d;
@@ -34,7 +29,6 @@ import misc.BitMask;
 import com.sun.j3d.utils.behaviors.mouse.MouseRotate;
 import com.sun.j3d.utils.behaviors.mouse.MouseWheelZoom;
 import com.sun.j3d.utils.behaviors.mouse.MouseZoom;
-import com.sun.j3d.utils.geometry.ColorCube;
 import com.sun.j3d.utils.universe.SimpleUniverse;
 
 /**
@@ -43,13 +37,11 @@ import com.sun.j3d.utils.universe.SimpleUniverse;
  * @author Karl-Ingo Friese
  */
 @SuppressWarnings("serial")
-public class Viewport3d extends Viewport implements Observer, MouseListener {
+public class Viewport3d extends Viewport implements Observer {
 
 	private float n = 10;
 
-	private ArrayList<Point3f> pointsToShow;
-
-	ColoringAttributes color_ca;
+	Hashtable<String, Shape3D> shapes = new Hashtable<String, Shape3D>();
 
 	MouseWheelZoom mouseWheelZoom;
 	TransformGroup tGroup;
@@ -69,8 +61,6 @@ public class Viewport3d extends Viewport implements Observer, MouseListener {
 			BoundingBox boundBox = new BoundingBox(new Point3d(-1000, -1000,
 					-1000), new Point3d(1000, 1000, 1000));
 
-			pointsToShow = new ArrayList<Point3f>();
-
 			setMinimumSize(new Dimension(DEF_WIDTH, DEF_HEIGHT));
 			setMaximumSize(new Dimension(DEF_WIDTH, DEF_HEIGHT));
 			setPreferredSize(new Dimension(DEF_WIDTH, DEF_HEIGHT));
@@ -79,9 +69,6 @@ public class Viewport3d extends Viewport implements Observer, MouseListener {
 			_simple_u = new SimpleUniverse(this);
 			_simple_u.getViewingPlatform().setNominalViewingTransform();
 			_scene = new BranchGroup();
-
-			color_ca = new ColoringAttributes();
-			color_ca.setCapability(ColoringAttributes.ALLOW_COLOR_WRITE);
 
 			tGroup = new TransformGroup();
 
@@ -102,6 +89,8 @@ public class Viewport3d extends Viewport implements Observer, MouseListener {
 			mouseBeh2.setSchedulingBounds(boundBox);
 			tGroup.addChild(mouseBeh2);
 
+			_scene.addChild(tGroup);
+
 			createScene();
 
 		}
@@ -111,37 +100,22 @@ public class Viewport3d extends Viewport implements Observer, MouseListener {
 			if (bgroup != null) {
 				bgroup.detach();
 				tGroup.removeChild(bgroup);
+				bgroup.removeAllChildren();
 			}
 
-			// TODO: für jede Segmentierung ColorAttribut ändern.
-			Appearance ap = new Appearance();
-			ap.setColoringAttributes(color_ca);
-			PointAttributes pAtts = new PointAttributes();
-			pAtts.setPointSize(1.0f);
-			ap.setPointAttributes(pAtts);
-
-			if (pointsToShow.size() > 0) {
-
-				PointArray points = new PointArray(pointsToShow.size(),
-						PointArray.COORDINATES);
-
-				for (int i = 0; i < pointsToShow.size(); i++) {
-					points.setCoordinate(i, pointsToShow.get(i));
-				}
-
-				Shape3D three_points_shape = new Shape3D(points, ap);
-
+			if (shapes.size() > 0) {
+				
 				bgroup = new BranchGroup();
 				bgroup.setCapability(BranchGroup.ALLOW_DETACH);
 
-				bgroup.addChild(three_points_shape);
+				Enumeration<Shape3D> elements = shapes.elements();
+				while (elements.hasMoreElements()) {
+					Shape3D shape = elements.nextElement();
+					bgroup.addChild(shape);
+
+				}
 
 				tGroup.addChild(bgroup);
-
-				if (tGroup.getParent() == null) {
-					System.out.println("lol");
-					_scene.addChild(tGroup);
-				}
 			}
 
 			if (!_scene.isCompiled()) {
@@ -157,7 +131,12 @@ public class Viewport3d extends Viewport implements Observer, MouseListener {
 	}
 
 	private void addPoints(Segment seg) {
-		pointsToShow.clear();
+		ArrayList<Point3f> pointsToShow = new ArrayList<Point3f>();
+		
+		if(shapes.containsKey(seg.getName())){
+			shapes.remove(seg.getName());
+		}
+		
 		int w2 = seg.getMask(0).getWidth() / 2;
 		int h2 = seg.getMask(0).getHeight() / 2;
 		for (int i = 0; i < seg.getMaskNum(); i++) {
@@ -178,14 +157,40 @@ public class Viewport3d extends Viewport implements Observer, MouseListener {
 				}
 			}
 		}
+		
+		if(pointsToShow.size() <= 0){
+			return;
+		}
+		
+		
 		int color = seg.getColor();
 
 		int red = (color >> 16) & 0xff;
 		int green = (color >> 8) & 0xff;
 		int blue = color & 0xff;
 
+		ColoringAttributes color_ca = new ColoringAttributes();
+		// color_ca.setCapability(ColoringAttributes.ALLOW_COLOR_WRITE);
+
+		Appearance ap = new Appearance();
+		ap.setColoringAttributes(color_ca);
+		PointAttributes pAtts = new PointAttributes();
+		pAtts.setPointSize(1.0f);
+		ap.setPointAttributes(pAtts);
+
 		color_ca.setColor(new Color3f(red / 256.0f, green / 256.0f,
 				blue / 256.0f));
+
+		PointArray points = new PointArray(pointsToShow.size(),
+				PointArray.COORDINATES);
+
+		for (int i = 0; i < pointsToShow.size(); i++) {
+			points.setCoordinate(i, pointsToShow.get(i));
+		}
+		
+		
+		shapes.put(seg.getName(), new Shape3D(points, ap));
+
 	}
 
 	private Panel3d _panel3d;
@@ -244,7 +249,8 @@ public class Viewport3d extends Viewport implements Observer, MouseListener {
 		// boolean update_needed = false;
 		Message m = (Message) obj;
 
-		if (m._type == Message.M_SEG_CHANGED) {
+		if (m._type == Message.M_SEG_CHANGED
+				|| m._type == Message.M_REGION_GROW_SEG_CHANGED) {
 			String seg_name = ((Segment) (m._obj)).getName();
 			boolean update_needed = _map_name_to_seg.containsKey(seg_name);
 			if (update_needed) {
@@ -254,36 +260,5 @@ public class Viewport3d extends Viewport implements Observer, MouseListener {
 				update_view();
 			}
 		}
-	}
-
-	@Override
-	public void mouseClicked(MouseEvent e) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void mouseEntered(MouseEvent e) {
-		System.out.println("Entered");
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void mouseExited(MouseEvent e) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void mousePressed(MouseEvent e) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void mouseReleased(MouseEvent e) {
-		// TODO Auto-generated method stub
-
 	}
 }
