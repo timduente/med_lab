@@ -1,16 +1,22 @@
 package main;
 
+import java.awt.AWTEvent;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.GraphicsConfiguration;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Observable;
 import java.util.Observer;
 
 import javax.media.j3d.Appearance;
+import javax.media.j3d.BoundingBox;
 import javax.media.j3d.BranchGroup;
 import javax.media.j3d.Canvas3D;
 import javax.media.j3d.ColoringAttributes;
@@ -20,10 +26,14 @@ import javax.media.j3d.Shape3D;
 import javax.media.j3d.Transform3D;
 import javax.media.j3d.TransformGroup;
 import javax.vecmath.Color3f;
+import javax.vecmath.Point3d;
 import javax.vecmath.Point3f;
 
 import misc.BitMask;
 
+import com.sun.j3d.utils.behaviors.mouse.MouseRotate;
+import com.sun.j3d.utils.behaviors.mouse.MouseWheelZoom;
+import com.sun.j3d.utils.behaviors.mouse.MouseZoom;
 import com.sun.j3d.utils.geometry.ColorCube;
 import com.sun.j3d.utils.universe.SimpleUniverse;
 
@@ -33,20 +43,17 @@ import com.sun.j3d.utils.universe.SimpleUniverse;
  * @author Karl-Ingo Friese
  */
 @SuppressWarnings("serial")
-public class Viewport3d extends Viewport implements Observer {
-
-	private double rot = Math.PI / 4.0;
+public class Viewport3d extends Viewport implements Observer, MouseListener {
 
 	private float n = 10;
 
-	private boolean cube = false;
-	private boolean test = true;
-
 	private ArrayList<Point3f> pointsToShow;
 
-	
-	
 	ColoringAttributes color_ca;
+
+	MouseWheelZoom mouseWheelZoom;
+	TransformGroup tGroup;
+	BranchGroup bgroup;
 
 	/**
 	 * Private class, implementing the GUI element for displaying the 3d data.
@@ -58,6 +65,10 @@ public class Viewport3d extends Viewport implements Observer {
 		public Panel3d(GraphicsConfiguration config) {
 			super(config);
 
+			// necessary
+			BoundingBox boundBox = new BoundingBox(new Point3d(-1000, -1000,
+					-1000), new Point3d(1000, 1000, 1000));
+
 			pointsToShow = new ArrayList<Point3f>();
 
 			setMinimumSize(new Dimension(DEF_WIDTH, DEF_HEIGHT));
@@ -67,105 +78,81 @@ public class Viewport3d extends Viewport implements Observer {
 
 			_simple_u = new SimpleUniverse(this);
 			_simple_u.getViewingPlatform().setNominalViewingTransform();
-			_scene = null;
+			_scene = new BranchGroup();
+
+			color_ca = new ColoringAttributes();
+			color_ca.setCapability(ColoringAttributes.ALLOW_COLOR_WRITE);
+
+			tGroup = new TransformGroup();
+
+			tGroup.setCapability(TransformGroup.ALLOW_CHILDREN_WRITE);
+			tGroup.setCapability(TransformGroup.ALLOW_CHILDREN_EXTEND);
+			tGroup.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
+
+			MouseRotate behavior = new MouseRotate(tGroup);
+			behavior.setTransformGroup(tGroup);
+			behavior.setSchedulingBounds(boundBox);
+			tGroup.addChild(behavior);
+
+			mouseWheelZoom = new MouseWheelZoom(tGroup);
+			mouseWheelZoom.setSchedulingBounds(boundBox);
+			tGroup.addChild(mouseWheelZoom);
+
+			MouseZoom mouseBeh2 = new MouseZoom(tGroup);
+			mouseBeh2.setSchedulingBounds(boundBox);
+			tGroup.addChild(mouseBeh2);
+
 			createScene();
 
-			if (cube) {
-				new Thread(new Runnable() {
-					public void run() {
-						while (true) {
-							rot = rot + 0.02;
-							update_view();
-							try {
-								Thread.sleep(50);
-							} catch (InterruptedException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
-
-						}
-					}
-
-				}).start();
-
-			}
-			
-			 color_ca = new ColoringAttributes();
-			 color_ca.setCapability(ColoringAttributes.ALLOW_COLOR_WRITE);
 		}
 
 		public void createScene() {
-			if (_scene != null) {
-				_scene.detach();
+
+			if (bgroup != null) {
+				bgroup.detach();
+				tGroup.removeChild(bgroup);
 			}
-			_scene = new BranchGroup();
-			_scene.setCapability(BranchGroup.ALLOW_DETACH);
 
-			if (cube) {
-				Transform3D rotate = new Transform3D();
-				rotate.rotY(rot);
-				Transform3D rot2 = new Transform3D();
-				rot2.rotX(rot);
-				TransformGroup rotate_group = new TransformGroup(rotate);
-				TransformGroup rotate_group2 = new TransformGroup(rot2);
-				rotate_group.addChild(rotate_group2);
-				_scene.addChild(rotate_group);
-				rotate_group2.addChild(new ColorCube(0.4));
-			} else {
+			// TODO: für jede Segmentierung ColorAttribut ändern.
+			Appearance ap = new Appearance();
+			ap.setColoringAttributes(color_ca);
+			PointAttributes pAtts = new PointAttributes();
+			pAtts.setPointSize(1.0f);
+			ap.setPointAttributes(pAtts);
 
-				// TODO: für jede Segmentierung ColorAttribut ändern.
-				Appearance ap = new Appearance();
-				ap.setColoringAttributes(color_ca);
-				PointAttributes pAtts = new PointAttributes();
-				pAtts.setPointSize(1.0f);
-				ap.setPointAttributes(pAtts);
+			if (pointsToShow.size() > 0) {
 
-				// pointsToShow.clear();
+				PointArray points = new PointArray(pointsToShow.size(),
+						PointArray.COORDINATES);
 
-				// Point3f p0 = new Point3f(0.1f, 0.1f, 0.2f);
-				// Point3f p1 = new Point3f(0.5f, 0.1f, 0.2f);
-				// Point3f p2 = new Point3f(0.3f, 0.2f, 0.4f);
-				// Point3f p3 = new Point3f(0.0f, 0.0f, 0.0f);
-				//
-				// addPoint(p0);
-				// addPoint(p1);
-				// addPoint(p2);
-				// addPoint(p3);
+				for (int i = 0; i < pointsToShow.size(); i++) {
+					points.setCoordinate(i, pointsToShow.get(i));
+				}
 
-				System.out.println("Size: " + pointsToShow.size());
+				Shape3D three_points_shape = new Shape3D(points, ap);
 
-				if (pointsToShow.size() > 0) {
+				bgroup = new BranchGroup();
+				bgroup.setCapability(BranchGroup.ALLOW_DETACH);
 
-					PointArray points = new PointArray(pointsToShow.size(),
-							PointArray.COORDINATES);
+				bgroup.addChild(three_points_shape);
 
-					for (int i = 0; i < pointsToShow.size(); i++) {
-						points.setCoordinate(i, pointsToShow.get(i));
-					}
+				tGroup.addChild(bgroup);
 
-					Shape3D three_points_shape = new Shape3D(points, ap);
-
-					Transform3D scaleTransform = new Transform3D();
-					scaleTransform.setScale(0.005);
-					TransformGroup tGroup = new TransformGroup(scaleTransform);
-
-					tGroup.addChild(three_points_shape);
-
+				if (tGroup.getParent() == null) {
+					System.out.println("lol");
 					_scene.addChild(tGroup);
 				}
 			}
 
-			_scene.compile();
-			_simple_u.addBranchGraph(_scene);
-
+			if (!_scene.isCompiled()) {
+				_scene.compile();
+				_simple_u.addBranchGraph(_scene);
+			}
 		}
-
 	}
 
-	private void addPoint(Point3f point) {
-		if ((point.x % n == 0 && point.y % n == 0 && point.z % n == 0)) {
-			pointsToShow.add(point);
-		}
+	private boolean addPoint(Point3f point) {
+		return (point.x % n == 0 && point.y % n == 0 && point.z % n == 0);
 
 	}
 
@@ -178,10 +165,15 @@ public class Viewport3d extends Viewport implements Observer {
 			for (int y = 0; y < bitmask.getHeight(); y++) {
 				for (int x = 0; x < bitmask.getWidth(); x++) {
 					if (bitmask.get(x, y)) {
-						addPoint(new Point3f((x - w2)
-								, (y - h2)
-								, (i)
-								));
+						Point3f point = new Point3f((x - w2), (y - h2),
+								(i - seg.getMaskNum() / 2));
+						if (addPoint(point)) {
+							point.set(point.x / bitmask.getWidth(), point.y
+									/ bitmask.getHeight(),
+									point.z / seg.getMaskNum());
+							pointsToShow.add(point);
+						}
+
 					}
 				}
 			}
@@ -192,7 +184,8 @@ public class Viewport3d extends Viewport implements Observer {
 		int green = (color >> 8) & 0xff;
 		int blue = color & 0xff;
 
-		color_ca.setColor(new Color3f(red/256.0f, green/256.0f, blue/256.0f));
+		color_ca.setColor(new Color3f(red / 256.0f, green / 256.0f,
+				blue / 256.0f));
 	}
 
 	private Panel3d _panel3d;
@@ -212,6 +205,7 @@ public class Viewport3d extends Viewport implements Observer {
 				.getPreferredConfiguration();
 		_panel3d = new Panel3d(config);
 		this.add(_panel3d, BorderLayout.CENTER);
+
 	}
 
 	/**
@@ -222,12 +216,13 @@ public class Viewport3d extends Viewport implements Observer {
 	}
 
 	public void changeN(int n) {
-		this.n = (float) n ;
-		for (Enumeration<Segment> segs = _map_name_to_seg.elements(); segs.hasMoreElements();){
+		this.n = (float) n;
+		for (Enumeration<Segment> segs = _map_name_to_seg.elements(); segs
+				.hasMoreElements();) {
 			Segment seg = segs.nextElement();
 			addPoints(seg);
 		}
-		
+
 		update_view();
 	}
 
@@ -259,5 +254,36 @@ public class Viewport3d extends Viewport implements Observer {
 				update_view();
 			}
 		}
+	}
+
+	@Override
+	public void mouseClicked(MouseEvent e) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void mouseEntered(MouseEvent e) {
+		System.out.println("Entered");
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void mouseExited(MouseEvent e) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void mousePressed(MouseEvent e) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void mouseReleased(MouseEvent e) {
+		// TODO Auto-generated method stub
+
 	}
 }
