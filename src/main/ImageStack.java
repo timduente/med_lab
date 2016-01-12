@@ -424,6 +424,10 @@ public class ImageStack extends Observable {
 		}
 
 	}
+	
+	public int getMode()	{
+		return this.mode; 
+	}
 
 	public byte[] getPictureData() {
 		if (_dicom_files.size() == 0) {

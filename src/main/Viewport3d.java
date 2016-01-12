@@ -40,6 +40,10 @@ import com.sun.j3d.utils.universe.SimpleUniverse;
 public class Viewport3d extends Viewport implements Observer {
 
 	private float n = 10;
+	//Dont need them, because changing perspective resets currently active image. IF this will be changed, the ansatz is here to remember the current image in the views.
+//	private int remember_sag = 0;
+//	private int remember_trans = 0;
+//	private int remember_frontal = 0;
 
 	Hashtable<String, Shape3D> shapes = new Hashtable<String, Shape3D>();
 
@@ -58,8 +62,7 @@ public class Viewport3d extends Viewport implements Observer {
 			super(config);
 
 			// necessary
-			BoundingBox boundBox = new BoundingBox(new Point3d(-1000, -1000,
-					-1000), new Point3d(1000, 1000, 1000));
+			BoundingBox boundBox = new BoundingBox(new Point3d(-1000, -1000, -1000), new Point3d(1000, 1000, 1000));
 
 			setMinimumSize(new Dimension(DEF_WIDTH, DEF_HEIGHT));
 			setMaximumSize(new Dimension(DEF_WIDTH, DEF_HEIGHT));
@@ -104,7 +107,7 @@ public class Viewport3d extends Viewport implements Observer {
 			}
 
 			if (shapes.size() > 0) {
-				
+
 				bgroup = new BranchGroup();
 				bgroup.setCapability(BranchGroup.ALLOW_DETACH);
 
@@ -125,6 +128,77 @@ public class Viewport3d extends Viewport implements Observer {
 		}
 	}
 
+	private void addOrthoSlices() {
+		System.out.println("Adding orthoSlices");
+		if (shapes.containsKey("OrthoSlices")) {
+			shapes.remove("OrthoSlices");
+		}
+
+		ArrayList<Point3f> pointsToShow = new ArrayList<Point3f>();
+
+		int activeImageID = _slices.getActiveImageID();
+		// How do i get the mode? How do i get the other modes active images? Grab it! And save it! Else use default 0! Problem solved - wub wub!
+		int img_width = _slices.getImageWidth();
+		int img_height = _slices.getImageHeight();
+		int view_mode = _slices.getMode();
+		float range = (img_width < img_height) ? img_width / 2 : img_height / 2;
+
+		for (float i = -range; i < range; i++) {
+			for (float j = -range; j < range; j++) {
+				// Trans = 0
+				Point3f pointT = new Point3f(i/range, j/range, (view_mode == 0) ? activeImageID/range : 0);
+				// TODO: Check if Saggital and Frontal should be switched...
+				// Sagi = 1
+				Point3f pointS = new Point3f(i/range, (view_mode == 1) ? activeImageID/range : 0, j/range);
+				// Front = 2
+				Point3f pointF = new Point3f((view_mode == 2) ? activeImageID/range : 0, i/range, j/range);
+				pointsToShow.add(pointT);
+				pointsToShow.add(pointS);
+				pointsToShow.add(pointF);
+			}
+		}
+
+		// for (int ix = 0; ix < 400 / 4; ix++) {
+		// for (int iy = 0; iy < 400 / 4; iy++) {
+		// Point3f point = new Point3f(ix, iy, 0);
+		// pointsToShow.add(point);
+		// }
+		// }
+
+		if (pointsToShow.size() <= 0) {
+			System.out.println("empty");
+			return;
+		} else {
+			System.out.println("I have " + pointsToShow.size() + " points to draw");
+		}
+
+		int color = 0x888888;
+
+		int red = (color >> 16) & 0xff;
+		int green = (color >> 8) & 0xff;
+		int blue = color & 0xff;
+
+		ColoringAttributes color_ca = new ColoringAttributes();
+		// color_ca.setCapability(ColoringAttributes.ALLOW_COLOR_WRITE);
+
+		Appearance ap = new Appearance();
+		ap.setColoringAttributes(color_ca);
+		PointAttributes pAtts = new PointAttributes();
+		pAtts.setPointSize(1.0f);
+		ap.setPointAttributes(pAtts);
+
+		color_ca.setColor(new Color3f(red / 256.0f, green / 256.0f, blue / 256.0f));
+
+		PointArray points = new PointArray(pointsToShow.size(), PointArray.COORDINATES);
+
+		for (int i = 0; i < pointsToShow.size(); i++) {
+			points.setCoordinate(i, pointsToShow.get(i));
+		}
+
+		shapes.put("OrthoSlice", new Shape3D(points, ap));
+
+	}
+
 	private boolean addPoint(Point3f point) {
 		return (point.x % n == 0 && point.y % n == 0 && point.z % n == 0);
 
@@ -132,11 +206,11 @@ public class Viewport3d extends Viewport implements Observer {
 
 	private void addPoints(Segment seg) {
 		ArrayList<Point3f> pointsToShow = new ArrayList<Point3f>();
-		
-		if(shapes.containsKey(seg.getName())){
+
+		if (shapes.containsKey(seg.getName())) {
 			shapes.remove(seg.getName());
 		}
-		
+
 		int w2 = seg.getMask(0).getWidth() / 2;
 		int h2 = seg.getMask(0).getHeight() / 2;
 		for (int i = 0; i < seg.getMaskNum(); i++) {
@@ -144,12 +218,9 @@ public class Viewport3d extends Viewport implements Observer {
 			for (int y = 0; y < bitmask.getHeight(); y++) {
 				for (int x = 0; x < bitmask.getWidth(); x++) {
 					if (bitmask.get(x, y)) {
-						Point3f point = new Point3f((x - w2), (y - h2),
-								(i - seg.getMaskNum() / 2));
+						Point3f point = new Point3f((x - w2), (y - h2), (i - seg.getMaskNum() / 2));
 						if (addPoint(point)) {
-							point.set(point.x / bitmask.getWidth(), point.y
-									/ bitmask.getHeight(),
-									point.z / seg.getMaskNum());
+							point.set(point.x / bitmask.getWidth(), point.y / bitmask.getHeight(), point.z / seg.getMaskNum());
 							pointsToShow.add(point);
 						}
 
@@ -157,12 +228,11 @@ public class Viewport3d extends Viewport implements Observer {
 				}
 			}
 		}
-		
-		if(pointsToShow.size() <= 0){
+
+		if (pointsToShow.size() <= 0) {
 			return;
 		}
-		
-		
+
 		int color = seg.getColor();
 
 		int red = (color >> 16) & 0xff;
@@ -178,17 +248,14 @@ public class Viewport3d extends Viewport implements Observer {
 		pAtts.setPointSize(1.0f);
 		ap.setPointAttributes(pAtts);
 
-		color_ca.setColor(new Color3f(red / 256.0f, green / 256.0f,
-				blue / 256.0f));
+		color_ca.setColor(new Color3f(red / 256.0f, green / 256.0f, blue / 256.0f));
 
-		PointArray points = new PointArray(pointsToShow.size(),
-				PointArray.COORDINATES);
+		PointArray points = new PointArray(pointsToShow.size(), PointArray.COORDINATES);
 
 		for (int i = 0; i < pointsToShow.size(); i++) {
 			points.setCoordinate(i, pointsToShow.get(i));
 		}
-		
-		
+
 		shapes.put(seg.getName(), new Shape3D(points, ap));
 
 	}
@@ -206,8 +273,7 @@ public class Viewport3d extends Viewport implements Observer {
 
 		this.setPreferredSize(new Dimension(DEF_WIDTH, DEF_HEIGHT));
 		this.setLayout(new BorderLayout());
-		GraphicsConfiguration config = SimpleUniverse
-				.getPreferredConfiguration();
+		GraphicsConfiguration config = SimpleUniverse.getPreferredConfiguration();
 		_panel3d = new Panel3d(config);
 		this.add(_panel3d, BorderLayout.CENTER);
 
@@ -222,18 +288,24 @@ public class Viewport3d extends Viewport implements Observer {
 
 	public void changeN(int n) {
 		this.n = (float) n;
-		for (Enumeration<Segment> segs = _map_name_to_seg.elements(); segs
-				.hasMoreElements();) {
+		for (Enumeration<Segment> segs = _map_name_to_seg.elements(); segs.hasMoreElements();) {
 			Segment seg = segs.nextElement();
 			addPoints(seg);
 		}
+		/* TODO: Temporary: */
+		changeSlices();
+		// END TEMP
 
 		update_view();
 	}
 
+	// TODO: Search for a meaningfull place to be called
+	public void changeSlices() {
+		this.addOrthoSlices();
+	}
+
 	/**
-	 * Implements the observer function update. Updates can be triggered by the
-	 * global image stack.
+	 * Implements the observer function update. Updates can be triggered by the global image stack.
 	 */
 	public void update(final Observable o, final Object obj) {
 		if (!EventQueue.isDispatchThread()) {
@@ -249,8 +321,7 @@ public class Viewport3d extends Viewport implements Observer {
 		// boolean update_needed = false;
 		Message m = (Message) obj;
 
-		if (m._type == Message.M_SEG_CHANGED
-				|| m._type == Message.M_REGION_GROW_SEG_CHANGED) {
+		if (m._type == Message.M_SEG_CHANGED || m._type == Message.M_REGION_GROW_SEG_CHANGED) {
 			String seg_name = ((Segment) (m._obj)).getName();
 			boolean update_needed = _map_name_to_seg.containsKey(seg_name);
 			if (update_needed) {
