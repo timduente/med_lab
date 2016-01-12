@@ -33,6 +33,8 @@ public class ToolRangeSelector extends JPanel implements Observer {
 	 */
 	public ToolRangeSelector(Segment seg) {
 		_seg = seg;
+		
+		Voxel.vox.addObserver(this);
 
 		final ImageStack slices = ImageStack.getInstance();
 		JLabel seg_sel_title = new JLabel("Edit Segmentation");
@@ -200,6 +202,7 @@ public class ToolRangeSelector extends JPanel implements Observer {
 		Message m = (Message) arg1;
 
 		if (m._type == Message.M_REGION_GROW_NEW_SEED) {
+			System.out.println("new seed");
 			changeRange(ImageStack.getInstance());
 		}
 	}

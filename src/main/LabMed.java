@@ -69,6 +69,7 @@ public class LabMed {
 		_is.addObserver(_v2d);
 		_is.addObserver(_v3d);
 		
+		
 		_win = new MainWindow("LabMed 2013", _v2d, _v3d);
 		_win.setVisible(true);
 	}

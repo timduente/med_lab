@@ -61,7 +61,7 @@ public class DiFile {
 	 */
 	public void initFromFile(String file_name) throws Exception {
 		// exercise 1
-		System.out.println("Initializing File: " + file_name);
+//		System.out.println("Initializing File: " + file_name);
 		_file_name = file_name;
 		File f = new File(file_name);
 
