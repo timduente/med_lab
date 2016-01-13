@@ -136,7 +136,7 @@ public class Viewport3d extends Viewport implements Observer {
 		}
 
 		ArrayList<Point3f> pointsToShow = new ArrayList<Point3f>();
-		int activeImageID =- _slices.getDepth()/2-_slices.getActiveImageID(); 
+		int activeImageID = - _slices.getDepth()/2+_slices.getActiveImageID(); 
 		// How do i get the mode? How do i get the other modes active images? Grab it! And save it! Else use default 0! Problem solved - wub wub!
 		int img_width = _slices.getImageWidth();
 		int img_height = _slices.getImageHeight();
