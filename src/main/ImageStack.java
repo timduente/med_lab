@@ -342,6 +342,20 @@ public class ImageStack extends Observable {
 	public int getNumberOfImages() {
 		return _dicom_files.size();
 	}
+	
+	public int getDepth()	{
+		if (mode == 0) {
+			System.out.println("Files "+_dicom_files.size());
+			return _dicom_files.size();
+		} else if (mode == 1) {
+			System.out.println("Files "+_h);
+			return _h;
+		} else if (mode == 2) {
+			System.out.println("Files "+_w);
+			return _w;
+		}
+		return -1;
+	}
 
 	/**
 	 * Returns the DefaultListModel containing the segment names.

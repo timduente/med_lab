@@ -20,6 +20,7 @@ import javax.media.j3d.PointArray;
 import javax.media.j3d.PointAttributes;
 import javax.media.j3d.Shape3D;
 import javax.media.j3d.TransformGroup;
+import javax.media.j3d.TransparencyAttributes;
 import javax.vecmath.Color3f;
 import javax.vecmath.Point3d;
 import javax.vecmath.Point3f;
@@ -135,8 +136,7 @@ public class Viewport3d extends Viewport implements Observer {
 		}
 
 		ArrayList<Point3f> pointsToShow = new ArrayList<Point3f>();
-
-		int activeImageID = _slices.getActiveImageID();
+		int activeImageID =- _slices.getDepth()/2-_slices.getActiveImageID(); 
 		// How do i get the mode? How do i get the other modes active images? Grab it! And save it! Else use default 0! Problem solved - wub wub!
 		int img_width = _slices.getImageWidth();
 		int img_height = _slices.getImageHeight();
@@ -147,11 +147,10 @@ public class Viewport3d extends Viewport implements Observer {
 			for (float j = -range; j < range; j++) {
 				// Trans = 0
 				Point3f pointT = new Point3f(i/range, j/range, (view_mode == 0) ? activeImageID/range : 0);
-				// TODO: Check if Saggital and Frontal should be switched...
 				// Sagi = 1
-				Point3f pointS = new Point3f(i/range, (view_mode == 1) ? activeImageID/range : 0, j/range);
-				// Front = 2
-				Point3f pointF = new Point3f((view_mode == 2) ? activeImageID/range : 0, i/range, j/range);
+				Point3f pointS = new Point3f((view_mode == 1) ? activeImageID/range : 0, i/range, j/range);
+				// Front = 2  i/range, (view_mode == 1) ? activeImageID/range : 0, 
+				Point3f pointF = new Point3f(i/range, (view_mode == 2) ? activeImageID/range : 0, j/range);
 				pointsToShow.add(pointT);
 				pointsToShow.add(pointS);
 				pointsToShow.add(pointF);
@@ -186,6 +185,7 @@ public class Viewport3d extends Viewport implements Observer {
 		PointAttributes pAtts = new PointAttributes();
 		pAtts.setPointSize(1.0f);
 		ap.setPointAttributes(pAtts);
+		ap.setTransparencyAttributes(new TransparencyAttributes(TransparencyAttributes.BLENDED, 0.8f));
 
 		color_ca.setColor(new Color3f(red / 256.0f, green / 256.0f, blue / 256.0f));
 
@@ -330,6 +330,11 @@ public class Viewport3d extends Viewport implements Observer {
 				addPoints((Segment) (m._obj));
 				update_view();
 			}
+		}
+		
+		if (m._type == Message.M_NEW_ACTIVE_IMAGE) {
+			changeSlices();
+			update_view();
 		}
 	}
 }

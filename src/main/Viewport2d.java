@@ -408,6 +408,7 @@ public class Viewport2d extends Viewport implements Observer {
 		}
 
 		if (m._type == Message.M_NEW_ACTIVE_IMAGE) {
+			
 			update_view();
 		}
 
