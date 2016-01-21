@@ -18,12 +18,14 @@ import javax.media.j3d.Canvas3D;
 import javax.media.j3d.ColoringAttributes;
 import javax.media.j3d.PointArray;
 import javax.media.j3d.PointAttributes;
+import javax.media.j3d.QuadArray;
 import javax.media.j3d.Shape3D;
 import javax.media.j3d.TransformGroup;
 import javax.media.j3d.TransparencyAttributes;
 import javax.vecmath.Color3f;
 import javax.vecmath.Point3d;
 import javax.vecmath.Point3f;
+import javax.vecmath.Vector3f;
 
 import misc.BitMask;
 
@@ -41,10 +43,10 @@ import com.sun.j3d.utils.universe.SimpleUniverse;
 public class Viewport3d extends Viewport implements Observer {
 
 	private float n = 10;
-	//Dont need them, because changing perspective resets currently active image. IF this will be changed, the ansatz is here to remember the current image in the views.
-//	private int remember_sag = 0;
-//	private int remember_trans = 0;
-//	private int remember_frontal = 0;
+	// Dont need them, because changing perspective resets currently active image. IF this will be changed, the ansatz is here to remember the current image in the views.
+	// private int remember_sag = 0;
+	// private int remember_trans = 0;
+	// private int remember_frontal = 0;
 
 	Hashtable<String, Shape3D> shapes = new Hashtable<String, Shape3D>();
 
@@ -135,44 +137,46 @@ public class Viewport3d extends Viewport implements Observer {
 			shapes.remove("OrthoSlices");
 		}
 
-		ArrayList<Point3f> pointsToShow = new ArrayList<Point3f>();
-		int activeImageID = - _slices.getDepth()/2+_slices.getActiveImageID(); 
-		// How do i get the mode? How do i get the other modes active images? Grab it! And save it! Else use default 0! Problem solved - wub wub!
+		int activeImageID = -_slices.getDepth() / 2 + _slices.getActiveImageID();
 		int img_width = _slices.getImageWidth();
 		int img_height = _slices.getImageHeight();
 		int view_mode = _slices.getMode();
 		float range = (img_width < img_height) ? img_width / 2 : img_height / 2;
+		float layer = activeImageID / range;
 
-		for (float i = -range; i < range; i++) {
-			for (float j = -range; j < range; j++) {
-				// Trans = 0
-				Point3f pointT = new Point3f(i/range, j/range, (view_mode == 0) ? activeImageID/range : 0);
-				// Sagi = 1
-				Point3f pointS = new Point3f((view_mode == 1) ? activeImageID/range : 0, i/range, j/range);
-				// Front = 2  i/range, (view_mode == 1) ? activeImageID/range : 0, 
-				Point3f pointF = new Point3f(i/range, (view_mode == 2) ? activeImageID/range : 0, j/range);
-				pointsToShow.add(pointT);
-				pointsToShow.add(pointS);
-				pointsToShow.add(pointF);
-			}
-		}
+		/**
+		 * What happens next: On view mode is active: The corresponding orthoslice shall be drawn on the layer which the 2d view shows. This slice will have (layer, 0,0) OR (0,layer,0) OR (0,0,layer) in its points. Therefore: Ternary Op which view mode is active
+		 * 
+		 * The other 2 view modes orthoslices will be drawn thru (0,0,0).
+		 * 
+		 * Next generate normal (Normalen) vectors which set up a plane
+		 **/
+		// Order: ++ -- +- -+
+		Point3f[] trans_slice = { new Point3f((view_mode == 0) ? layer : 0.0f, range, range), new Point3f((view_mode == 0) ? layer : 0.0f, -range, -range), new Point3f((view_mode == 0) ? layer : 0.0f, +range, -range), new Point3f((view_mode == 0) ? layer : 0.0f, -range, +range) };
+		Point3f[] sag_slice = { new Point3f(range, (view_mode == 1) ? layer : 0.0f, range), new Point3f(-range, (view_mode == 1) ? layer : 0.0f, -range), new Point3f(+range, (view_mode == 1) ? layer : 0.0f, -range), new Point3f(+range, (view_mode == 1) ? layer : 0.0f, +range) };
+		Point3f[] fron_slice = { new Point3f(range, range, (view_mode == 2) ? layer : 0.0f), new Point3f(-range, -range, (view_mode == 2) ? layer : 0.0f), new Point3f(+range, -range, (view_mode == 2) ? layer : 0.0f), new Point3f(-range, +range, (view_mode == 2) ? layer : 0.0f) };
 
-		// for (int ix = 0; ix < 400 / 4; ix++) {
-		// for (int iy = 0; iy < 400 / 4; iy++) {
-		// Point3f point = new Point3f(ix, iy, 0);
-		// pointsToShow.add(point);
-		// }
-		// }
+		QuadArray trans_plane = new QuadArray(trans_slice.length, QuadArray.COORDINATES);
+		trans_plane.setCoordinates(0, trans_slice);
+		QuadArray sag_plane = new QuadArray(sag_slice.length, QuadArray.COORDINATES);
+		sag_plane.setCoordinates(0, sag_slice);
+		QuadArray fron_plane = new QuadArray(fron_slice.length, QuadArray.COORDINATES);
+		fron_plane.setCoordinates(0, fron_slice);
 
-		if (pointsToShow.size() <= 0) {
-			System.out.println("empty");
-			return;
-		} else {
-			System.out.println("I have " + pointsToShow.size() + " points to draw");
-		}
+		// new Point3f(range, 0.0f, range)
+		// Point3f[] coordinates = { new Point3f(0.0f, 0.0f, 0.0f),new Point3f(0.0f, 0.0f, 0.0f),new Point3f(0.0f, 0.0f, 0.0f),new Point3f(0.0f, 0.0f, 0.0f), new Point3f((view_mode == 0) ? layer : 0.0f, (view_mode == 1) ? layer : 0.0f, (view_mode == 2) ? layer : 0.0f) };
+		// Vector3f[] normal_vec = { new Vector3f(1.0f, 0.0f, 0.0f), new Vector3f(0.0f, 1.0f, 0.0f), new Vector3f(0.0f, 0.0f, 1.0f) }; // Carthesic coordinate base
+
+		// Point3f
+
+		// Point3f[] coordinates;
+
+		// QuadArray planes = new QuadArray(coordinates.length, QuadArray.COORDINATES | QuadArray.NORMALS);
+		// planes.setCoordinates(0, coordinates);
+		// planes.setNormals(0, normal_vec);
 
 		int color = 0x888888;
-
+		//
 		int red = (color >> 16) & 0xff;
 		int green = (color >> 8) & 0xff;
 		int blue = color & 0xff;
@@ -189,13 +193,72 @@ public class Viewport3d extends Viewport implements Observer {
 
 		color_ca.setColor(new Color3f(red / 256.0f, green / 256.0f, blue / 256.0f));
 
-		PointArray points = new PointArray(pointsToShow.size(), PointArray.COORDINATES);
+		shapes.put("Orthoslices", new Shape3D(trans_plane, ap));
+		shapes.put("Orthoslices", new Shape3D(sag_plane, ap));
+		shapes.put("Orthoslices", new Shape3D(fron_plane, ap));
 
-		for (int i = 0; i < pointsToShow.size(); i++) {
-			points.setCoordinate(i, pointsToShow.get(i));
-		}
+		// Vector3f[] normal_vec = { new Vector3f((view_mode==0)? 1.0f : 0.0f, (view_mode==1)? 1.0f: 0.0f, (view_mode==2)? 1.0f:0.0f)};
 
-		shapes.put("OrthoSlice", new Shape3D(points, ap));
+		// ArrayList<Point3f> pointsToShow = new ArrayList<Point3f>();
+		// int activeImageID = - _slices.getDepth()/2+_slices.getActiveImageID();
+		// How do i get the mode? How do i get the other modes active images? Grab it! And save it! Else use default 0! Problem solved - wub wub!
+		// float range = (img_width < img_height) ? img_width / 2 : img_height / 2;
+
+		// for (float i = -range; i < range; i++) {
+		// for (float j = -range; j < range; j++) {
+		// // Trans = 0
+		// Point3f pointT = new Point3f(i/range, j/range, (view_mode == 0) ? activeImageID/range : 0);
+		// // Sagi = 1
+		// Point3f pointS = new Point3f((view_mode == 1) ? activeImageID/range : 0, i/range, j/range);
+		// // Front = 2 i/range, (view_mode == 1) ? activeImageID/range : 0,
+		// Point3f pointF = new Point3f(i/range, (view_mode == 2) ? activeImageID/range : 0, j/range);
+		// pointsToShow.add(pointT);
+		// pointsToShow.add(pointS);
+		// pointsToShow.add(pointF);
+		// }
+		// }
+		//
+		// // for (int ix = 0; ix < 400 / 4; ix++) {
+		// // for (int iy = 0; iy < 400 / 4; iy++) {
+		// // Point3f point = new Point3f(ix, iy, 0);
+		// // pointsToShow.add(point);
+		// // }
+		// // }
+		//
+		// if (pointsToShow.size() <= 0) {
+		// System.out.println("empty");
+		// return;
+		// } else {
+		// System.out.println("I have " + pointsToShow.size() + " points to draw");
+		// }
+		//
+		// int color = 0x888888;
+		//
+		// int red = (color >> 16) & 0xff;
+		// int green = (color >> 8) & 0xff;
+		// int blue = color & 0xff;
+		//
+		// ColoringAttributes color_ca = new ColoringAttributes();
+		// // color_ca.setCapability(ColoringAttributes.ALLOW_COLOR_WRITE);
+		//
+		// Appearance ap = new Appearance();
+		// ap.setColoringAttributes(color_ca);
+		// PointAttributes pAtts = new PointAttributes();
+		// pAtts.setPointSize(1.0f);
+		// ap.setPointAttributes(pAtts);
+		// ap.setTransparencyAttributes(new TransparencyAttributes(TransparencyAttributes.BLENDED, 0.8f));
+		//
+		// color_ca.setColor(new Color3f(red / 256.0f, green / 256.0f, blue / 256.0f));
+		//
+		// PointArray points = new PointArray(pointsToShow.size(), PointArray.COORDINATES);
+		// QuadArray plains = new QuadArray(3,QuadArray.COORDINATES);
+		//
+		// for (int i = 0; i < pointsToShow.size(); i++) {
+		// points.setCoordinate(i, pointsToShow.get(i));
+		// }
+		//
+		// shapes.put("OrthoSlice", new Shape3D(points, ap));
+		// shapes.put("Ortho", new Shape3D(plains, ap));
 
 	}
 
@@ -331,7 +394,7 @@ public class Viewport3d extends Viewport implements Observer {
 				update_view();
 			}
 		}
-		
+
 		if (m._type == Message.M_NEW_ACTIVE_IMAGE) {
 			changeSlices();
 			update_view();
