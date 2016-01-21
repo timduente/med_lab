@@ -32,6 +32,8 @@ import misc.BitMask;
 import com.sun.j3d.utils.behaviors.mouse.MouseRotate;
 import com.sun.j3d.utils.behaviors.mouse.MouseWheelZoom;
 import com.sun.j3d.utils.behaviors.mouse.MouseZoom;
+import com.sun.j3d.utils.geometry.GeometryInfo;
+import com.sun.j3d.utils.geometry.NormalGenerator;
 import com.sun.j3d.utils.universe.SimpleUniverse;
 
 /**
@@ -133,11 +135,17 @@ public class Viewport3d extends Viewport implements Observer {
 
 	private void addOrthoSlices() {
 		System.out.println("Adding orthoSlices");
-		if (shapes.containsKey("OrthoSlices")) {
-			shapes.remove("OrthoSlices");
+		if (shapes.containsKey("OrthoSlices_trans")) {
+			shapes.remove("OrthoSlices_trans");
+			if(shapes.containsKey("Orthoslices_sag"))	{
+				shapes.remove("OrthoSlices_sag");
+				if(shapes.containsKey("Orthoslices_fron"))	{
+					shapes.remove("OrthoSlices_fron");	
+				}
+			}
 		}
 
-		int activeImageID = -_slices.getDepth() / 2 + _slices.getActiveImageID();
+		int activeImageID = -_slices.getDepth() / 2 + _slices.getActiveImageID();	//Negative value... Wrong? Or change name. Should be okay, but the name is misleading.
 		int img_width = _slices.getImageWidth();
 		int img_height = _slices.getImageHeight();
 		int view_mode = _slices.getMode();
@@ -156,12 +164,23 @@ public class Viewport3d extends Viewport implements Observer {
 		Point3f[] sag_slice = { new Point3f(range, (view_mode == 1) ? layer : 0.0f, range), new Point3f(-range, (view_mode == 1) ? layer : 0.0f, -range), new Point3f(+range, (view_mode == 1) ? layer : 0.0f, -range), new Point3f(+range, (view_mode == 1) ? layer : 0.0f, +range) };
 		Point3f[] fron_slice = { new Point3f(range, range, (view_mode == 2) ? layer : 0.0f), new Point3f(-range, -range, (view_mode == 2) ? layer : 0.0f), new Point3f(+range, -range, (view_mode == 2) ? layer : 0.0f), new Point3f(-range, +range, (view_mode == 2) ? layer : 0.0f) };
 
-		QuadArray trans_plane = new QuadArray(trans_slice.length, QuadArray.COORDINATES);
+//		Vector3f[] normal_vec = { new Vector3f(1.0f, 0.0f, 0.0f), new Vector3f(0.0f, 1.0f, 0.0f), new Vector3f(0.0f, 0.0f, 1.0f)};
+		NormalGenerator ng = new NormalGenerator(); 
+		QuadArray trans_plane = new QuadArray(trans_slice.length, QuadArray.COORDINATES | QuadArray.NORMALS);
 		trans_plane.setCoordinates(0, trans_slice);
-		QuadArray sag_plane = new QuadArray(sag_slice.length, QuadArray.COORDINATES);
+		GeometryInfo gi = new GeometryInfo(trans_plane);
+		ng.generateNormals(gi);
+		trans_plane.setNormals(0,gi.getNormals());
+		QuadArray sag_plane = new QuadArray(sag_slice.length, QuadArray.COORDINATES | QuadArray.NORMALS);
 		sag_plane.setCoordinates(0, sag_slice);
-		QuadArray fron_plane = new QuadArray(fron_slice.length, QuadArray.COORDINATES);
+		gi = new GeometryInfo(sag_plane);
+		ng.generateNormals(gi);
+		sag_plane.setNormals(0,gi.getNormals());
+		QuadArray fron_plane = new QuadArray(fron_slice.length, QuadArray.COORDINATES | QuadArray.NORMALS);
 		fron_plane.setCoordinates(0, fron_slice);
+		gi = new GeometryInfo(fron_plane);
+		ng.generateNormals(gi);
+		fron_plane.setNormals(0,gi.getNormals());
 
 		// new Point3f(range, 0.0f, range)
 		// Point3f[] coordinates = { new Point3f(0.0f, 0.0f, 0.0f),new Point3f(0.0f, 0.0f, 0.0f),new Point3f(0.0f, 0.0f, 0.0f),new Point3f(0.0f, 0.0f, 0.0f), new Point3f((view_mode == 0) ? layer : 0.0f, (view_mode == 1) ? layer : 0.0f, (view_mode == 2) ? layer : 0.0f) };
@@ -193,9 +212,9 @@ public class Viewport3d extends Viewport implements Observer {
 
 		color_ca.setColor(new Color3f(red / 256.0f, green / 256.0f, blue / 256.0f));
 
-		shapes.put("Orthoslices", new Shape3D(trans_plane, ap));
-		shapes.put("Orthoslices", new Shape3D(sag_plane, ap));
-		shapes.put("Orthoslices", new Shape3D(fron_plane, ap));
+		shapes.put("Orthoslices_trans", new Shape3D(trans_plane, ap));
+		shapes.put("Orthoslices_sag", new Shape3D(sag_plane, ap));
+		shapes.put("Orthoslices_fron", new Shape3D(fron_plane, ap));
 
 		// Vector3f[] normal_vec = { new Vector3f((view_mode==0)? 1.0f : 0.0f, (view_mode==1)? 1.0f: 0.0f, (view_mode==2)? 1.0f:0.0f)};
 
