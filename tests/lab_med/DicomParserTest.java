@@ -1,8 +1,6 @@
 package lab_med;
 
-import java.io.File;
 
-import static org.junit.Assert.*;
 import main.ImageStack;
 import misc.DiFile;
 

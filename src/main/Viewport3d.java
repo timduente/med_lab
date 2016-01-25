@@ -16,7 +16,6 @@ import javax.media.j3d.BoundingBox;
 import javax.media.j3d.BranchGroup;
 import javax.media.j3d.Canvas3D;
 import javax.media.j3d.ColoringAttributes;
-import javax.media.j3d.GeometryArray;
 import javax.media.j3d.PointArray;
 import javax.media.j3d.PointAttributes;
 import javax.media.j3d.PolygonAttributes;
@@ -27,8 +26,6 @@ import javax.media.j3d.TransparencyAttributes;
 import javax.vecmath.Color3f;
 import javax.vecmath.Point3d;
 import javax.vecmath.Point3f;
-import javax.vecmath.TexCoord2f;
-import javax.vecmath.Vector3f;
 
 import misc.BitMask;
 
@@ -72,8 +69,7 @@ public class Viewport3d extends Viewport implements Observer {
 			super(config);
 
 			// necessary
-			BoundingBox boundBox = new BoundingBox(new Point3d(-1000, -1000,
-					-1000), new Point3d(1000, 1000, 1000));
+			BoundingBox boundBox = new BoundingBox(new Point3d(-1000, -1000, -1000), new Point3d(1000, 1000, 1000));
 
 			setMinimumSize(new Dimension(DEF_WIDTH, DEF_HEIGHT));
 			setMaximumSize(new Dimension(DEF_WIDTH, DEF_HEIGHT));
@@ -151,21 +147,40 @@ public class Viewport3d extends Viewport implements Observer {
 			}
 		}
 
-		int activeImageID = -_slices.getDepth() / 2
-				+ _slices.getActiveImageID(); // Negative value... Wrong? Or
-												// change name. Should be okay,
-												// but the name is misleading.
+		int view_mode = _slices.getMode();
 		int img_width = _slices.getImageWidth();
 		int img_height = _slices.getImageHeight();
-		int view_mode = _slices.getMode();
-		float range = (img_width < img_height) ? img_width / 2 : img_height / 2;
-		float layer = activeImageID / range;
+		
+		int activeImageID = -1;		
+		float range = -1;
+		float layer = -1;
+
+		switch (view_mode) {
+		case 0: //Trans
+			activeImageID = -_slices.getDepth() / 2 + _slices.getActiveImageID();
+			range = (img_width < img_height) ? img_width / 2 : img_height / 2;
+			layer = activeImageID / range;
+			break;
+		case 1://Sag
+			activeImageID = -_slices.getDepth() / 2 + _slices.getActiveImageID();
+			range = (img_width > img_height) ? img_width  : img_height ;
+			layer = activeImageID / range;
+			break;
+		case 2://Fro
+			activeImageID = -_slices.getDepth() / 2 + _slices.getActiveImageID();
+			range = (img_width > img_height) ? img_width  : img_height ;
+			layer = activeImageID / range;
+		}
+		// int activeImageID = -_slices.getDepth() / 2
+		// + _slices.getActiveImageID(); // Negative value... Wrong? Or
+		// change name. Should be okay,
+		// but the name is misleading.
+
+		// float range = (img_width < img_height) ? img_width / 2 : img_height / 2;
+		// float layer = activeImageID / range;
 
 		/**
-		 * What happens next: On view mode is active: The corresponding
-		 * orthoslice shall be drawn on the layer which the 2d view shows. This
-		 * slice will have (layer, 0,0) OR (0,layer,0) OR (0,0,layer) in its
-		 * points. Therefore: Ternary Op which view mode is active
+		 * What happens next: On view mode is active: The corresponding orthoslice shall be drawn on the layer which the 2d view shows. This slice will have (layer, 0,0) OR (0,layer,0) OR (0,0,layer) in its points. Therefore: Ternary Op which view mode is active
 		 * 
 		 * The other 2 view modes orthoslices will be drawn thru (0,0,0).
 		 * 
@@ -174,43 +189,56 @@ public class Viewport3d extends Viewport implements Observer {
 
 		range = 1.0f;
 		// Order: ++ -- +- -+
-		Point3f[] trans_slice = {
-				new Point3f((view_mode == 0) ? layer : 0.0f, range, range),
-				new Point3f((view_mode == 0) ? layer : 0.0f, -range, range),
-				new Point3f((view_mode == 0) ? layer : 0.0f, -range, -range),
-				new Point3f((view_mode == 0) ? layer : 0.0f, range, -range) };
-		Point3f[] sag_slice = {
-				new Point3f(range, (view_mode == 1) ? layer : 0.0f, range),
-				new Point3f(range, (view_mode == 1) ? layer : 0.0f, -range),
-				new Point3f(-range, (view_mode == 1) ? layer : 0.0f, -range),
-				new Point3f(-range, (view_mode == 1) ? layer : 0.0f, +range) };
-		Point3f[] fron_slice = {
-				new Point3f(range, range, (view_mode == 2) ? layer : 0.0f),
-				new Point3f(-range, range, (view_mode == 2) ? layer : 0.0f),
-				new Point3f(-range, -range, (view_mode == 2) ? layer : 0.0f),
-				new Point3f(+range, -range, (view_mode == 2) ? layer : 0.0f) };
+		/**
+		 * Changing (x,y,z) yields: x: Ear to ear y: Nose to Back of head z: Head to toe
+		 * 
+		 * Trans: Plane in x,y Sag (ear2ear): Plane in y,z Front: Plane in x,z
+		 * **/
+
+		System.out.println("I am in " + ((view_mode == 0) ? "transversal" : (view_mode == 1) ? "sagital" : "frontal") + " viewmode and the active image is: " + _slices.getActiveImageID() + " while the layer is: " + layer);
+
+		Point3f[] trans_slice = { new Point3f(range, range, (view_mode == 0) ? layer : 0.0f), new Point3f(-range, range, (view_mode == 0) ? layer : 0.0f), new Point3f(-range, -range, (view_mode == 0) ? layer : 0.0f), new Point3f(range, -range, (view_mode == 0) ? layer : 0.0f) };
+		Point3f[] sag_slice = { new Point3f((view_mode == 1) ? layer : 0.0f, range, range), new Point3f((view_mode == 1) ? layer : 0.0f, -range, range), new Point3f((view_mode == 1) ? layer : 0.0f, -range, -range), new Point3f((view_mode == 1) ? layer : 0.0f, +range, -range) };
+		Point3f[] fron_slice = { new Point3f(range, (view_mode == 2) ? layer : 0.0f, range), new Point3f(-range, (view_mode == 2) ? layer : 0.0f, range), new Point3f(-range, (view_mode == 2) ? layer : 0.0f, -range), new Point3f(+range, (view_mode == 2) ? layer : 0.0f, -range) };
+		/** Something is odd with the orientation of the coordinate system. Testing... **/
+		// Point3f[] fron_slice = {
+		// new Point3f(-5.0f, 5.0f, -50.0f),
+		// new Point3f(-5.0f, 5.0f, 50.0f),
+		// new Point3f(5.0f, 5.0f, 50.0f),
+		// new Point3f(5.0f, 5.0f, -50.0f)
+		// };
+		// if (shapes.containsKey("Ortho_test")) {
+		// shapes.remove("Ortho_test");
+		// }
+
+		/** End Testing **/
 
 		// Vector3f[] normal_vec = { new Vector3f(1.0f, 0.0f, 0.0f), new
 		// Vector3f(0.0f, 1.0f, 0.0f), new Vector3f(0.0f, 0.0f, 1.0f)};
 		NormalGenerator ng = new NormalGenerator();
-		QuadArray trans_plane = new QuadArray(trans_slice.length,
-				QuadArray.COORDINATES | QuadArray.NORMALS );
+		QuadArray trans_plane = new QuadArray(trans_slice.length, QuadArray.COORDINATES | QuadArray.NORMALS);
 		trans_plane.setCoordinates(0, trans_slice);
 		GeometryInfo gi = new GeometryInfo(trans_plane);
 		ng.generateNormals(gi);
 		trans_plane.setNormals(0, gi.getNormals());
-		QuadArray sag_plane = new QuadArray(sag_slice.length,
-				QuadArray.COORDINATES | QuadArray.NORMALS);
+		QuadArray sag_plane = new QuadArray(sag_slice.length, QuadArray.COORDINATES | QuadArray.NORMALS);
 		sag_plane.setCoordinates(0, sag_slice);
 		gi = new GeometryInfo(sag_plane);
 		ng.generateNormals(gi);
 		sag_plane.setNormals(0, gi.getNormals());
-		QuadArray fron_plane = new QuadArray(fron_slice.length,
-				QuadArray.COORDINATES | QuadArray.NORMALS);
+		QuadArray fron_plane = new QuadArray(fron_slice.length, QuadArray.COORDINATES | QuadArray.NORMALS);
 		fron_plane.setCoordinates(0, fron_slice);
 		gi = new GeometryInfo(fron_plane);
 		ng.generateNormals(gi);
 		fron_plane.setNormals(0, gi.getNormals());
+
+		/** Testing 2 **/
+		// QuadArray coordinate_plane = new QuadArray(coordinate.length, QuadArray.COORDINATES | QuadArray.NORMALS);
+		// coordinate_plane.setCoordinates(0, coordinate);
+		// gi = new GeometryInfo(coordinate_plane);
+		// ng.generateNormals(gi);
+		// coordinate_plane.setNormals(0, gi.getNormals());
+		/** End Testing 2 **/
 
 		// new Point3f(range, 0.0f, range)
 		// Point3f[] coordinates = { new Point3f(0.0f, 0.0f, 0.0f),new
@@ -245,41 +273,40 @@ public class Viewport3d extends Viewport implements Observer {
 		PointAttributes pAtts = new PointAttributes();
 		pAtts.setPointSize(1.0f);
 		ap.setPointAttributes(pAtts);
-		
+
 		PolygonAttributes polygonAttributs = new PolygonAttributes();
 		polygonAttributs.setCullFace(PolygonAttributes.CULL_NONE);
-		
-		ap.setTransparencyAttributes(new TransparencyAttributes(
-				TransparencyAttributes.BLENDED, 0.8f));
+
+		ap.setTransparencyAttributes(new TransparencyAttributes(TransparencyAttributes.BLENDED, 0.8f));
 		ap.setPolygonAttributes(polygonAttributs);
 
-		color_ca.setColor(new Color3f(red / 256.0f, green / 256.0f,
-				blue / 256.0f));
-		Shape3D trans_shape = new Shape3D(trans_plane, ap);
-		
-				shapes.put("Orthoslices_trans", trans_shape);
+		color_ca.setColor(new Color3f(red / 256.0f, green / 256.0f, blue / 256.0f));
+
+		shapes.put("Orthoslices_trans", new Shape3D(trans_plane, ap));
 		shapes.put("Orthoslices_sag", new Shape3D(sag_plane, ap));
 		shapes.put("Orthoslices_fron", new Shape3D(fron_plane, ap));
-		
-		
-//		Point3d a,b,c,d; // need to be initialized
-//		
-//		a = new Point3d(0.0f, 1.0f, 1.0f);
-//		b = new Point3d(0.0f, -1.0f, 1.0f);
-//		c = new Point3d(0.0f, -1.0f, -1.0f);
-//		d = new Point3d(0.0f, 1.0f, -1.0f);
-//		QuadArray sq = new QuadArray(4, QuadArray.COORDINATES |
-//		GeometryArray.TEXTURE_COORDINATE_2);
-//		sq.setCoordinate(0, a);
-//		sq.setCoordinate(1, b);
-//		sq.setCoordinate(2, c);
-//		sq.setCoordinate(3, d);
-//		sq.setTextureCoordinate(0, 0, new TexCoord2f(0.0f,0.0f));
-//		sq.setTextureCoordinate(0, 1, new TexCoord2f(1.0f,0.0f));
-//		sq.setTextureCoordinate(0, 2, new TexCoord2f(1.0f,1.0f));
-//		sq.setTextureCoordinate(0, 3, new TexCoord2f(0.0f,1.0f));
-//		Shape3D square_shp = new Shape3D(sq);
-//		shapes.put("slices", square_shp);
+
+		/** Testing 3 **/
+		// shapes.put("Ortho_test", new Shape3D(coordinate_plane, ap));
+
+		// Point3d a,b,c,d; // need to be initialized
+		//
+		// a = new Point3d(0.0f, 1.0f, 1.0f);
+		// b = new Point3d(0.0f, -1.0f, 1.0f);
+		// c = new Point3d(0.0f, -1.0f, -1.0f);
+		// d = new Point3d(0.0f, 1.0f, -1.0f);
+		// QuadArray sq = new QuadArray(4, QuadArray.COORDINATES |
+		// GeometryArray.TEXTURE_COORDINATE_2);
+		// sq.setCoordinate(0, a);
+		// sq.setCoordinate(1, b);
+		// sq.setCoordinate(2, c);
+		// sq.setCoordinate(3, d);
+		// sq.setTextureCoordinate(0, 0, new TexCoord2f(0.0f,0.0f));
+		// sq.setTextureCoordinate(0, 1, new TexCoord2f(1.0f,0.0f));
+		// sq.setTextureCoordinate(0, 2, new TexCoord2f(1.0f,1.0f));
+		// sq.setTextureCoordinate(0, 3, new TexCoord2f(0.0f,1.0f));
+		// Shape3D square_shp = new Shape3D(sq);
+		// shapes.put("slices", square_shp);
 
 		// Vector3f[] normal_vec = { new Vector3f((view_mode==0)? 1.0f : 0.0f,
 		// (view_mode==1)? 1.0f: 0.0f, (view_mode==2)? 1.0f:0.0f)};
@@ -376,12 +403,9 @@ public class Viewport3d extends Viewport implements Observer {
 			for (int y = 0; y < bitmask.getHeight(); y++) {
 				for (int x = 0; x < bitmask.getWidth(); x++) {
 					if (bitmask.get(x, y)) {
-						Point3f point = new Point3f((x - w2), (y - h2),
-								(i - seg.getMaskNum() / 2));
+						Point3f point = new Point3f((x - w2), (y - h2), (i - seg.getMaskNum() / 2));
 						if (addPoint(point)) {
-							point.set(point.x / bitmask.getWidth(), point.y
-									/ bitmask.getHeight(),
-									point.z / seg.getMaskNum());
+							point.set(point.x / bitmask.getWidth(), point.y / bitmask.getHeight(), point.z / seg.getMaskNum());
 							pointsToShow.add(point);
 						}
 
@@ -409,11 +433,9 @@ public class Viewport3d extends Viewport implements Observer {
 		pAtts.setPointSize(1.0f);
 		ap.setPointAttributes(pAtts);
 
-		color_ca.setColor(new Color3f(red / 256.0f, green / 256.0f,
-				blue / 256.0f));
+		color_ca.setColor(new Color3f(red / 256.0f, green / 256.0f, blue / 256.0f));
 
-		PointArray points = new PointArray(pointsToShow.size(),
-				PointArray.COORDINATES);
+		PointArray points = new PointArray(pointsToShow.size(), PointArray.COORDINATES);
 
 		for (int i = 0; i < pointsToShow.size(); i++) {
 			points.setCoordinate(i, pointsToShow.get(i));
@@ -436,8 +458,7 @@ public class Viewport3d extends Viewport implements Observer {
 
 		this.setPreferredSize(new Dimension(DEF_WIDTH, DEF_HEIGHT));
 		this.setLayout(new BorderLayout());
-		GraphicsConfiguration config = SimpleUniverse
-				.getPreferredConfiguration();
+		GraphicsConfiguration config = SimpleUniverse.getPreferredConfiguration();
 		_panel3d = new Panel3d(config);
 		this.add(_panel3d, BorderLayout.CENTER);
 
@@ -452,8 +473,7 @@ public class Viewport3d extends Viewport implements Observer {
 
 	public void changeN(int n) {
 		this.n = (float) n;
-		for (Enumeration<Segment> segs = _map_name_to_seg.elements(); segs
-				.hasMoreElements();) {
+		for (Enumeration<Segment> segs = _map_name_to_seg.elements(); segs.hasMoreElements();) {
 			Segment seg = segs.nextElement();
 			addPoints(seg);
 		}
@@ -470,8 +490,7 @@ public class Viewport3d extends Viewport implements Observer {
 	}
 
 	/**
-	 * Implements the observer function update. Updates can be triggered by the
-	 * global image stack.
+	 * Implements the observer function update. Updates can be triggered by the global image stack.
 	 */
 	public void update(final Observable o, final Object obj) {
 		if (!EventQueue.isDispatchThread()) {
@@ -487,8 +506,7 @@ public class Viewport3d extends Viewport implements Observer {
 		// boolean update_needed = false;
 		Message m = (Message) obj;
 
-		if (m._type == Message.M_SEG_CHANGED
-				|| m._type == Message.M_REGION_GROW_SEG_CHANGED) {
+		if (m._type == Message.M_SEG_CHANGED || m._type == Message.M_REGION_GROW_SEG_CHANGED) {
 			String seg_name = ((Segment) (m._obj)).getName();
 			boolean update_needed = _map_name_to_seg.containsKey(seg_name);
 			if (update_needed) {
