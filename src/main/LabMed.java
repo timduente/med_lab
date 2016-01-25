@@ -63,7 +63,8 @@ public class LabMed {
 		// the global image stack
 		_is = ImageStack.getInstance(); 		
 		_v2d = new Viewport2d();
-		_v3d = new Viewport3d();	
+		_v3d = new Viewport3d();
+		_v3d.setV2d(_v2d);
 		
 		// the viewports need to update when the global image stack data changes
 		_is.addObserver(_v2d);

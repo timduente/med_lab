@@ -8,6 +8,7 @@ import java.awt.Graphics;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
+import java.awt.image.WritableRaster;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Observable;
@@ -68,8 +69,8 @@ public class Viewport2d extends Viewport implements Observer {
 		}
 
 		public void mouseClicked(java.awt.event.MouseEvent e) {
-//			System.out.println("Panel2d::mouseClicked: x=" + e.getX() + " y="
-//					+ e.getY());
+			// System.out.println("Panel2d::mouseClicked: x=" + e.getX() + " y="
+			// + e.getY());
 
 			if (viewMode == 0) {
 				Voxel.vox.setXYZ(
@@ -77,14 +78,12 @@ public class Viewport2d extends Viewport implements Observer {
 						e.getY() * _slices.getImageHeight() / this.getHeight(),
 						_slices.getActiveImageID());
 			} else if (viewMode == 1) {
-				
-				Voxel.vox.setXYZ(
-						_slices.getActiveImageID(),
-						
-						e.getX() * _slices.getImageWidth() / this.getWidth(),
-						
-						e.getY() * _slices.getNumberOfImages()
-								/ this.getHeight());
+
+				Voxel.vox.setXYZ(_slices.getActiveImageID(),
+
+				e.getX() * _slices.getImageWidth() / this.getWidth(),
+
+				e.getY() * _slices.getNumberOfImages() / this.getHeight());
 			} else if (viewMode == 2) {
 				Voxel.vox.setXYZ(
 						e.getX() * _slices.getImageWidth() / this.getWidth(),
@@ -229,7 +228,7 @@ public class Viewport2d extends Viewport implements Observer {
 		_w = _slices.getImageWidth();
 		_h = _slices.getImageHeight();
 
-		byte[] picture_data = _slices.getPictureData();
+		byte[] picture_data = _slices.getPictureData(_slices.getActiveImageID(), viewMode);
 
 		if (!(_slices.getPixelDataFormat().equals("MONOCHROME2"))) {
 			System.err.println("False picture format. Not MONOCHROME2.");
@@ -252,11 +251,6 @@ public class Viewport2d extends Viewport implements Observer {
 			// AARRGGBB
 			// the resulting image will be used in the Panel2d::paint() method
 
-			// System.out.println("Array Groeße: " + picture_data.length
-			// + ", Breite: " + _w + ", Höhe: " + _h + "Pixel *2 : " + _h
-			// * _w * 2);
-			// System.out.println("Picture Größe " + _bg_img.getHeight()
-			// * _bg_img.getWidth());
 
 			for (int i = 0; i < _w; i++) {
 				for (int j = 0; j < _h; j++) {
@@ -408,7 +402,7 @@ public class Viewport2d extends Viewport implements Observer {
 		}
 
 		if (m._type == Message.M_NEW_ACTIVE_IMAGE) {
-			
+
 			update_view();
 		}
 
@@ -487,5 +481,25 @@ public class Viewport2d extends Viewport implements Observer {
 
 		repaint();
 		return true;
+	}
+
+	public BufferedImage getBGImage() {
+		BufferedImage buf = new BufferedImage(_bg_img.getWidth(),
+				_bg_img.getHeight(), BufferedImage.TYPE_INT_ARGB);
+		
+
+		int[] buffer = ((DataBufferInt) _bg_img.getRaster().getDataBuffer())
+				.getData();
+
+		int[] buffer2 = ((DataBufferInt) buf.getRaster().getDataBuffer())
+				.getData();
+
+		for (int i = 0; i < buffer.length; i++) {
+
+			buffer2[i] = 0x80000000 | buffer[i];
+
+		}
+
+		return buf;
 	}
 }

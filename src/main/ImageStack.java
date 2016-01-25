@@ -1,5 +1,7 @@
 package main;
 
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferInt;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -342,16 +344,16 @@ public class ImageStack extends Observable {
 	public int getNumberOfImages() {
 		return _dicom_files.size();
 	}
-	
-	public int getDepth()	{
+
+	public int getDepth() {
 		if (mode == 0) {
-			System.out.println("Files "+_dicom_files.size());
+			System.out.println("Files " + _dicom_files.size());
 			return _dicom_files.size();
 		} else if (mode == 1) {
-			System.out.println("Files "+_h);
+			System.out.println("Files " + _h);
 			return _h;
 		} else if (mode == 2) {
-			System.out.println("Files "+_w);
+			System.out.println("Files " + _w);
 			return _w;
 		}
 		return -1;
@@ -372,6 +374,10 @@ public class ImageStack extends Observable {
 	 * @return the image width
 	 */
 	public int getImageWidth() {
+		return getImageWidth(mode);
+	}
+
+	public int getImageWidth(int mode) {
 		if (mode == 0) {
 			return _w;
 		} else if (mode == 1) {
@@ -388,6 +394,10 @@ public class ImageStack extends Observable {
 	 * @return the image height
 	 */
 	public int getImageHeight() {
+		return getImageHeight(mode);
+	}
+
+	public int getImageHeight(int mode) {
 
 		if (mode == 0) {
 			return _h;
@@ -438,12 +448,13 @@ public class ImageStack extends Observable {
 		}
 
 	}
-	
-	public int getMode()	{
-		return this.mode; 
+
+	public int getMode() {
+		return this.mode;
 	}
 
-	public byte[] getPictureData() {
+	public byte[] getPictureData(int activeImage, int mode) {
+
 		if (_dicom_files.size() == 0) {
 			return null;
 		}
@@ -480,5 +491,41 @@ public class ImageStack extends Observable {
 		}
 
 		return new byte[10];
+	}
+
+	public BufferedImage getImage(int number, int mode) {
+		byte[] pixData = getPictureData(number, mode);
+
+		int max = 1024; // Math.max(buf.getHeight(), buf.getWidth())
+		BufferedImage buf = new BufferedImage(max, max,
+				BufferedImage.TYPE_INT_ARGB);
+
+
+
+		// System.out.println(data.length + " " + bg_pixels.length);
+		// i/getWindowWidth=x/max
+		
+		System.out.println("size: " + pixData.length);
+
+		for (int i = 0; i < max; i++) {
+			for (int j = 0; j < max; j++) {
+				int index = (int) (i
+						* ((double) max / getImageWidth(mode)) )
+						+ (int) (j * ((double) max / getImageHeight(mode)));
+				
+				if(index >= pixData.length){
+					index =pixData.length-1;
+					System.err.println("error");
+				}
+				
+				byte data = pixData[index];
+
+				int pixel = 0x80000000 | ((data & 0xff) | 0xff000000
+						| (data & 0xff) << 8 | (data & 0xff) << 16);
+				buf.setRGB(j, i, pixel);
+			}
+		}
+
+		return buf;
 	}
 }
