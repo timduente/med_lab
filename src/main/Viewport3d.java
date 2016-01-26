@@ -174,7 +174,6 @@ public class Viewport3d extends Viewport implements Observer {
 		 * 
 		 * The other 2 view modes orthoslices will be drawn thru (0,0,0).
 		 * 
-		 * Next generate normal (Normalen) vectors which set up a plane
 		 **/
 
 		range = 0.5f;
