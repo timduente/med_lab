@@ -37,6 +37,8 @@ public class ImageStack extends Observable {
 	private int _w, _h, _active;
 	private String pixelDataFormat;
 
+	private boolean loadFinished = false;
+
 	private int bytesPerPixel, bitsStored;
 
 	public int getBytesPerPixel() {
@@ -103,6 +105,10 @@ public class ImageStack extends Observable {
 		return _instance;
 	}
 
+	public boolean loadingFinished() {
+		return loadFinished;
+	}
+
 	/**
 	 * Reads all DICOM files from the given directory. All files are checked for
 	 * correctness before loading. The load process is implemented as a thread.
@@ -111,6 +117,7 @@ public class ImageStack extends Observable {
 	 *            string containing the directory name.
 	 */
 	public void initFromDirectory(String dir_name) {
+		loadFinished = false;
 		_dir_name = dir_name;
 		_w = 0;
 		_h = 0;
@@ -240,6 +247,7 @@ public class ImageStack extends Observable {
 				}
 
 				progress_win.setVisible(false);
+				loadFinished = true;
 			}
 		};
 
@@ -345,18 +353,22 @@ public class ImageStack extends Observable {
 		return _dicom_files.size();
 	}
 
-	public int getDepth() {
+	public int getDepth(int mode) {
 		if (mode == 0) {
-			System.out.println("Files " + _dicom_files.size());
+			// System.out.println("Files " + _dicom_files.size());
 			return _dicom_files.size();
 		} else if (mode == 1) {
-			System.out.println("Files " + _h);
-			return _h;
-		} else if (mode == 2) {
-			System.out.println("Files " + _w);
+			// System.out.println("Files " + _h);
 			return _w;
+		} else if (mode == 2) {
+			// System.out.println("Files " + _w);
+			return _h;
 		}
 		return -1;
+	}
+
+	public int getDepth() {
+		return getDepth(mode);
 	}
 
 	/**
@@ -460,7 +472,7 @@ public class ImageStack extends Observable {
 		}
 
 		if (mode == 0) {
-			return _dicom_files.get(_active).get_scaled_data();
+			return _dicom_files.get(activeImage).get_scaled_data();
 		} else if (mode == 1) {
 			byte[] sagitalPictureData = new byte[_h * _dicom_files.size()];
 
@@ -470,7 +482,7 @@ public class ImageStack extends Observable {
 
 				for (int j = 0; j < _h; j++) {
 
-					byte b = pictureData[j * _w + _active];
+					byte b = pictureData[j * _w + activeImage];
 					sagitalPictureData[j + i * _h] = b;
 				}
 
@@ -482,8 +494,8 @@ public class ImageStack extends Observable {
 				DiFile diFile = _dicom_files.get(i);
 				byte[] pictureData = diFile.get_scaled_data();
 				for (int j = 0; j < _h; j++) {
-					frontalPictureData[j + i * _h] = pictureData[_active * _w
-							+ j];
+					frontalPictureData[j + i * _h] = pictureData[activeImage
+							* _w + j];
 				}
 
 			}
@@ -496,31 +508,26 @@ public class ImageStack extends Observable {
 	public BufferedImage getImage(int number, int mode) {
 		byte[] pixData = getPictureData(number, mode);
 
-		int max = 1024; // Math.max(buf.getHeight(), buf.getWidth())
+		int max = 1024; 
 		BufferedImage buf = new BufferedImage(max, max,
 				BufferedImage.TYPE_INT_ARGB);
 
-
-
-		// System.out.println(data.length + " " + bg_pixels.length);
-		// i/getWindowWidth=x/max
-		
-		System.out.println("size: " + pixData.length);
+		int x, y, pixel, index;
+		byte data;
 
 		for (int i = 0; i < max; i++) {
+			y = (int) (i * (getImageHeight(mode) / (double) max));
 			for (int j = 0; j < max; j++) {
-				int index = (int) (i
-						* ((double) max / getImageWidth(mode)) )
-						+ (int) (j * ((double) max / getImageHeight(mode)));
-				
-				if(index >= pixData.length){
-					index =pixData.length-1;
-					System.err.println("error");
-				}
-				
-				byte data = pixData[index];
+				x = (int) (j * getImageWidth(mode) / (double) max);
+				 index = y * getImageWidth(mode) + x;
 
-				int pixel = 0x80000000 | ((data & 0xff) | 0xff000000
+				if (index >= pixData.length) {
+					index = pixData.length - 1;
+				}
+
+				data = pixData[index];
+
+				pixel = 0x80000000|((data & 0xff) | 0xff000000
 						| (data & 0xff) << 8 | (data & 0xff) << 16);
 				buf.setRGB(j, i, pixel);
 			}

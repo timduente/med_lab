@@ -238,21 +238,21 @@ public class Viewport3d extends Viewport implements Observer {
 		} else {
 			img_trans = _slices.getImage(_slices.getNumberOfImages() / 2, 0);
 		}
-		
+
 		ImageComponent2D i2d_trans = new ImageComponent2D(
 				ImageComponent2D.FORMAT_RGBA, img_trans);
 
-		Texture2D tex_trans = new Texture2D(Texture2D.BASE_LEVEL, Texture2D.RGBA,
-				img_trans.getWidth(), img_trans.getHeight());
+		Texture2D tex_trans = new Texture2D(Texture2D.BASE_LEVEL,
+				Texture2D.RGBA, img_trans.getWidth(), img_trans.getHeight());
 
 		tex_trans.setImage(0, i2d_trans);
-		
+
 		if (view_mode == 1) {
 			img_sag = _slices.getImage(_slices.getActiveImageID(), 1);
 		} else {
-			img_sag = _slices.getImage(0, 1);
+			img_sag = _slices.getImage(_slices.getDepth(1) / 2, 1);
 		}
-		
+
 		ImageComponent2D i2d_sag = new ImageComponent2D(
 				ImageComponent2D.FORMAT_RGBA, img_sag);
 
@@ -260,45 +260,57 @@ public class Viewport3d extends Viewport implements Observer {
 				img_sag.getWidth(), img_sag.getHeight());
 
 		tex_sag.setImage(0, i2d_sag);
-		
+
 		if (view_mode == 2) {
-			img_front = _slices.getImage(_slices.getActiveImageID(), 0);
+			img_front = _slices.getImage(_slices.getActiveImageID(), 2);
 		} else {
-			img_front = _slices.getImage(0, 0);
+			img_front = _slices.getImage(_slices.getDepth(2) / 2, 2);
 		}
 
 		ImageComponent2D i2d_front = new ImageComponent2D(
 				ImageComponent2D.FORMAT_RGBA, img_front);
 
-		Texture2D tex_front = new Texture2D(Texture2D.BASE_LEVEL, Texture2D.RGBA,
-				img_front.getWidth(), img_front.getHeight());
+		Texture2D tex_front = new Texture2D(Texture2D.BASE_LEVEL,
+				Texture2D.RGBA, img_front.getWidth(), img_front.getHeight());
 
 		tex_front.setImage(0, i2d_front);
 
 		TextureAttributes ta = new TextureAttributes();
-		ta.setTextureMode(TextureAttributes.BLEND);
+		ta.setTextureMode(TextureAttributes.COMBINE);
+
+		ColoringAttributes color_ca = new ColoringAttributes();
+		color_ca.setColor(new Color3f(1.0f, 1.0f, 1.0f));
 
 		Appearance ap_trans = new Appearance();
 
 		PolygonAttributes polygonAttributs = new PolygonAttributes();
 		polygonAttributs.setCullFace(PolygonAttributes.CULL_NONE);
 		polygonAttributs.setPolygonMode(PolygonAttributes.POLYGON_FILL);
+		TransparencyAttributes tpAtt = new TransparencyAttributes(
+				TransparencyAttributes.BLENDED, .5f);
 
 		ap_trans.setTextureAttributes(ta);
 		ap_trans.setPolygonAttributes(polygonAttributs);
 		ap_trans.setTexture(tex_trans);
-//		ap_trans.setTransparencyAttributes(new TransparencyAttributes(
-//				TransparencyAttributes.BLENDED, 0.5f));
+		ap_trans.setTransparencyAttributes(tpAtt);
+		ap_trans.setColoringAttributes(color_ca);
 
 		Appearance ap_sag = new Appearance();
 		ap_sag.setPolygonAttributes(polygonAttributs);
 		ap_sag.setTextureAttributes(ta);
 		ap_sag.setTexture(tex_sag);
-		
-		
+		ap_sag.setTransparencyAttributes(tpAtt);
+		ap_sag.setColoringAttributes(color_ca);
+
+		Appearance ap_front = new Appearance();
+		ap_front.setPolygonAttributes(polygonAttributs);
+		ap_front.setTextureAttributes(ta);
+		ap_front.setTexture(tex_front);
+		ap_front.setTransparencyAttributes(tpAtt);
+		ap_front.setColoringAttributes(color_ca);
 
 		shapes.put("Orthoslices_sag", new Shape3D(sag_plane, ap_sag));
-		shapes.put("Orthoslices_fron", new Shape3D(fron_plane, ap_sag));
+		shapes.put("Orthoslices_fron", new Shape3D(fron_plane, ap_front));
 		shapes.put("Orthoslices_trans", new Shape3D(trans_plane, ap_trans));
 	}
 
@@ -393,7 +405,8 @@ public class Viewport3d extends Viewport implements Observer {
 	 */
 	public void update_view() {
 		_panel3d.createScene();
-		///this.addOrthoSlices();
+		if (_slices.loadingFinished())
+			this.addOrthoSlices();
 	}
 
 	public void changeN(int n) {
@@ -446,7 +459,7 @@ public class Viewport3d extends Viewport implements Observer {
 		}
 
 		if (m._type == Message.M_NEW_ACTIVE_IMAGE) {
-			//changeSlices();
+			// changeSlices();
 			update_view();
 		}
 	}
