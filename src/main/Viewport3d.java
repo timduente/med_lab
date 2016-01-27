@@ -50,6 +50,8 @@ import com.sun.j3d.utils.universe.SimpleUniverse;
 @SuppressWarnings("serial")
 public class Viewport3d extends Viewport implements Observer {
 
+	int mode = 0;
+
 	Viewport2d v2d;
 
 	public void setV2d(Viewport2d v2d) {
@@ -220,10 +222,10 @@ public class Viewport3d extends Viewport implements Observer {
 
 		Shape3D sag_shape = new Shape3D(sag_plane, ap_sag);
 		sag_shape.setCapability(Shape3D.ALLOW_GEOMETRY_WRITE);
-		
+
 		Shape3D fron_shape = new Shape3D(fron_plane, ap_front);
 		fron_shape.setCapability(Shape3D.ALLOW_GEOMETRY_WRITE);
-		
+
 		Shape3D trans_shape = new Shape3D(trans_plane, ap_trans);
 		trans_shape.setCapability(Shape3D.ALLOW_GEOMETRY_WRITE);
 
@@ -232,22 +234,7 @@ public class Viewport3d extends Viewport implements Observer {
 		shapes.put("Orthoslices_trans", trans_shape);
 	}
 
-	private void addOrthoSlices() {
-
-//		System.out.println("Adding orthoSlices");
-		if (shapes.containsKey("OrthoSlices_trans")) {
-			shapes.remove("OrthoSlices_trans");
-			if (shapes.containsKey("Orthoslices_sag")) {
-				shapes.remove("OrthoSlices_sag");
-				if (shapes.containsKey("Orthoslices_fron")) {
-					shapes.remove("OrthoSlices_fron");
-				}
-			}
-		}
-
-
-		int view_mode = _slices.getMode();
-
+	private void addOrthoSlices(int lastMode, int newMode, boolean init) {
 		float layer = (_slices.getActiveImageID() - _slices.getDepth() / 2.0f)
 				/ _slices.getDepth();
 
@@ -263,42 +250,67 @@ public class Viewport3d extends Viewport implements Observer {
 
 		float range = 0.5f;
 
-	// System.out.println("I am in "
-		// + ((view_mode == 0) ? "transversal"
-		// : (view_mode == 1) ? "sagital" : "frontal")
-		// + " viewmode and the active image is: "
-		// + _slices.getActiveImageID() + " while the layer is: " + layer);
+		if (init) {
+			initFront(range, newMode, layer);
+			initSag(range, newMode, layer);
+			initTrans(range, newMode, layer);
+			return;
+		}
 
-//		System.out.println("I am in "
-//				+ ((view_mode == 0) ? "transversal"
-//						: (view_mode == 1) ? "sagital" : "frontal")
-//				+ " viewmode and the active image is: "
-//				+ _slices.getActiveImageID() + " while the layer is: " + layer);
+		initOrtho(newMode, range, newMode, layer);
+		if (lastMode != newMode) {
+			initOrtho(lastMode, range, newMode, layer);
+		}
 
+	}
+
+	private void initOrtho(int ortho, float range, int view_mode, float layer) {
+		if (ortho == 0) {
+			initTrans(range, view_mode, layer);
+		} else if (ortho == 1) {
+			initSag(range, view_mode, layer);
+		} else if (ortho == 2) {
+			initFront(range, view_mode, layer);
+		}
+	}
+
+	private void initSag(float range, int view_mode, float layer) {
+
+		BufferedImage img_sag;
+		Point3f[] sag_slice = {
+				new Point3f((view_mode == 1) ? layer : 0.0f, range, range),
+				new Point3f((view_mode == 1) ? layer : 0.0f, -range, range),
+				new Point3f((view_mode == 1) ? layer : 0.0f, -range, -range),
+				new Point3f((view_mode == 1) ? layer : 0.0f, +range, -range) };
+
+		sag_plane.setCoordinates(0, sag_slice);
+
+		if (view_mode == 1) {
+			img_sag = _slices.getImage(_slices.getActiveImageID(), 1);
+		} else {
+			img_sag = _slices.getImage(_slices.getDepth(1) / 2, 1);
+		}
+
+		ImageComponent2D i2d_sag = new ImageComponent2D(
+				ImageComponent2D.FORMAT_RGBA, img_sag);
+
+		Texture2D tex_sag = new Texture2D(Texture2D.BASE_LEVEL, Texture2D.RGBA,
+				img_sag.getWidth(), img_sag.getHeight());
+
+		tex_sag.setImage(0, i2d_sag);
+		ap_sag.setTexture(tex_sag);
+	}
+
+	private void initTrans(float range, int view_mode, float layer) {
+		BufferedImage img_trans;
 
 		Point3f[] trans_slice = {
 				new Point3f(range, range, (view_mode == 0) ? layer : 0.0f),
 				new Point3f(-range, range, (view_mode == 0) ? layer : 0.0f),
 				new Point3f(-range, -range, (view_mode == 0) ? layer : 0.0f),
 				new Point3f(range, -range, (view_mode == 0) ? layer : 0.0f) };
-		Point3f[] sag_slice = {
-				new Point3f((view_mode == 1) ? layer : 0.0f, range, range),
-				new Point3f((view_mode == 1) ? layer : 0.0f, -range, range),
-				new Point3f((view_mode == 1) ? layer : 0.0f, -range, -range),
-				new Point3f((view_mode == 1) ? layer : 0.0f, +range, -range) };
-		Point3f[] fron_slice = {
-				new Point3f(range, (view_mode == 2) ? layer : 0.0f, range),
-				new Point3f(-range, (view_mode == 2) ? layer : 0.0f, range),
-				new Point3f(-range, (view_mode == 2) ? layer : 0.0f, -range),
-				new Point3f(+range, (view_mode == 2) ? layer : 0.0f, -range) };
 
 		trans_plane.setCoordinates(0, trans_slice);
-		sag_plane.setCoordinates(0, sag_slice);
-		fron_plane.setCoordinates(0, fron_slice);
-
-		BufferedImage img_trans;
-		BufferedImage img_sag;
-		BufferedImage img_front;
 
 		if (view_mode == 0) {
 			img_trans = _slices.getImage(_slices.getActiveImageID(), 0);
@@ -314,19 +326,20 @@ public class Viewport3d extends Viewport implements Observer {
 
 		tex_trans.setImage(0, i2d_trans);
 
-		if (view_mode == 1) {
-			img_sag = _slices.getImage(_slices.getActiveImageID(), 1);
-		} else {
-			img_sag = _slices.getImage(_slices.getDepth(1) / 2, 1);
-		}
+		ap_trans.setTexture(tex_trans);
 
-		ImageComponent2D i2d_sag = new ImageComponent2D(
-				ImageComponent2D.FORMAT_RGBA, img_sag);
+	}
 
-		Texture2D tex_sag = new Texture2D(Texture2D.BASE_LEVEL, Texture2D.RGBA,
-				img_sag.getWidth(), img_sag.getHeight());
+	private void initFront(float range, int view_mode, float layer) {
+		Point3f[] fron_slice = {
+				new Point3f(range, (view_mode == 2) ? layer : 0.0f, range),
+				new Point3f(-range, (view_mode == 2) ? layer : 0.0f, range),
+				new Point3f(-range, (view_mode == 2) ? layer : 0.0f, -range),
+				new Point3f(+range, (view_mode == 2) ? layer : 0.0f, -range) };
 
-		tex_sag.setImage(0, i2d_sag);
+		fron_plane.setCoordinates(0, fron_slice);
+
+		BufferedImage img_front;
 
 		if (view_mode == 2) {
 			img_front = _slices.getImage(_slices.getActiveImageID(), 2);
@@ -342,10 +355,7 @@ public class Viewport3d extends Viewport implements Observer {
 
 		tex_front.setImage(0, i2d_front);
 
-		ap_trans.setTexture(tex_trans);
-		ap_sag.setTexture(tex_sag);
 		ap_front.setTexture(tex_front);
-
 	}
 
 	private boolean addPoint(Point3f point) {
@@ -445,8 +455,7 @@ public class Viewport3d extends Viewport implements Observer {
 	 */
 	public void update_view() {
 		_panel3d.createScene();
-		if (_slices.loadingFinished())
-			this.addOrthoSlices();
+		addOrthoSlices(mode, mode, false);
 	}
 
 	public void changeN(int n) {
@@ -456,16 +465,7 @@ public class Viewport3d extends Viewport implements Observer {
 			Segment seg = segs.nextElement();
 			addPoints(seg);
 		}
-		/* TODO: Temporary: */
-		changeSlices();
-		// END TEMP
-
 		update_view();
-	}
-
-	// TODO: Search for a meaningfull place to be called
-	public void changeSlices() {
-		this.addOrthoSlices();
 	}
 
 	/**
@@ -499,8 +499,21 @@ public class Viewport3d extends Viewport implements Observer {
 		}
 
 		if (m._type == Message.M_NEW_ACTIVE_IMAGE) {
-			// changeSlices();
 			update_view();
 		}
+		
+		if(m._type == Message.M_LOADING_IMAGES_FINISHED){
+			addOrthoSlices(mode, mode, true);
+			update_view();
+		}
+
+	}
+
+	public void setViewMode(int mode) {
+		int oldMode = this.mode;
+		this.mode = mode;
+		addOrthoSlices(oldMode, mode, false);
+		
+
 	}
 }

@@ -37,7 +37,7 @@ public class ImageStack extends Observable {
 	private int _w, _h, _active;
 	private String pixelDataFormat;
 
-	private boolean loadFinished = false;
+//	private boolean loadFinished = false;
 
 	private int bytesPerPixel, bitsStored;
 
@@ -105,9 +105,9 @@ public class ImageStack extends Observable {
 		return _instance;
 	}
 
-	public boolean loadingFinished() {
-		return loadFinished;
-	}
+//	public boolean loadingFinished() {
+//		return loadFinished;
+//	}
 
 	/**
 	 * Reads all DICOM files from the given directory. All files are checked for
@@ -117,7 +117,6 @@ public class ImageStack extends Observable {
 	 *            string containing the directory name.
 	 */
 	public void initFromDirectory(String dir_name) {
-		loadFinished = false;
 		_dir_name = dir_name;
 		_w = 0;
 		_h = 0;
@@ -247,7 +246,9 @@ public class ImageStack extends Observable {
 				}
 
 				progress_win.setVisible(false);
-				loadFinished = true;
+				
+				setChanged();
+				notifyObservers(new Message(Message.M_LOADING_IMAGES_FINISHED));
 			}
 		};
 
