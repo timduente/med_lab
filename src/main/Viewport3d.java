@@ -234,6 +234,18 @@ public class Viewport3d extends Viewport implements Observer {
 
 	private void addOrthoSlices() {
 
+//		System.out.println("Adding orthoSlices");
+		if (shapes.containsKey("OrthoSlices_trans")) {
+			shapes.remove("OrthoSlices_trans");
+			if (shapes.containsKey("Orthoslices_sag")) {
+				shapes.remove("OrthoSlices_sag");
+				if (shapes.containsKey("Orthoslices_fron")) {
+					shapes.remove("OrthoSlices_fron");
+				}
+			}
+		}
+
+
 		int view_mode = _slices.getMode();
 
 		float layer = (_slices.getActiveImageID() - _slices.getDepth() / 2.0f)
@@ -251,11 +263,18 @@ public class Viewport3d extends Viewport implements Observer {
 
 		float range = 0.5f;
 
-		// System.out.println("I am in "
+	// System.out.println("I am in "
 		// + ((view_mode == 0) ? "transversal"
 		// : (view_mode == 1) ? "sagital" : "frontal")
 		// + " viewmode and the active image is: "
 		// + _slices.getActiveImageID() + " while the layer is: " + layer);
+
+//		System.out.println("I am in "
+//				+ ((view_mode == 0) ? "transversal"
+//						: (view_mode == 1) ? "sagital" : "frontal")
+//				+ " viewmode and the active image is: "
+//				+ _slices.getActiveImageID() + " while the layer is: " + layer);
+
 
 		Point3f[] trans_slice = {
 				new Point3f(range, range, (view_mode == 0) ? layer : 0.0f),
