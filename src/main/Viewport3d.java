@@ -113,6 +113,7 @@ public class Viewport3d extends Viewport implements Observer {
 			tGroup.addChild(mouseBeh2);
 
 			_scene.addChild(tGroup);
+			initOrthoSlices();
 
 			createScene();
 
@@ -120,25 +121,23 @@ public class Viewport3d extends Viewport implements Observer {
 
 		public void createScene() {
 
-			if (bgroup != null) {
-				bgroup.detach();
-				tGroup.removeChild(bgroup);
-				bgroup.removeAllChildren();
+			if (bgroup == null) {
+				bgroup = new BranchGroup();
+				bgroup.setCapability(BranchGroup.ALLOW_CHILDREN_EXTEND);
+				tGroup.addChild(bgroup);
 			}
 
 			if (shapes.size() > 0) {
-
-				bgroup = new BranchGroup();
-				bgroup.setCapability(BranchGroup.ALLOW_DETACH);
-
 				Enumeration<Shape3D> elements = shapes.elements();
 				while (elements.hasMoreElements()) {
 					Shape3D shape = elements.nextElement();
-					bgroup.addChild(shape);
 
+					if (shape.getParent() == null) {
+						BranchGroup b = new BranchGroup();
+						b.addChild(shape);
+						bgroup.addChild(b);
+					}
 				}
-
-				tGroup.addChild(bgroup);
 			}
 
 			if (!_scene.isCompiled()) {
@@ -148,21 +147,95 @@ public class Viewport3d extends Viewport implements Observer {
 		}
 	}
 
+	QuadArray trans_plane;
+	QuadArray sag_plane;
+	QuadArray fron_plane;
+
+	Appearance ap_trans;
+	Appearance ap_sag;
+	Appearance ap_front;
+
+	private void initOrthoSlices() {
+		trans_plane = new QuadArray(4, QuadArray.COORDINATES
+				| GeometryArray.TEXTURE_COORDINATE_2);
+		sag_plane = new QuadArray(4, QuadArray.COORDINATES
+				| GeometryArray.TEXTURE_COORDINATE_2);
+		fron_plane = new QuadArray(4, QuadArray.COORDINATES
+				| GeometryArray.TEXTURE_COORDINATE_2);
+
+		trans_plane.setCapability(GeometryArray.ALLOW_COORDINATE_WRITE);
+		sag_plane.setCapability(GeometryArray.ALLOW_COORDINATE_WRITE);
+		fron_plane.setCapability(GeometryArray.ALLOW_COORDINATE_WRITE);
+
+		trans_plane.setTextureCoordinate(0, 0, new TexCoord2f(1.0f, 0.0f));
+		trans_plane.setTextureCoordinate(0, 1, new TexCoord2f(0.0f, 0.0f));
+		trans_plane.setTextureCoordinate(0, 2, new TexCoord2f(0.0f, 1.0f));
+		trans_plane.setTextureCoordinate(0, 3, new TexCoord2f(1.0f, 1.0f));
+
+		sag_plane.setTextureCoordinate(0, 0, new TexCoord2f(1.0f, 0.0f));
+		sag_plane.setTextureCoordinate(0, 1, new TexCoord2f(0.0f, 0.0f));
+		sag_plane.setTextureCoordinate(0, 2, new TexCoord2f(0.0f, 1.0f));
+		sag_plane.setTextureCoordinate(0, 3, new TexCoord2f(1.0f, 1.0f));
+
+		fron_plane.setTextureCoordinate(0, 0, new TexCoord2f(1.0f, 0.0f));
+		fron_plane.setTextureCoordinate(0, 1, new TexCoord2f(0.0f, 0.0f));
+		fron_plane.setTextureCoordinate(0, 2, new TexCoord2f(0.0f, 1.0f));
+		fron_plane.setTextureCoordinate(0, 3, new TexCoord2f(1.0f, 1.0f));
+
+		ap_trans = new Appearance();
+		ap_sag = new Appearance();
+		ap_front = new Appearance();
+
+		TextureAttributes ta = new TextureAttributes();
+		ta.setTextureMode(TextureAttributes.COMBINE);
+
+		ColoringAttributes color_ca = new ColoringAttributes();
+		color_ca.setColor(new Color3f(1.0f, 1.0f, 1.0f));
+
+		PolygonAttributes polygonAttributs = new PolygonAttributes();
+		polygonAttributs.setCullFace(PolygonAttributes.CULL_NONE);
+		polygonAttributs.setPolygonMode(PolygonAttributes.POLYGON_FILL);
+		TransparencyAttributes tpAtt = new TransparencyAttributes(
+				TransparencyAttributes.BLENDED, .4f,
+				TransparencyAttributes.BLEND_SRC_ALPHA,
+				TransparencyAttributes.BLEND_ONE);
+
+		ap_trans.setTextureAttributes(ta);
+		ap_trans.setPolygonAttributes(polygonAttributs);
+		ap_trans.setTransparencyAttributes(tpAtt);
+		ap_trans.setColoringAttributes(color_ca);
+		ap_trans.setCapability(Appearance.ALLOW_TEXTURE_WRITE);
+
+		ap_sag.setPolygonAttributes(polygonAttributs);
+		ap_sag.setTextureAttributes(ta);
+		ap_sag.setTransparencyAttributes(tpAtt);
+		ap_sag.setColoringAttributes(color_ca);
+		ap_sag.setCapability(Appearance.ALLOW_TEXTURE_WRITE);
+
+		ap_front.setPolygonAttributes(polygonAttributs);
+		ap_front.setTextureAttributes(ta);
+		ap_front.setTransparencyAttributes(tpAtt);
+		ap_front.setColoringAttributes(color_ca);
+		ap_front.setCapability(Appearance.ALLOW_TEXTURE_WRITE);
+
+		Shape3D sag_shape = new Shape3D(sag_plane, ap_sag);
+		sag_shape.setCapability(Shape3D.ALLOW_GEOMETRY_WRITE);
+		
+		Shape3D fron_shape = new Shape3D(fron_plane, ap_front);
+		fron_shape.setCapability(Shape3D.ALLOW_GEOMETRY_WRITE);
+		
+		Shape3D trans_shape = new Shape3D(trans_plane, ap_trans);
+		trans_shape.setCapability(Shape3D.ALLOW_GEOMETRY_WRITE);
+
+		shapes.put("Orthoslices_sag", sag_shape);
+		shapes.put("Orthoslices_fron", fron_shape);
+		shapes.put("Orthoslices_trans", trans_shape);
+	}
+
 	private void addOrthoSlices() {
-		System.out.println("Adding orthoSlices");
-		if (shapes.containsKey("OrthoSlices_trans")) {
-			shapes.remove("OrthoSlices_trans");
-			if (shapes.containsKey("Orthoslices_sag")) {
-				shapes.remove("OrthoSlices_sag");
-				if (shapes.containsKey("Orthoslices_fron")) {
-					shapes.remove("OrthoSlices_fron");
-				}
-			}
-		}
 
 		int view_mode = _slices.getMode();
 
-		float range = -1;
 		float layer = (_slices.getActiveImageID() - _slices.getDepth() / 2.0f)
 				/ _slices.getDepth();
 
@@ -176,13 +249,13 @@ public class Viewport3d extends Viewport implements Observer {
 		 * 
 		 **/
 
-		range = 0.5f;
+		float range = 0.5f;
 
-		System.out.println("I am in "
-				+ ((view_mode == 0) ? "transversal"
-						: (view_mode == 1) ? "sagital" : "frontal")
-				+ " viewmode and the active image is: "
-				+ _slices.getActiveImageID() + " while the layer is: " + layer);
+		// System.out.println("I am in "
+		// + ((view_mode == 0) ? "transversal"
+		// : (view_mode == 1) ? "sagital" : "frontal")
+		// + " viewmode and the active image is: "
+		// + _slices.getActiveImageID() + " while the layer is: " + layer);
 
 		Point3f[] trans_slice = {
 				new Point3f(range, range, (view_mode == 0) ? layer : 0.0f),
@@ -200,33 +273,9 @@ public class Viewport3d extends Viewport implements Observer {
 				new Point3f(-range, (view_mode == 2) ? layer : 0.0f, -range),
 				new Point3f(+range, (view_mode == 2) ? layer : 0.0f, -range) };
 
-		QuadArray trans_plane = new QuadArray(trans_slice.length,
-				QuadArray.COORDINATES | GeometryArray.TEXTURE_COORDINATE_2);
 		trans_plane.setCoordinates(0, trans_slice);
-
-		trans_plane.setTextureCoordinate(0, 0, new TexCoord2f(1.0f, 0.0f));
-		trans_plane.setTextureCoordinate(0, 1, new TexCoord2f(0.0f, 0.0f));
-		trans_plane.setTextureCoordinate(0, 2, new TexCoord2f(0.0f, 1.0f));
-		trans_plane.setTextureCoordinate(0, 3, new TexCoord2f(1.0f, 1.0f));
-
-		QuadArray sag_plane = new QuadArray(sag_slice.length,
-				QuadArray.COORDINATES | GeometryArray.TEXTURE_COORDINATE_2);
 		sag_plane.setCoordinates(0, sag_slice);
-
-		sag_plane.setTextureCoordinate(0, 0, new TexCoord2f(1.0f, 0.0f));
-		sag_plane.setTextureCoordinate(0, 1, new TexCoord2f(0.0f, 0.0f));
-		sag_plane.setTextureCoordinate(0, 2, new TexCoord2f(0.0f, 1.0f));
-		sag_plane.setTextureCoordinate(0, 3, new TexCoord2f(1.0f, 1.0f));
-
-		QuadArray fron_plane = new QuadArray(fron_slice.length,
-				QuadArray.COORDINATES | GeometryArray.TEXTURE_COORDINATE_2);
-
 		fron_plane.setCoordinates(0, fron_slice);
-
-		fron_plane.setTextureCoordinate(0, 0, new TexCoord2f(1.0f, 0.0f));
-		fron_plane.setTextureCoordinate(0, 1, new TexCoord2f(0.0f, 0.0f));
-		fron_plane.setTextureCoordinate(0, 2, new TexCoord2f(0.0f, 1.0f));
-		fron_plane.setTextureCoordinate(0, 3, new TexCoord2f(1.0f, 1.0f));
 
 		BufferedImage img_trans;
 		BufferedImage img_sag;
@@ -274,43 +323,10 @@ public class Viewport3d extends Viewport implements Observer {
 
 		tex_front.setImage(0, i2d_front);
 
-		TextureAttributes ta = new TextureAttributes();
-		ta.setTextureMode(TextureAttributes.COMBINE);
-
-		ColoringAttributes color_ca = new ColoringAttributes();
-		color_ca.setColor(new Color3f(1.0f, 1.0f, 1.0f));
-
-		Appearance ap_trans = new Appearance();
-
-		PolygonAttributes polygonAttributs = new PolygonAttributes();
-		polygonAttributs.setCullFace(PolygonAttributes.CULL_NONE);
-		polygonAttributs.setPolygonMode(PolygonAttributes.POLYGON_FILL);
-		TransparencyAttributes tpAtt = new TransparencyAttributes(
-				TransparencyAttributes.BLENDED, .5f);
-
-		ap_trans.setTextureAttributes(ta);
-		ap_trans.setPolygonAttributes(polygonAttributs);
 		ap_trans.setTexture(tex_trans);
-		ap_trans.setTransparencyAttributes(tpAtt);
-		ap_trans.setColoringAttributes(color_ca);
-
-		Appearance ap_sag = new Appearance();
-		ap_sag.setPolygonAttributes(polygonAttributs);
-		ap_sag.setTextureAttributes(ta);
 		ap_sag.setTexture(tex_sag);
-		ap_sag.setTransparencyAttributes(tpAtt);
-		ap_sag.setColoringAttributes(color_ca);
-
-		Appearance ap_front = new Appearance();
-		ap_front.setPolygonAttributes(polygonAttributs);
-		ap_front.setTextureAttributes(ta);
 		ap_front.setTexture(tex_front);
-		ap_front.setTransparencyAttributes(tpAtt);
-		ap_front.setColoringAttributes(color_ca);
 
-		shapes.put("Orthoslices_sag", new Shape3D(sag_plane, ap_sag));
-		shapes.put("Orthoslices_fron", new Shape3D(fron_plane, ap_front));
-		shapes.put("Orthoslices_trans", new Shape3D(trans_plane, ap_trans));
 	}
 
 	private boolean addPoint(Point3f point) {
@@ -320,9 +336,10 @@ public class Viewport3d extends Viewport implements Observer {
 
 	private void addPoints(Segment seg) {
 		ArrayList<Point3f> pointsToShow = new ArrayList<Point3f>();
+		Shape3D shape = null;
 
 		if (shapes.containsKey(seg.getName())) {
-			shapes.remove(seg.getName());
+			shape = shapes.remove(seg.getName());
 		}
 
 		int w2 = seg.getMask(0).getWidth() / 2;
@@ -350,24 +367,6 @@ public class Viewport3d extends Viewport implements Observer {
 			return;
 		}
 
-		int color = seg.getColor();
-
-		int red = (color >> 16) & 0xff;
-		int green = (color >> 8) & 0xff;
-		int blue = color & 0xff;
-
-		ColoringAttributes color_ca = new ColoringAttributes();
-		// color_ca.setCapability(ColoringAttributes.ALLOW_COLOR_WRITE);
-
-		Appearance ap = new Appearance();
-		ap.setColoringAttributes(color_ca);
-		PointAttributes pAtts = new PointAttributes();
-		pAtts.setPointSize(1.0f);
-		ap.setPointAttributes(pAtts);
-
-		color_ca.setColor(new Color3f(red / 256.0f, green / 256.0f,
-				blue / 256.0f));
-
 		PointArray points = new PointArray(pointsToShow.size(),
 				PointArray.COORDINATES);
 
@@ -375,7 +374,30 @@ public class Viewport3d extends Viewport implements Observer {
 			points.setCoordinate(i, pointsToShow.get(i));
 		}
 
-		shapes.put(seg.getName(), new Shape3D(points, ap));
+		if (shape == null) {
+			int color = seg.getColor();
+
+			int red = (color >> 16) & 0xff;
+			int green = (color >> 8) & 0xff;
+			int blue = color & 0xff;
+
+			ColoringAttributes color_ca = new ColoringAttributes();
+
+			Appearance ap = new Appearance();
+			ap.setColoringAttributes(color_ca);
+			PointAttributes pAtts = new PointAttributes();
+			pAtts.setPointSize(1.0f);
+			ap.setPointAttributes(pAtts);
+
+			color_ca.setColor(new Color3f(red / 256.0f, green / 256.0f,
+					blue / 256.0f));
+			shape = new Shape3D(points, ap);
+			shape.setCapability(Shape3D.ALLOW_GEOMETRY_WRITE);
+			shapes.put(seg.getName(), shape);
+		} else {
+			shape.setGeometry(points);
+			shapes.put(seg.getName(), shape);
+		}
 
 	}
 
