@@ -68,9 +68,22 @@ public class Viewport3d extends Viewport implements Observer {
 
 	Hashtable<String, Shape3D> shapes = new Hashtable<String, Shape3D>();
 
+	ArrayList<Shape3D> volume_slices = new ArrayList<Shape3D>();
+
 	MouseWheelZoom mouseWheelZoom;
 	TransformGroup tGroup;
 	BranchGroup bgroup;
+
+	QuadArray[] ortho_planes = new QuadArray[3];
+	Appearance[] app_for_ortho_planes = new Appearance[3];
+
+	// QuadArray trans_plane; 0
+	// QuadArray sag_plane; 1
+	// QuadArray fron_plane; 2
+
+	// Appearance ap_trans; 0
+	// Appearance ap_sag; 1
+	// Appearance ap_front; 2
 
 	/**
 	 * Private class, implementing the GUI element for displaying the 3d data.
@@ -149,45 +162,73 @@ public class Viewport3d extends Viewport implements Observer {
 		}
 	}
 
-	QuadArray trans_plane;
-	QuadArray sag_plane;
-	QuadArray fron_plane;
+	private void initVolumeRendering() {
+		TextureAttributes ta = new TextureAttributes();
+		ta.setTextureMode(TextureAttributes.COMBINE);
 
-	Appearance ap_trans;
-	Appearance ap_sag;
-	Appearance ap_front;
+		ColoringAttributes color_ca = new ColoringAttributes();
+		color_ca.setColor(new Color3f(1.0f, 1.0f, 1.0f));
+
+		PolygonAttributes polygonAttributs = new PolygonAttributes();
+		polygonAttributs.setCullFace(PolygonAttributes.CULL_NONE);
+		polygonAttributs.setPolygonMode(PolygonAttributes.POLYGON_FILL);
+		TransparencyAttributes tpAtt = new TransparencyAttributes(
+				TransparencyAttributes.BLENDED, .4f,
+				TransparencyAttributes.BLEND_SRC_ALPHA,
+				TransparencyAttributes.BLEND_ONE);
+		
+		int width = 0;
+		int height = 0;
+		int depth = 0;
+		
+		for(int i = 0; i<width; i++){
+			Appearance ap = initAppearanceForOrthoPlanes(ta, color_ca, polygonAttributs, tpAtt);
+			QuadArray quad = initQuadArray();
+			Shape3D onePlane = new Shape3D(quad,
+					ap);
+			onePlane.setCapability(Shape3D.ALLOW_GEOMETRY_WRITE);
+			volume_slices.add(onePlane);
+		}
+		
+		for(int i = 0; i< height; i++){
+			Appearance ap = initAppearanceForOrthoPlanes(ta, color_ca, polygonAttributs, tpAtt);
+			QuadArray quad = initQuadArray();
+		}
+		
+		for(int i = 0; i<depth; i++){
+			Appearance ap = initAppearanceForOrthoPlanes(ta, color_ca, polygonAttributs, tpAtt);
+			QuadArray quad = initQuadArray();
+		}
+
+	}
+
+	private Appearance initAppearanceForOrthoPlanes(TextureAttributes ta,
+			ColoringAttributes color_ca, PolygonAttributes polygonAttributs,
+			TransparencyAttributes tpAtt) {
+		Appearance appearance = new Appearance();
+
+		appearance.setTextureAttributes(ta);
+		appearance.setPolygonAttributes(polygonAttributs);
+		appearance.setTransparencyAttributes(tpAtt);
+		appearance.setColoringAttributes(color_ca);
+		appearance.setCapability(Appearance.ALLOW_TEXTURE_WRITE);
+
+		return appearance;
+	}
+
+	private QuadArray initQuadArray() {
+		QuadArray quadArray = new QuadArray(4, QuadArray.COORDINATES
+				| GeometryArray.TEXTURE_COORDINATE_2);
+		quadArray.setCapability(GeometryArray.ALLOW_COORDINATE_WRITE);
+		quadArray.setTextureCoordinate(0, 0, new TexCoord2f(1.0f, 0.0f));
+		quadArray.setTextureCoordinate(0, 1, new TexCoord2f(0.0f, 0.0f));
+		quadArray.setTextureCoordinate(0, 2, new TexCoord2f(0.0f, 1.0f));
+		quadArray.setTextureCoordinate(0, 3, new TexCoord2f(1.0f, 1.0f));
+
+		return quadArray;
+	}
 
 	private void initOrthoSlices() {
-		trans_plane = new QuadArray(4, QuadArray.COORDINATES
-				| GeometryArray.TEXTURE_COORDINATE_2);
-		sag_plane = new QuadArray(4, QuadArray.COORDINATES
-				| GeometryArray.TEXTURE_COORDINATE_2);
-		fron_plane = new QuadArray(4, QuadArray.COORDINATES
-				| GeometryArray.TEXTURE_COORDINATE_2);
-
-		trans_plane.setCapability(GeometryArray.ALLOW_COORDINATE_WRITE);
-		sag_plane.setCapability(GeometryArray.ALLOW_COORDINATE_WRITE);
-		fron_plane.setCapability(GeometryArray.ALLOW_COORDINATE_WRITE);
-
-		trans_plane.setTextureCoordinate(0, 0, new TexCoord2f(1.0f, 0.0f));
-		trans_plane.setTextureCoordinate(0, 1, new TexCoord2f(0.0f, 0.0f));
-		trans_plane.setTextureCoordinate(0, 2, new TexCoord2f(0.0f, 1.0f));
-		trans_plane.setTextureCoordinate(0, 3, new TexCoord2f(1.0f, 1.0f));
-
-		sag_plane.setTextureCoordinate(0, 0, new TexCoord2f(1.0f, 0.0f));
-		sag_plane.setTextureCoordinate(0, 1, new TexCoord2f(0.0f, 0.0f));
-		sag_plane.setTextureCoordinate(0, 2, new TexCoord2f(0.0f, 1.0f));
-		sag_plane.setTextureCoordinate(0, 3, new TexCoord2f(1.0f, 1.0f));
-
-		fron_plane.setTextureCoordinate(0, 0, new TexCoord2f(1.0f, 0.0f));
-		fron_plane.setTextureCoordinate(0, 1, new TexCoord2f(0.0f, 0.0f));
-		fron_plane.setTextureCoordinate(0, 2, new TexCoord2f(0.0f, 1.0f));
-		fron_plane.setTextureCoordinate(0, 3, new TexCoord2f(1.0f, 1.0f));
-
-		ap_trans = new Appearance();
-		ap_sag = new Appearance();
-		ap_front = new Appearance();
-
 		TextureAttributes ta = new TextureAttributes();
 		ta.setTextureMode(TextureAttributes.COMBINE);
 
@@ -202,36 +243,22 @@ public class Viewport3d extends Viewport implements Observer {
 				TransparencyAttributes.BLEND_SRC_ALPHA,
 				TransparencyAttributes.BLEND_ONE);
 
-		ap_trans.setTextureAttributes(ta);
-		ap_trans.setPolygonAttributes(polygonAttributs);
-		ap_trans.setTransparencyAttributes(tpAtt);
-		ap_trans.setColoringAttributes(color_ca);
-		ap_trans.setCapability(Appearance.ALLOW_TEXTURE_WRITE);
+		Shape3D[] ortho_shapes = new Shape3D[3];
 
-		ap_sag.setPolygonAttributes(polygonAttributs);
-		ap_sag.setTextureAttributes(ta);
-		ap_sag.setTransparencyAttributes(tpAtt);
-		ap_sag.setColoringAttributes(color_ca);
-		ap_sag.setCapability(Appearance.ALLOW_TEXTURE_WRITE);
+		for (int i = 0; i < ortho_planes.length; i++) {
 
-		ap_front.setPolygonAttributes(polygonAttributs);
-		ap_front.setTextureAttributes(ta);
-		ap_front.setTransparencyAttributes(tpAtt);
-		ap_front.setColoringAttributes(color_ca);
-		ap_front.setCapability(Appearance.ALLOW_TEXTURE_WRITE);
+			app_for_ortho_planes[i] = initAppearanceForOrthoPlanes(ta,
+					color_ca, polygonAttributs, tpAtt);
+			ortho_planes[i] = initQuadArray();
 
-		Shape3D sag_shape = new Shape3D(sag_plane, ap_sag);
-		sag_shape.setCapability(Shape3D.ALLOW_GEOMETRY_WRITE);
+			ortho_shapes[i] = new Shape3D(ortho_planes[i],
+					app_for_ortho_planes[i]);
+			ortho_shapes[i].setCapability(Shape3D.ALLOW_GEOMETRY_WRITE);
+		}
 
-		Shape3D fron_shape = new Shape3D(fron_plane, ap_front);
-		fron_shape.setCapability(Shape3D.ALLOW_GEOMETRY_WRITE);
-
-		Shape3D trans_shape = new Shape3D(trans_plane, ap_trans);
-		trans_shape.setCapability(Shape3D.ALLOW_GEOMETRY_WRITE);
-
-		shapes.put("Orthoslices_sag", sag_shape);
-		shapes.put("Orthoslices_fron", fron_shape);
-		shapes.put("Orthoslices_trans", trans_shape);
+		shapes.put("Orthoslices_trans", ortho_shapes[0]);
+		shapes.put("Orthoslices_sag", ortho_shapes[1]);
+		shapes.put("Orthoslices_fron", ortho_shapes[2]);
 	}
 
 	private void addOrthoSlices(int lastMode, int newMode, boolean init) {
@@ -275,15 +302,14 @@ public class Viewport3d extends Viewport implements Observer {
 	}
 
 	private void initSag(float range, int view_mode, float layer) {
-
 		BufferedImage img_sag;
 		Point3f[] sag_slice = {
 				new Point3f((view_mode == 1) ? layer : 0.0f, range, range),
 				new Point3f((view_mode == 1) ? layer : 0.0f, -range, range),
 				new Point3f((view_mode == 1) ? layer : 0.0f, -range, -range),
-				new Point3f((view_mode == 1) ? layer : 0.0f, +range, -range) };
+				new Point3f((view_mode == 1) ? layer : 0.0f, range, -range) };
 
-		sag_plane.setCoordinates(0, sag_slice);
+		ortho_planes[1].setCoordinates(0, sag_slice);
 
 		if (view_mode == 1) {
 			img_sag = _slices.getImage(_slices.getActiveImageID(), 1);
@@ -298,7 +324,7 @@ public class Viewport3d extends Viewport implements Observer {
 				img_sag.getWidth(), img_sag.getHeight());
 
 		tex_sag.setImage(0, i2d_sag);
-		ap_sag.setTexture(tex_sag);
+		app_for_ortho_planes[1].setTexture(tex_sag);
 	}
 
 	private void initTrans(float range, int view_mode, float layer) {
@@ -310,7 +336,7 @@ public class Viewport3d extends Viewport implements Observer {
 				new Point3f(-range, -range, (view_mode == 0) ? layer : 0.0f),
 				new Point3f(range, -range, (view_mode == 0) ? layer : 0.0f) };
 
-		trans_plane.setCoordinates(0, trans_slice);
+		ortho_planes[0].setCoordinates(0, trans_slice);
 
 		if (view_mode == 0) {
 			img_trans = _slices.getImage(_slices.getActiveImageID(), 0);
@@ -326,7 +352,7 @@ public class Viewport3d extends Viewport implements Observer {
 
 		tex_trans.setImage(0, i2d_trans);
 
-		ap_trans.setTexture(tex_trans);
+		app_for_ortho_planes[0].setTexture(tex_trans);
 
 	}
 
@@ -337,7 +363,7 @@ public class Viewport3d extends Viewport implements Observer {
 				new Point3f(-range, (view_mode == 2) ? layer : 0.0f, -range),
 				new Point3f(+range, (view_mode == 2) ? layer : 0.0f, -range) };
 
-		fron_plane.setCoordinates(0, fron_slice);
+		ortho_planes[2].setCoordinates(0, fron_slice);
 
 		BufferedImage img_front;
 
@@ -355,7 +381,7 @@ public class Viewport3d extends Viewport implements Observer {
 
 		tex_front.setImage(0, i2d_front);
 
-		ap_front.setTexture(tex_front);
+		app_for_ortho_planes[2].setTexture(tex_front);
 	}
 
 	private boolean addPoint(Point3f point) {
@@ -501,8 +527,8 @@ public class Viewport3d extends Viewport implements Observer {
 		if (m._type == Message.M_NEW_ACTIVE_IMAGE) {
 			update_view();
 		}
-		
-		if(m._type == Message.M_LOADING_IMAGES_FINISHED){
+
+		if (m._type == Message.M_LOADING_IMAGES_FINISHED) {
 			addOrthoSlices(mode, mode, true);
 			update_view();
 		}
@@ -513,7 +539,5 @@ public class Viewport3d extends Viewport implements Observer {
 		int oldMode = this.mode;
 		this.mode = mode;
 		addOrthoSlices(oldMode, mode, false);
-		
-
 	}
 }
