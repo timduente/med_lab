@@ -34,8 +34,11 @@ public class ImageStack extends Observable {
 	private DefaultListModel<String> _window_names;
 	private Hashtable<String, SelectWindow> _windows;
 	private String _dir_name;
-	private int _w, _h, _active;
+	private int _w, _h;
 	private String pixelDataFormat;
+	
+	
+	private int[] active = new int[3]; //0 trans, 1 sag , 2 front
 
 //	private boolean loadFinished = false;
 
@@ -94,7 +97,11 @@ public class ImageStack extends Observable {
 		_windows = new Hashtable<String, SelectWindow>();
 		_window_names = new DefaultListModel<String>();
 		_dir_name = new String();
-		_active = 0;
+		
+		
+		active[0] = 0;
+		active[1] = 0;
+		active[2] = 0;
 		mode = 0;
 	}
 
@@ -104,10 +111,6 @@ public class ImageStack extends Observable {
 		}
 		return _instance;
 	}
-
-//	public boolean loadingFinished() {
-//		return loadFinished;
-//	}
 
 	/**
 	 * Reads all DICOM files from the given directory. All files are checked for
@@ -246,6 +249,10 @@ public class ImageStack extends Observable {
 				}
 
 				progress_win.setVisible(false);
+				
+				active[0] = 0;
+				active[1] = 0;
+				active[2] = 0;
 				
 				setChanged();
 				notifyObservers(new Message(Message.M_LOADING_IMAGES_FINISHED));
@@ -427,8 +434,13 @@ public class ImageStack extends Observable {
 	 * 
 	 * @return the currently active image
 	 */
+	
 	public int getActiveImageID() {
-		return _active;
+		return getActiveImageID(mode);
+	}
+	
+	public int getActiveImageID(int mode){
+		return active[mode];
 	}
 
 	/**
@@ -437,16 +449,22 @@ public class ImageStack extends Observable {
 	 * @param i
 	 *            the active image
 	 */
+	
 	public void setActiveImage(int i) {
-		_active = i;
-
+		setActiveImage(i, mode);
+	}
+	
+	public void setActiveImage(int i, int mode){
+		active[mode] = i;
+//		for(int j = 0; j<3; j++){
+//			System.out.println("mode " + j + " " + active[j]);
+//		}
 		setChanged();
 		notifyObservers(new Message(Message.M_NEW_ACTIVE_IMAGE, new Integer(i)));
 	}
 
 	public void setMode(int mode) {
 		this.mode = mode;
-		_active = 0;
 
 		setChanged();
 		if (mode == 0) {

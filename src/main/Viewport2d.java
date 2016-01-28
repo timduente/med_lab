@@ -379,7 +379,7 @@ public class Viewport2d extends Viewport implements Observer {
 					_slice_names.addElement(name);
 				}
 				reallocate();
-				_slices.setActiveImage(0);
+				_slices.setActiveImage(_slices.getActiveImageID());
 			} else {
 				String name = new String();
 				int num = _slice_names.getSize();
@@ -396,7 +396,7 @@ public class Viewport2d extends Viewport implements Observer {
 					// active
 					// (display it).
 					reallocate();
-					_slices.setActiveImage(0);
+					_slices.setActiveImage(_slices.getActiveImageID());
 				}
 			}
 		}
