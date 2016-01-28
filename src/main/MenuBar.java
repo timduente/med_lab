@@ -130,11 +130,13 @@ public class MenuBar extends JMenuBar {
 		item.addActionListener(toggleBGListener3d);
 		_menu3d.add(item);
 
-		item = new JCheckBoxMenuItem(new String("Show Ortho Slices"), true);
+		item = new JCheckBoxMenuItem(new String("Show Ortho Slices"), false);
+		item.addActionListener(orthosliceListener);
 		_menu3d.add(item);
 
 		item = new JCheckBoxMenuItem(new String("Show 2D Texture volume"),
 				false);
+		item.addActionListener(textureVolumeListener);
 		_menu3d.add(item);
 
 		_menu3d.addSeparator();
@@ -173,6 +175,37 @@ public class MenuBar extends JMenuBar {
 		add(_menu3d);
 		add(_menuTools);
 	}
+	
+	
+	ActionListener orthosliceListener = new ActionListener() {
+		public void actionPerformed(ActionEvent event) {
+			if (_v2d.currentFile() == null) {
+				JOptionPane.showMessageDialog(null,
+						"Fehler: Keine DICOM Datei geöffnet", "Inane error",
+						JOptionPane.ERROR_MESSAGE);
+				return;
+			}
+			boolean state = ((JCheckBoxMenuItem) event.getSource()).getState();
+			_v3d.enableOrthoslices(state);
+		}
+	};
+	
+	ActionListener textureVolumeListener = new ActionListener() {
+		public void actionPerformed(ActionEvent event) {
+			if (_v2d.currentFile() == null) {
+				JOptionPane.showMessageDialog(null,
+						"Fehler: Keine DICOM Datei geöffnet", "Inane error",
+						JOptionPane.ERROR_MESSAGE);
+				return;
+			}
+			boolean state = ((JCheckBoxMenuItem) event.getSource()).getState();
+			_v3d.enable2DTextureVolumeRendering(state);
+		}
+	};
+	
+	
+	
+	
 
 	/**
 	 * This function is called when someone chooses to load DICOM series.

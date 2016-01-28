@@ -54,6 +54,10 @@ public class Viewport3d extends Viewport implements Observer {
 
 	Viewport2d v2d;
 
+	boolean orthoEnabled = false;
+	boolean marchingCubeEnabled = false;
+	boolean TextureVolumeRenderingEnabled = false;
+
 	public void setV2d(Viewport2d v2d) {
 		this.v2d = v2d;
 	}
@@ -75,6 +79,7 @@ public class Viewport3d extends Viewport implements Observer {
 	BranchGroup bgroup;
 
 	BranchGroup volume2DRendering;
+	BranchGroup orthoNode;
 
 	QuadArray[] ortho_planes = new QuadArray[3];
 	Appearance[] app_for_ortho_planes = new Appearance[3];
@@ -132,8 +137,10 @@ public class Viewport3d extends Viewport implements Observer {
 			_scene.addChild(tGroup);
 
 			volume2DRendering = new BranchGroup();
+			volume2DRendering.setCapability(BranchGroup.ALLOW_DETACH);
 
-			initOrthoSlices();
+			orthoNode = new BranchGroup();
+			orthoNode.setCapability(BranchGroup.ALLOW_DETACH);
 
 			createScene();
 
@@ -144,6 +151,7 @@ public class Viewport3d extends Viewport implements Observer {
 			if (bgroup == null) {
 				bgroup = new BranchGroup();
 				bgroup.setCapability(BranchGroup.ALLOW_CHILDREN_EXTEND);
+				bgroup.setCapability(BranchGroup.ALLOW_CHILDREN_WRITE);
 				tGroup.addChild(bgroup);
 			}
 
@@ -158,10 +166,6 @@ public class Viewport3d extends Viewport implements Observer {
 						bgroup.addChild(b);
 					}
 				}
-//				if (volume2DRendering.getParent() == null){
-//					bgroup.addChild(volume2DRendering);
-//					System.out.println("VolumeRendering added");
-//				}
 			}
 
 			if (!_scene.isCompiled()) {
@@ -169,6 +173,34 @@ public class Viewport3d extends Viewport implements Observer {
 				_simple_u.addBranchGraph(_scene);
 			}
 		}
+	}
+
+	public void enableOrthoslices(boolean enable) {
+		orthoEnabled = enable;
+		if (enable) {
+			bgroup.addChild(orthoNode);
+		} else {
+			bgroup.removeChild(orthoNode);
+			orthoNode.detach();
+		}
+		update_view();
+	}
+
+	public void enableMarchingCube(boolean enable) {
+		marchingCubeEnabled = enable;
+		System.out.println("show marching cubes");
+		update_view();
+	}
+
+	public void enable2DTextureVolumeRendering(boolean enable) {
+		TextureVolumeRenderingEnabled = enable;
+		if (enable) {
+			bgroup.addChild(volume2DRendering);
+		} else {
+			bgroup.removeChild(volume2DRendering);
+			volume2DRendering.detach();
+		}
+		update_view();
 	}
 
 	private void initVolumeRendering() {
@@ -186,39 +218,17 @@ public class Viewport3d extends Viewport implements Observer {
 				TransparencyAttributes.BLEND_SRC_ALPHA,
 				TransparencyAttributes.BLEND_ONE);
 
-		int width = 0;
-		int height = 0;
-		int depth = 0;
-
 		float range = 0.5f;
-		
 
 		for (int i = 0; i < _slices.getDepth(0); i++) {
 			Appearance ap = initAppearanceForOrthoPlanes(ta, color_ca,
 					polygonAttributs, tpAtt);
 			QuadArray quad = initQuadArray();
 			Shape3D onePlane = new Shape3D(quad, ap);
-			// onePlane.setCapability(Shape3D.ALLOW_GEOMETRY_WRITE);
 			volume_slices.add(onePlane);
 			initArea(quad, ap, range, 0, i);
 			volume2DRendering.addChild(onePlane);
-			//System.out.println("child added");
 		}
-		
-		bgroup.addChild(volume2DRendering);
-
-		for (int i = 0; i < height; i++) {
-			Appearance ap = initAppearanceForOrthoPlanes(ta, color_ca,
-					polygonAttributs, tpAtt);
-			QuadArray quad = initQuadArray();
-		}
-
-		for (int i = 0; i < depth; i++) {
-			Appearance ap = initAppearanceForOrthoPlanes(ta, color_ca,
-					polygonAttributs, tpAtt);
-			QuadArray quad = initQuadArray();
-		}
-
 	}
 
 	private void initArea(QuadArray quad, Appearance ap, float range,
@@ -235,7 +245,7 @@ public class Viewport3d extends Viewport implements Observer {
 
 		quad.setCoordinates(0, slice);
 
-		img_trans = _slices.getImage(imageIndex, view_mode);
+		img_trans = _slices.getImage(imageIndex, view_mode, 0x04000000);
 
 		ImageComponent2D i2d = new ImageComponent2D(
 				ImageComponent2D.FORMAT_RGBA, img_trans);
@@ -301,11 +311,9 @@ public class Viewport3d extends Viewport implements Observer {
 			ortho_shapes[i] = new Shape3D(ortho_planes[i],
 					app_for_ortho_planes[i]);
 			ortho_shapes[i].setCapability(Shape3D.ALLOW_GEOMETRY_WRITE);
-		}
 
-		shapes.put("Orthoslices_trans", ortho_shapes[0]);
-		shapes.put("Orthoslices_sag", ortho_shapes[1]);
-		shapes.put("Orthoslices_fron", ortho_shapes[2]);
+			orthoNode.addChild(ortho_shapes[i]);
+		}
 	}
 
 	private void addOrthoSlices(int lastMode, int newMode, boolean init) {
@@ -359,9 +367,9 @@ public class Viewport3d extends Viewport implements Observer {
 		ortho_planes[1].setCoordinates(0, sag_slice);
 
 		if (view_mode == 1) {
-			img_sag = _slices.getImage(_slices.getActiveImageID(1), 1);
+			img_sag = _slices.getImage(_slices.getActiveImageID(1), 1, 0x80000000);
 		} else {
-			img_sag = _slices.getImage(_slices.getDepth(1) / 2, 1);
+			img_sag = _slices.getImage(_slices.getDepth(1) / 2, 1,0x80000000);
 		}
 
 		ImageComponent2D i2d_sag = new ImageComponent2D(
@@ -386,9 +394,9 @@ public class Viewport3d extends Viewport implements Observer {
 		ortho_planes[0].setCoordinates(0, trans_slice);
 
 		if (view_mode == 0) {
-			img_trans = _slices.getImage(_slices.getActiveImageID(), 0);
+			img_trans = _slices.getImage(_slices.getActiveImageID(), 0, 0x80000000);
 		} else {
-			img_trans = _slices.getImage(_slices.getNumberOfImages() / 2, 0);
+			img_trans = _slices.getImage(_slices.getNumberOfImages() / 2, 0, 0x80000000);
 		}
 
 		ImageComponent2D i2d_trans = new ImageComponent2D(
@@ -415,9 +423,9 @@ public class Viewport3d extends Viewport implements Observer {
 		BufferedImage img_front;
 
 		if (view_mode == 2) {
-			img_front = _slices.getImage(_slices.getActiveImageID(), 2);
+			img_front = _slices.getImage(_slices.getActiveImageID(), 2, 0x80000000);
 		} else {
-			img_front = _slices.getImage(_slices.getDepth(2) / 2, 2);
+			img_front = _slices.getImage(_slices.getDepth(2) / 2, 2, 0x80000000);
 		}
 
 		ImageComponent2D i2d_front = new ImageComponent2D(
@@ -528,7 +536,8 @@ public class Viewport3d extends Viewport implements Observer {
 	 */
 	public void update_view() {
 		_panel3d.createScene();
-		addOrthoSlices(mode, mode, false);
+		if (orthoEnabled)
+			addOrthoSlices(mode, mode, false);
 	}
 
 	public void changeN(int n) {
@@ -576,6 +585,7 @@ public class Viewport3d extends Viewport implements Observer {
 		}
 
 		if (m._type == Message.M_LOADING_IMAGES_FINISHED) {
+			initOrthoSlices();
 			addOrthoSlices(mode, mode, true);
 			initVolumeRendering();
 			update_view();
