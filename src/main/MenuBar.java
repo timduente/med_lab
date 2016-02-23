@@ -28,7 +28,7 @@ public class MenuBar extends JMenuBar {
 
 	private ToolRangeSelector toolRangeSelector;
 	private ToolWindowSelector toolWindowSelector;
-	private ToolRegionGrowSelector regionGrowSelector;
+	//private ToolRegionGrowSelector regionGrowSelector;
 	private ToolChangeN changeN;
 
 	// private JMenuItem item;

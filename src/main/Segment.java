@@ -32,6 +32,7 @@ public class Segment extends Observable {
 	public int get_max() {
 		return _max;
 	}
+	
 
 	private int _max;
 
@@ -113,7 +114,10 @@ public class Segment extends Observable {
 
 		System.out.println("x: " + x + " y: " + y + " z: " + pictureNum);
 		int value = slices.getDiFile(pictureNum).getPixel(x, y);
-		this._min = value; 
+		this._min = value;
+		this._max = v;
+		
+		
 		int high = (int) (value * (((v + 100)) / 100.0f));
 		int low = (int) (value * (((100 - v)) / 100.0f));
 

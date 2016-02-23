@@ -17,6 +17,7 @@ import javax.swing.event.*;
  */
 @SuppressWarnings("serial")
 public class ToolRangeSelector extends JPanel implements Observer {
+	private static final int START_VARIANCE = 10;
 	private int _min, _max, _variance;
 	private Segment _seg;
 	private JList<String> _seg_list;
@@ -24,7 +25,8 @@ public class ToolRangeSelector extends JPanel implements Observer {
 	private JLabel _range_sel_title, _min_label, _max_label;
 
 	/**
-	 * Default Constructor. Creates the GUI element and connects it to a segmentation.
+	 * Default Constructor. Creates the GUI element and connects it to a
+	 * segmentation.
 	 * 
 	 * @param slices
 	 *            the global image stack
@@ -33,8 +35,10 @@ public class ToolRangeSelector extends JPanel implements Observer {
 	 */
 	public ToolRangeSelector(Segment seg) {
 		_seg = seg;
-		
+
 		Voxel.vox.addObserver(this);
+
+		_variance = START_VARIANCE;
 
 		final ImageStack slices = ImageStack.getInstance();
 		JLabel seg_sel_title = new JLabel("Edit Segmentation");
@@ -46,32 +50,43 @@ public class ToolRangeSelector extends JPanel implements Observer {
 		_seg_list.addListSelectionListener(new ListSelectionListener() {
 			public void valueChanged(ListSelectionEvent e) {
 				int seg_index = _seg_list.getSelectedIndex();
-				String name = (String) (slices.getSegNames().getElementAt(seg_index));
+				String name = (String) (slices.getSegNames()
+						.getElementAt(seg_index));
 				// TODO: Here needs to be set if variance or minmax slider
 				// should be put!
 				if (!_seg.getName().equals(name)) {
 					_seg = slices.getSegment(name);
 
 					if (_seg.get_type().equals("range")) {
-						_range_sel_title.setText("Range Selector - " + _seg.getName());
-						int range_max = (int) Math.pow(2, slices.getBitsStored());
+						_range_sel_title.setText("Range Selector - "
+								+ _seg.getName());
+						int range_max = (int) Math.pow(2,
+								slices.getBitsStored());
 						_min = (int) Math.pow(2, slices.getBitsStored() - 1);
-						_min_slider.setMaximum((int) Math.pow(2, slices.getBitsStored()));
+						_min_slider.setMaximum((int) Math.pow(2,
+								slices.getBitsStored()));
 						_min_slider.setMinimum(0);
 						_min_slider.setValue(_seg.get_min());
 						_max_slider.setVisible(true);
 						_max_slider.setValue(_seg.get_max());
+						_min_label.setText("Min: ");
+						_max_label.setVisible(true);
 					} else if (_seg.get_type().equals("region")) {
 
-						_range_sel_title.setText("Region Selector - " + _seg.getName());
+						_range_sel_title.setText("Region Selector - "
+								+ _seg.getName());
 						_min_slider.setMaximum(100);
 						_min_slider.setMinimum(0);
 						// System.out.println(_seg.get_min());
-						_min_slider.setValue((int) (_seg.get_min() * 1.0f / 100)); // Region Segment
+						_min_slider.setValue((int) (_seg.get_min() * 1.0f / 100)); // Region
+																					// Segment
 						// has its
 						// variance in
 						// _min
+						
 						_max_slider.setVisible(false);
+						_min_label.setText("Variance: ");
+						_max_label.setVisible(false);
 						System.out.println("Min: " + _min_slider.getMinimum());
 						System.out.println("Max: " + _min_slider.getMaximum());
 						System.out.println("Val: " + _min_slider.getValue());
@@ -84,8 +99,10 @@ public class ToolRangeSelector extends JPanel implements Observer {
 		});
 
 		JScrollPane scrollPane = new JScrollPane(_seg_list);
-		scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+		scrollPane
+				.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+		scrollPane
+				.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 
 		_range_sel_title = new JLabel("Range Selector - " + _seg.getName());
 
@@ -106,11 +123,11 @@ public class ToolRangeSelector extends JPanel implements Observer {
 				JSlider source = (JSlider) e.getSource();
 				if (source.getValueIsAdjusting()) {
 					_min = (int) source.getValue();
-					// System.out.println("_min_slider stateChanged: " +
-					// _min);
+
 					if (_seg.get_type().equals("range")) {
 						changeRange(_min, _max, slices, _seg);
 					} else {
+						_variance = _min;
 						changeRange(_min, 0, slices, _seg);
 					}
 				}
@@ -165,17 +182,18 @@ public class ToolRangeSelector extends JPanel implements Observer {
 		c.gridx = 2;
 		c.gridy = 2;
 		this.add(_max_slider, c);
-		
-		
+
 		/** Ugly Hack following... **/
 		if (_seg.get_type().equals("region")) {
 
 			_range_sel_title.setText("Region Selector - " + _seg.getName());
 			_min_slider.setMaximum(100);
 			_min_slider.setMinimum(0);
-			// System.out.println(_seg.get_min());
-			_min_slider.setValue((int) (_seg.get_min() * 1.0f / 100)); // Region Segment has its variance in _min
+			_min_slider.setValue(START_VARIANCE); // Region Segment has its
+													// variance in _min
 			_max_slider.setVisible(false);
+			_min_label.setText("Variance");
+			_max_label.setVisible(false);
 		}
 	}
 
@@ -183,7 +201,8 @@ public class ToolRangeSelector extends JPanel implements Observer {
 		if (seg.get_type().equals("range")) {
 			seg.create_range_seg(min, max, slices);
 		} else {
-			_seg.create_regionGrow_seq(min, Voxel.vox.x, Voxel.vox.y, Voxel.vox.z, slices);
+			_seg.create_regionGrow_seq(min, Voxel.vox.x, Voxel.vox.y,
+					Voxel.vox.z, slices);
 		}
 	}
 
@@ -194,7 +213,8 @@ public class ToolRangeSelector extends JPanel implements Observer {
 		// }
 
 		System.out.println("changeRange");
-		_seg.create_regionGrow_seq(_variance, Voxel.vox.x, Voxel.vox.y, Voxel.vox.z, slices);
+		_seg.create_regionGrow_seq(_variance, Voxel.vox.x, Voxel.vox.y,
+				Voxel.vox.z, slices);
 	}
 
 	@Override
