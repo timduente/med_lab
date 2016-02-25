@@ -1,33 +1,41 @@
-package misc;
-
+package myTestCube;
 import java.util.BitSet;
 import java.util.LinkedList;
 
 import javax.media.j3d.TriangleArray;
 import javax.vecmath.Point3f;
 
-import misc.MarchingCubeLUT.points;
+import myTestCube.Main;
+import myTestCube.Main.points;
+
+
+
 
 public class Cube {
-	public byte corner;
+	public int corner;
 	// This list contains the enum points as an array of 3 each.
 	// Each plane/triangle is defined by eg. p45, 67, p56 => This way an order is introduced and it can be rotated
 	public LinkedList<points[]> lPlanes;
 	public TriangleArray[] planes;
 
-	public Cube(byte corner, LinkedList<points[]> lPlanes) {
+	public Cube(int corner, LinkedList<points[]> lPlanes) {
 		this.corner = corner;
 		this.lPlanes = lPlanes;
 		// TODO: Translate lPlanes to planes
+		planes = new TriangleArray[lPlanes.size()]; 
 		populateTriangleArray();
 	}
 	
 	public Cube invert() {
-		BitSet newCor = BitSet.valueOf(new byte[] { corner });
+		BitSet newCor = BitSet.valueOf(new byte[] { (byte) corner });
 		LinkedList<points[]> newPlanes = (LinkedList<points[]>) lPlanes.clone();
 
 		// Change bit value and points of plane
-		newCor.flip(0, newCor.length() - 1);
+		for(int i = 0; i < 8; i++)	{
+			newCor.flip(i);
+		}
+		System.out.println("cor1 " + Integer.toBinaryString(corner));
+		System.out.println("cor2 " + Integer.toBinaryString(newCor.toByteArray()[0]));
 
 		for (points[] pt : lPlanes) {
 			points[] threePoints = (points[]) pt.clone();
@@ -86,13 +94,13 @@ public class Cube {
 				}
 			}
 			planes[index] = new TriangleArray(3, TriangleArray.COORDINATES);
-			planes[index].setCoordinates(3, single);
+			planes[index].setCoordinates(0, single);
 			index++;
 		}
 	}
 
 	public Cube getNewFromRotXAxes(int rot) {
-		BitSet newCor = BitSet.valueOf(new byte[] { corner });
+		BitSet newCor = BitSet.valueOf(new byte[] { (byte) corner });
 		LinkedList<points[]> newPlanes = new LinkedList<points[]>();
 
 		// Change bit value and points of plane
@@ -161,7 +169,7 @@ public class Cube {
 	}
 
 	public Cube getNewFromRotYAxes(int rot) {
-		BitSet newCor = BitSet.valueOf(new byte[] { corner });
+		BitSet newCor = BitSet.valueOf(new byte[] { (byte) corner });
 		LinkedList<points[]> newPlanes = new LinkedList<points[]>();
 
 		// Change bit value and points of plane
@@ -230,7 +238,7 @@ public class Cube {
 	}
 
 	public Cube getNewFromRotZAxes(int rot) {
-		BitSet newCor = BitSet.valueOf(new byte[] { corner });
+		BitSet newCor = BitSet.valueOf(new byte[] { (byte) corner });
 		LinkedList<points[]> newPlanes = new LinkedList<points[]>();
 
 		// Change bit value and points of plane
