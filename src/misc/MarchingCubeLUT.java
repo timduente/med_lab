@@ -11,18 +11,23 @@ import javax.vecmath.Point3f;
 public class MarchingCubeLUT {
 	public Hashtable<Byte, GeometryArray[]> McLut = new Hashtable<Byte, GeometryArray[]>();
 
-	Point3f p01 = new Point3f(0.0f, -0.5f, -0.5f); // byte 0
-	Point3f p12 = new Point3f(0.0f, -0.5f, -0.5f);// byte 1
-	Point3f p23 = new Point3f(0.0f, -0.5f, -0.5f);// byte 2
-	Point3f p03 = new Point3f(0.0f, -0.5f, -0.5f);// byte 3
-	Point3f p45 = new Point3f(0.0f, -0.5f, -0.5f);// byte 4
-	Point3f p56 = new Point3f(0.0f, -0.5f, -0.5f);// byte5
-	Point3f p67 = new Point3f(0.0f, -0.5f, -0.5f);// byte 6
-	Point3f p47 = new Point3f(0.0f, -0.5f, -0.5f);// byte 7
-	Point3f p04 = new Point3f(0.0f, -0.5f, -0.5f);// byte 8
-	Point3f p15 = new Point3f(0.0f, -0.5f, -0.5f);// byte 9
-	Point3f p26 = new Point3f(0.0f, -0.5f, -0.5f);// byte 10
-	Point3f p37 = new Point3f(0.0f, -0.5f, -0.5f);// byte 11
+	public enum points{
+		p01, p12, p23, p03, p45, p56, p67, p47, p04, p15, p26, p37; 
+	}
+	//TODO: Coordinates not set!!
+	
+	public Point3f p01 = new Point3f(0.0f, -0.5f, -0.5f); // byte 0
+	public Point3f p12 = new Point3f(0.0f, -0.5f, -0.5f);// byte 1
+	public Point3f p23 = new Point3f(0.0f, -0.5f, -0.5f);// byte 2
+	public Point3f p03 = new Point3f(0.0f, -0.5f, -0.5f);// byte 3
+	public Point3f p45 = new Point3f(0.0f, -0.5f, -0.5f);// byte 4
+	public Point3f p56 = new Point3f(0.0f, -0.5f, -0.5f);// byte5
+	public Point3f p67 = new Point3f(0.0f, -0.5f, -0.5f);// byte 6
+	public Point3f p47 = new Point3f(0.0f, -0.5f, -0.5f);// byte 7
+	public Point3f p04 = new Point3f(0.0f, -0.5f, -0.5f);// byte 8
+	public Point3f p15 = new Point3f(0.0f, -0.5f, -0.5f);// byte 9
+	public Point3f p26 = new Point3f(0.0f, -0.5f, -0.5f);// byte 10
+	public Point3f p37 = new Point3f(0.0f, -0.5f, -0.5f);// byte 11
 
 	Point3f pxx = new Point3f(0.0f, 0.0f, 0.0f);
 
@@ -36,7 +41,7 @@ public class MarchingCubeLUT {
 
 	public MarchingCubeLUT() {
 		
-		
+	
 		
 		/** Case 0 **/
 //		// McLut.put((byte) 0x00000000, new float[] { 0, 0, 0 });
