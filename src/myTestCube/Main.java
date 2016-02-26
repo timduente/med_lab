@@ -115,6 +115,8 @@ public class Main {
 		LinkedList<points[]> link11 = new LinkedList<points[]>();
 //		link11.add(new points[] { points.p, points.p, points.p });
 //		link11.add(new points[] { points.p, points.p, points.p });
+//		link11.add(new points[] { points.p, points.p, points.p });
+//		link11.add(new points[] { points.p, points.p, points.p });
 		addAll(0b10001110, link11);
 		/** Case 12 **/
 		LinkedList<points[]> link12 = new LinkedList<points[]>();
@@ -132,10 +134,10 @@ public class Main {
 		addAll(0b10100101, link13);
 		/** Case 14 **/								//TODO TODO TODO TODO TODO CANT SEE TODO TODO TODO
 		LinkedList<points[]> link14 = new LinkedList<points[]>();
-//		link14.add(new points[] { points.p, points.p, points.p });
-//		link14.add(new points[] { points.p, points.p, points.p });
-//		link14.add(new points[] { points.p, points.p, points.p });
-//		link14.add(new points[] { points.p, points.p, points.p });
+		link14.add(new points[] { points.p67, points.p56, points.p37 });
+		link14.add(new points[] { points.p56, points.p37, points.p01 });
+		link14.add(new points[] { points.p01, points.p12, points.p56 });
+		link14.add(new points[] { points.p04, points.p37, points.p01 });
 		addAll(0b01001101, link14);
 
 		Enumeration<Integer> enumKey = McLut.keys();
