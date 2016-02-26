@@ -19,7 +19,7 @@ public class Cube {
 	public TriangleArray[] planes;
 
 	public Cube(int corner, LinkedList<points[]> lPlanes) {
-		this.corner = corner;
+		this.corner = corner & 0xFF;
 		this.lPlanes = lPlanes;
 		// TODO: Translate lPlanes to planes
 		planes = new TriangleArray[lPlanes.size()]; 
@@ -27,15 +27,16 @@ public class Cube {
 	}
 	
 	public Cube invert() {
-		BitSet newCor = BitSet.valueOf(new byte[] { (byte) corner });
+		BitSet newCor = BitSet.valueOf(new byte[] { (byte) (corner & 0xFF) });
 		LinkedList<points[]> newPlanes = (LinkedList<points[]>) lPlanes.clone();
 
 		// Change bit value and points of plane
 		for(int i = 0; i < 8; i++)	{
 			newCor.flip(i);
 		}
-		System.out.println("cor1 " + Integer.toBinaryString(corner));
-		System.out.println("cor2 " + Integer.toBinaryString(newCor.toByteArray()[0]));
+		
+//		System.out.println("cor1 " + Integer.toBinaryString(corner));
+//		System.out.println("cor2 " + Integer.toBinaryString(newCor.toByteArray()[0] & 0xFF));
 
 		for (points[] pt : lPlanes) {
 			points[] threePoints = (points[]) pt.clone();
@@ -46,7 +47,7 @@ public class Cube {
 			newPlanes.add(threePoints);
 
 		}
-		return new Cube(newCor.toByteArray()[0], newPlanes);
+		return new Cube(newCor.toByteArray()[0] & 0xFF, newPlanes);
 	}
 
 	private void populateTriangleArray() {

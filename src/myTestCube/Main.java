@@ -24,20 +24,20 @@ public class Main {
 
 	// TODO: Coordinates not set!!
 
-	public Point3f p01 = new Point3f(0.0f, -0.5f, -0.5f); // byte 0
-	public Point3f p12 = new Point3f(0.0f, -0.5f, -0.5f);// byte 1
-	public Point3f p23 = new Point3f(0.0f, -0.5f, -0.5f);// byte 2
-	public Point3f p03 = new Point3f(0.0f, -0.5f, -0.5f);// byte 3
-	public Point3f p45 = new Point3f(0.0f, -0.5f, -0.5f);// byte 4
-	public Point3f p56 = new Point3f(0.0f, -0.5f, -0.5f);// byte5
-	public Point3f p67 = new Point3f(0.0f, -0.5f, -0.5f);// byte 6
-	public Point3f p47 = new Point3f(0.0f, -0.5f, -0.5f);// byte 7
-	public Point3f p04 = new Point3f(0.0f, -0.5f, -0.5f);// byte 8
-	public Point3f p15 = new Point3f(0.0f, -0.5f, -0.5f);// byte 9
-	public Point3f p26 = new Point3f(0.0f, -0.5f, -0.5f);// byte 10
-	public Point3f p37 = new Point3f(0.0f, -0.5f, -0.5f);// byte 11
-
-	Point3f pxx = new Point3f(0.0f, 0.0f, 0.0f);
+	// public Point3f p01 = new Point3f(0.0f, -0.5f, -0.5f); // byte 0
+	// public Point3f p12 = new Point3f(0.0f, -0.5f, -0.5f);// byte 1
+	// public Point3f p23 = new Point3f(0.0f, -0.5f, -0.5f);// byte 2
+	// public Point3f p03 = new Point3f(0.0f, -0.5f, -0.5f);// byte 3
+	// public Point3f p45 = new Point3f(0.0f, -0.5f, -0.5f);// byte 4
+	// public Point3f p56 = new Point3f(0.0f, -0.5f, -0.5f);// byte5
+	// public Point3f p67 = new Point3f(0.0f, -0.5f, -0.5f);// byte 6
+	// public Point3f p47 = new Point3f(0.0f, -0.5f, -0.5f);// byte 7
+	// public Point3f p04 = new Point3f(0.0f, -0.5f, -0.5f);// byte 8
+	// public Point3f p15 = new Point3f(0.0f, -0.5f, -0.5f);// byte 9
+	// public Point3f p26 = new Point3f(0.0f, -0.5f, -0.5f);// byte 10
+	// public Point3f p37 = new Point3f(0.0f, -0.5f, -0.5f);// byte 11
+	//
+	// Point3f pxx = new Point3f(0.0f, 0.0f, 0.0f);
 
 	/**
 	 * Edges are labeled the way on the excercise sheet. Bottom left 0, bottom front 1, up front 2, up left 3, bottom back 4, bottom right 5, up right 6, up back 7. A cube has the following coordinate system: (0,0,0) is the origin with x increasing to point 1/5/2/6. Y increasing to 4/5/7/6 and z
@@ -52,27 +52,91 @@ public class Main {
 	}
 
 	public Main() {
-		
+
 		/** Case 0 **/
-		add0( 0b00000000, new LinkedList<points[]>());
+		add0(0b00000000, new LinkedList<points[]>());
 		/** Case 1 **/
 		LinkedList<points[]> link1 = new LinkedList<points[]>();
 		link1.add(new points[] { points.p01, points.p03, points.p04 });
-		add1(0b10000000, link1);
+		addAll(0b10000000, link1);
 		/** Case 2 **/
+		LinkedList<points[]> link2 = new LinkedList<points[]>();
+		link2.add(new points[] { points.p04, points.p03, points.p01 });
+		link2.add(new points[] { points.p15, points.p12, points.p04 });
+		addAll(0b11000000, link2);
 		/** Case 3 **/
+		LinkedList<points[]> link3 = new LinkedList<points[]>();
+		link3.add(new points[] { points.p04, points.p03, points.p01 });
+		link3.add(new points[] { points.p23, points.p12, points.p26 });
+		addAll(0b10100000, link3);
 		/** Case 4 **/
+		LinkedList<points[]> link4 = new LinkedList<points[]>();
+		link4.add(new points[] { points.p04, points.p03, points.p01 });
+		link4.add(new points[] { points.p56, points.p26, points.p67 });
+		addAll(0b10000010, link4);
 		/** Case 5 **/
+		LinkedList<points[]> link5 = new LinkedList<points[]>();
+		link5.add(new points[] { points.p56, points.p12, points.p47 });
+		link5.add(new points[] { points.p12, points.p47, points.p01 });
+		link5.add(new points[] { points.p01, points.p47, points.p04 });
+		addAll(0b01001100, link5);
 		/** Case 6 **/
+		LinkedList<points[]> link6 = new LinkedList<points[]>();
+		link6.add(new points[] { points.p56, points.p67, points.p26 });
+		link6.add(new points[] { points.p15, points.p12, points.p04 });
+		link6.add(new points[] { points.p03, points.p04, points.p26 });
+		addAll(0b11000010, link6);
 		/** Case 7 **/
+		LinkedList<points[]> link7 = new LinkedList<points[]>();
+		link7.add(new points[] { points.p01, points.p12, points.p15 });
+		link7.add(new points[] { points.p03, points.p37, points.p23 });
+		link7.add(new points[] { points.p26, points.p67, points.p56 });
+		addAll(0b01010010, link7);
 		/** Case 8 **/
+		LinkedList<points[]> link8 = new LinkedList<points[]>();
+		link8.add(new points[] { points.p03, points.p47, points.p56 });
+		link8.add(new points[] { points.p03, points.p12, points.p56 });
+		addAll(0b11001100, link8);
 		/** Case 9 **/
+		LinkedList<points[]> link9 = new LinkedList<points[]>();
+		link9.add(new points[] { points.p03, points.p37, points.p67 });
+		link9.add(new points[] { points.p03, points.p67, points.p01 });
+		link9.add(new points[] { points.p01, points.p67, points.p56 });
+		link9.add(new points[] { points.p01, points.p15, points.p56 });
+		addAll(0b10001101, link9);
 		/** Case 10 **/
-		/** Case 11 **/
+		LinkedList<points[]> link10 = new LinkedList<points[]>();
+		link10.add(new points[] { points.p67, points.p26, points.p45 });
+		link10.add(new points[] { points.p45, points.p26, points.p15 });
+		link10.add(new points[] { points.p04, points.p37, points.p23 });
+		link10.add(new points[] { points.p23, points.p37, points.p04 });
+		addAll(0b10010110, link10);
+		/** Case 11 **/                               //TODO TODO TODO TODO TODO CANT SEE TODO TODO TODO
+		LinkedList<points[]> link11 = new LinkedList<points[]>();
+//		link11.add(new points[] { points.p, points.p, points.p });
+//		link11.add(new points[] { points.p, points.p, points.p });
+		addAll(0b10001110, link11);
 		/** Case 12 **/
+		LinkedList<points[]> link12 = new LinkedList<points[]>();
+		link12.add(new points[] { points.p37, points.p03, points.p23 });
+		link12.add(new points[] { points.p56, points.p47, points.p12 });
+		link12.add(new points[] { points.p01, points.p12, points.p47 });
+		link12.add(new points[] { points.p01, points.p47, points.p04 });
+		addAll(0b01011100, link12);
 		/** Case 13 **/
-		/** Case 14 **/
-		/** Case 15 **/
+		LinkedList<points[]> link13 = new LinkedList<points[]>();
+		link13.add(new points[] { points.p01, points.p04, points.p03 });
+		link13.add(new points[] { points.p15, points.p56, points.p45 });
+		link13.add(new points[] { points.p12, points.p23, points.p26 });
+		link13.add(new points[] { points.p37, points.p47, points.p67 });
+		addAll(0b10100101, link13);
+		/** Case 14 **/								//TODO TODO TODO TODO TODO CANT SEE TODO TODO TODO
+		LinkedList<points[]> link14 = new LinkedList<points[]>();
+//		link14.add(new points[] { points.p, points.p, points.p });
+//		link14.add(new points[] { points.p, points.p, points.p });
+//		link14.add(new points[] { points.p, points.p, points.p });
+//		link14.add(new points[] { points.p, points.p, points.p });
+		addAll(0b01001101, link14);
 
 		Enumeration<Integer> enumKey = McLut.keys();
 		while (enumKey.hasMoreElements()) {
@@ -80,17 +144,60 @@ public class Main {
 			Cube val = McLut.get(key);
 			// System.out.printf("0x%02X" key.toString());
 			System.out.println("Bytes-Key: " + Integer.toBinaryString(key));
-			for (points[] pt : val.lPlanes) {
-				System.out.println("Values:" + pt[0] + " " + pt[1] + " " + pt[2] + " " );
-			}
+			// for (points[] pt : val.lPlanes) {
+			// System.out.println("Values:" + pt[0] + " " + pt[1] + " " + pt[2] + " ");
+			// }
 
 		}
 		Cube cubibubi = McLut.get(0b11111111111111111111111111111111);
-		if(cubibubi != null)	{
-		System.out.println(cubibubi.corner);
-		} else	{
+		if (cubibubi != null) {
+			System.out.println(cubibubi.corner);
+		} else {
 			System.out.println("Fail");
 		}
+	}
+
+	private void addAll(int value, LinkedList<points[]> planes) {
+		Cube newCube = new Cube(value, planes);
+		McLut.put(value, newCube);
+		Cube invertCube = newCube.invert();
+		McLut.put(invertCube.corner, invertCube);
+		// Brute every orientation
+		for (int rotX = 0; rotX < 4; rotX++) {
+			for (int rotY = 0; rotY < 4; rotY++) {
+				for (int rotZ = 0; rotZ < 4; rotZ++) {
+					if (rotX != 0 || rotY != 0 || rotZ != 0) {
+						Cube cX;
+						if (rotX != 0) {
+							cX = newCube.getNewFromRotXAxes(rotX);
+						} else {
+							cX = newCube;
+						}
+						Cube cY;
+						if (rotY != 0) {
+							cY = cX.getNewFromRotYAxes(rotY);
+						} else {
+							cY = cX;
+						}
+						Cube cZ;
+						if (rotZ != 0) {
+							cZ = cY.getNewFromRotZAxes(rotZ);
+						} else {
+							cZ = cY;
+						}
+						if (!McLut.contains(cZ.corner)) {
+							McLut.put(cZ.corner, cZ);
+						}
+						Cube inverted = cZ.invert();
+						if (!McLut.contains(inverted.corner)) {
+							McLut.put(inverted.corner, inverted);
+						}
+
+					}
+				}
+			}
+		}
+
 	}
 
 	private void add0(int value, LinkedList<points[]> planes) {
@@ -109,7 +216,7 @@ public class Main {
 		// Inverted Cube
 		Cube invertCube = newCube.invert();
 		McLut.put(invertCube.corner, invertCube);
-		System.out.println("invert: "+Integer.toBinaryString(invertCube.corner));
+		System.out.println("invert: " + Integer.toBinaryString(invertCube.corner));
 		// Rotate Cube
 		Cube bottomCube1 = newCube.getNewFromRotZAxes(1);
 		McLut.put(bottomCube1.corner, bottomCube1);
@@ -117,10 +224,23 @@ public class Main {
 		McLut.put(bottomCube2.corner, bottomCube2);
 		Cube bottomCube3 = newCube.getNewFromRotZAxes(3);
 		McLut.put(bottomCube3.corner, bottomCube3);
+		// Invert bottom
+		Cube invertBotCube1 = bottomCube1.invert();
+		McLut.put(invertBotCube1.corner, invertBotCube1);
+		Cube invertBotCube2 = bottomCube2.invert();
+		McLut.put(invertBotCube2.corner, invertBotCube2);
+		Cube invertBotCube3 = bottomCube3.invert();
+		McLut.put(invertBotCube3.corner, invertBotCube3);
 
 		Cube topCube0 = newCube.getNewFromRotYAxes(1);
 		McLut.put(topCube0.corner, topCube0);
-
+		// System.out.println("top: " +Integer.toBinaryString(topCube0.corner));
+		Cube topCube1 = topCube0.getNewFromRotZAxes(1);
+		McLut.put(topCube1.corner, topCube1);
+		Cube topCube2 = topCube0.getNewFromRotZAxes(2);
+		McLut.put(topCube2.corner, topCube2);
+		Cube topCube3 = topCube0.getNewFromRotZAxes(3);
+		McLut.put(topCube3.corner, topCube3);
 	}
 
 	// // No planes
