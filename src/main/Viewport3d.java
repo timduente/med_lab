@@ -28,18 +28,20 @@ import javax.media.j3d.Texture2D;
 import javax.media.j3d.TextureAttributes;
 import javax.media.j3d.TransformGroup;
 import javax.media.j3d.TransparencyAttributes;
+import javax.media.j3d.TriangleArray;
 import javax.vecmath.Color3f;
 import javax.vecmath.Point3d;
 import javax.vecmath.Point3f;
 import javax.vecmath.TexCoord2f;
 
 import misc.BitMask;
+import myTestCube.Cube;
+import myTestCube.Main;
+import myTestCube.Main.points;
 
 import com.sun.j3d.utils.behaviors.mouse.MouseRotate;
 import com.sun.j3d.utils.behaviors.mouse.MouseWheelZoom;
 import com.sun.j3d.utils.behaviors.mouse.MouseZoom;
-import com.sun.j3d.utils.geometry.GeometryInfo;
-import com.sun.j3d.utils.geometry.NormalGenerator;
 import com.sun.j3d.utils.universe.SimpleUniverse;
 
 /**
@@ -80,6 +82,7 @@ public class Viewport3d extends Viewport implements Observer {
 
 	BranchGroup volume2DRendering;
 	BranchGroup orthoNode;
+	BranchGroup marchingNode;
 
 	QuadArray[] ortho_planes = new QuadArray[3];
 	Appearance[] app_for_ortho_planes = new Appearance[3];
@@ -141,9 +144,13 @@ public class Viewport3d extends Viewport implements Observer {
 
 			orthoNode = new BranchGroup();
 			orthoNode.setCapability(BranchGroup.ALLOW_DETACH);
+			
+			marchingNode = new BranchGroup();
+			marchingNode.setCapability(BranchGroup.ALLOW_DETACH);
 
+			
 			createScene();
-
+			initMarchingCube(0b10000000);
 		}
 
 		public void createScene() {
@@ -188,8 +195,119 @@ public class Viewport3d extends Viewport implements Observer {
 
 	public void enableMarchingCube(boolean enable) {
 		marchingCubeEnabled = enable;
-		System.out.println("show marching cubes");
+		
+		if (enable) {
+			bgroup.addChild(marchingNode);
+			System.out.println("show marching cubes");
+		} else {
+			bgroup.removeChild(marchingNode);
+			marchingNode.detach();
+			System.out.println("dont show marching cubes");
+		}
+		
 		update_view();
+	}
+	
+	public void initMarchingCube(int number){
+		bgroup.removeChild(marchingNode);
+		marchingNode.detach();
+		marchingNode = new BranchGroup();
+		marchingNode.setCapability(BranchGroup.ALLOW_DETACH);
+		
+		
+		
+		Main main = new Main();
+		Cube cubi = main.McLut.get(number);
+		
+		ColoringAttributes color_ca = new ColoringAttributes();
+		color_ca.setColor(new Color3f(0.3f, 0.3f, 0.3f));
+		
+		Appearance app = new Appearance();
+		app.setColoringAttributes(color_ca);
+		
+		PolygonAttributes p = new PolygonAttributes(PolygonAttributes.POLYGON_FILL, PolygonAttributes.CULL_NONE, 0.0f);
+		app.setPolygonAttributes(p);
+		PointAttributes ps = new PointAttributes();
+		ps.setPointSize(10);
+		
+		ColoringAttributes color_points_0 = new ColoringAttributes();
+		color_points_0.setColor(new Color3f(0.0f, 0.0f, 1.0f));
+		
+		ColoringAttributes color_points_1 = new ColoringAttributes();
+		color_points_1.setColor(new Color3f(1.0f, 0.0f, 0.0f));
+		Appearance app0 = new Appearance();
+		app0.setColoringAttributes(color_points_0);
+		Appearance app1 = new Appearance();
+		app1.setColoringAttributes(color_points_1);
+		System.out.println("Size of triangle array: " + cubi.planes.length);
+		for(TriangleArray tri : cubi.planes)	{
+			Shape3D shape = new Shape3D(tri);
+			shape.setAppearance(app);
+			
+			marchingNode.addChild(shape);
+			System.out.println("Point 1 coord:  " + tri.toString());
+		}
+		TriangleArray tria = new TriangleArray(3, TriangleArray.COORDINATES);
+		tria.setCoordinates(0, new Point3f[]{ new Point3f(-1.0f, -1.0f, -1.0f), new Point3f(1.0f, -1.0f, -1.0f),new Point3f(-1.0f, 1.0f, -1.0f)});
+		Shape3D shapppp = new Shape3D(tria); 
+		shapppp.setAppearance(app1);
+		marchingNode.addChild(shapppp);
+		
+		
+		
+		boolean[] corn = new boolean[8];
+		int index = 1; 
+		int on = 0; 
+		int off = 0; 
+		for(int i = 0; i < 8; i++)	{
+			corn[7-i] = ((byte) ( cubi.corner & index))!=0; 
+			index = index << 1; 
+			if(corn[7-i]) on++;
+			else off++; 
+		}
+		
+		PointArray pointsArr_0 = new PointArray(off, PointArray.COORDINATES);
+		PointArray pointsArr_1 = new PointArray(on, PointArray.COORDINATES);
+		
+		Point3f p0 = new Point3f(-1.0f, -1.0f, -1.0f); 
+		Point3f p1 = new Point3f(1.0f, -1.0f, -1.0f);
+		Point3f p2 = new Point3f(1.0f, -1.0f, 1.0f);
+		Point3f p3 = new Point3f(-1.0f, -1.0f, 1.0f);
+		Point3f p4 = new Point3f(-1.0f, 1.0f, -1.0f);
+		Point3f p5 = new Point3f(1.0f, 1.0f, -1.0f);
+		Point3f p6 = new Point3f(1.0f, 1.0f, 1.0f);
+		Point3f p7 = new Point3f(-1.0f, 1.0f, 1.0f);
+		Point3f[] allPoints = new Point3f[]{p0, p1,p2,p3,p4,p5,p6,p7};
+		
+		int c_on = 0; 
+		int c_off = 0; 
+		for (int i = 0; i < 8; i++) {
+			if(corn[i])	{ //is on point
+				pointsArr_1.setCoordinate(c_on, allPoints[i]);
+				c_on++;
+			} else{
+				pointsArr_0.setCoordinate(c_off, allPoints[i]);
+				c_off++;
+			}
+		}
+		
+		app0.setPointAttributes(ps);
+		app1.setPointAttributes(ps);
+		Shape3D points_on = new Shape3D(pointsArr_1, app1);
+		Shape3D points_off = new Shape3D(pointsArr_0, app0);
+	
+		marchingNode.addChild(points_on);
+		marchingNode.addChild(points_off);
+		bgroup.addChild(marchingNode);
+		
+		/** DEBUG **/
+		System.out.println("Cube plane (points, no triangle): ");
+		 
+		for (points[] pt : cubi.lPlanes) {
+			System.out.println("Values:" + pt[0] + " " + pt[1] + " " + pt[2]
+					+ " ");
+		
+		}
 	}
 
 	public void enable2DTextureVolumeRendering(boolean enable) {
@@ -588,6 +706,7 @@ public class Viewport3d extends Viewport implements Observer {
 			initOrthoSlices();
 			addOrthoSlices(mode, mode, true);
 			initVolumeRendering();
+			
 			update_view();
 		}
 

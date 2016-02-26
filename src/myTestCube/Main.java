@@ -1,19 +1,10 @@
 package myTestCube;
 
-import java.util.Arrays;
-import java.util.BitSet;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.LinkedList;
 
-import javax.media.j3d.GeometryArray;
-import javax.media.j3d.QuadArray;
-import javax.media.j3d.TriangleArray;
-import javax.vecmath.Point3f;
 
-import myTestCube.Cube;
-
-;
 
 public class Main {
 	public Hashtable<Integer, Cube> McLut = new Hashtable<Integer, Cube>();
@@ -47,9 +38,9 @@ public class Main {
 	 * 
 	 */
 
-	public static void main(String[] args) {
-		new Main();
-	}
+//	public static void main(String[] args) {
+//		new Main();
+//	}
 
 	public Main() {
 
@@ -61,7 +52,7 @@ public class Main {
 		addAll(0b10000000, link1);
 		/** Case 2 **/
 		LinkedList<points[]> link2 = new LinkedList<points[]>();
-		link2.add(new points[] { points.p04, points.p03, points.p01 });
+		link2.add(new points[] { points.p04, points.p03, points.p12 });
 		link2.add(new points[] { points.p15, points.p12, points.p04 });
 		addAll(0b11000000, link2);
 		/** Case 3 **/
@@ -84,7 +75,7 @@ public class Main {
 		LinkedList<points[]> link6 = new LinkedList<points[]>();
 		link6.add(new points[] { points.p56, points.p67, points.p26 });
 		link6.add(new points[] { points.p15, points.p12, points.p04 });
-		link6.add(new points[] { points.p03, points.p04, points.p26 });
+		link6.add(new points[] { points.p03, points.p04, points.p12 });
 		addAll(0b11000010, link6);
 		/** Case 7 **/
 		LinkedList<points[]> link7 = new LinkedList<points[]>();
@@ -108,15 +99,15 @@ public class Main {
 		LinkedList<points[]> link10 = new LinkedList<points[]>();
 		link10.add(new points[] { points.p67, points.p26, points.p45 });
 		link10.add(new points[] { points.p45, points.p26, points.p15 });
-		link10.add(new points[] { points.p04, points.p37, points.p23 });
+		link10.add(new points[] { points.p04, points.p01, points.p23 });
 		link10.add(new points[] { points.p23, points.p37, points.p04 });
 		addAll(0b10010110, link10);
 		/** Case 11 **/                               //TODO TODO TODO TODO TODO CANT SEE TODO TODO TODO
 		LinkedList<points[]> link11 = new LinkedList<points[]>();
-//		link11.add(new points[] { points.p, points.p, points.p });
-//		link11.add(new points[] { points.p, points.p, points.p });
-//		link11.add(new points[] { points.p, points.p, points.p });
-//		link11.add(new points[] { points.p, points.p, points.p });
+		link11.add(new points[] { points.p03, points.p47, points.p01 });
+		link11.add(new points[] { points.p67, points.p26, points.p47 });
+		link11.add(new points[] { points.p01, points.p47, points.p26 });
+		link11.add(new points[] { points.p01, points.p15, points.p26 });
 		addAll(0b10001110, link11);
 		/** Case 12 **/
 		LinkedList<points[]> link12 = new LinkedList<points[]>();
@@ -132,7 +123,7 @@ public class Main {
 		link13.add(new points[] { points.p12, points.p23, points.p26 });
 		link13.add(new points[] { points.p37, points.p47, points.p67 });
 		addAll(0b10100101, link13);
-		/** Case 14 **/								//TODO TODO TODO TODO TODO CANT SEE TODO TODO TODO
+		/** Case 14 **/								
 		LinkedList<points[]> link14 = new LinkedList<points[]>();
 		link14.add(new points[] { points.p67, points.p56, points.p37 });
 		link14.add(new points[] { points.p56, points.p37, points.p01 });
@@ -140,22 +131,38 @@ public class Main {
 		link14.add(new points[] { points.p04, points.p37, points.p01 });
 		addAll(0b01001101, link14);
 
-		Enumeration<Integer> enumKey = McLut.keys();
-		while (enumKey.hasMoreElements()) {
-			Integer key = enumKey.nextElement();
-			Cube val = McLut.get(key);
-			// System.out.printf("0x%02X" key.toString());
-			System.out.println("Bytes-Key: " + Integer.toBinaryString(key));
-			// for (points[] pt : val.lPlanes) {
-			// System.out.println("Values:" + pt[0] + " " + pt[1] + " " + pt[2] + " ");
-			// }
-
+//		Enumeration<Integer> enumKey = McLut.keys();
+//		while (enumKey.hasMoreElements()) {
+//			Integer key = enumKey.nextElement();
+//			Cube val = McLut.get(key);
+//			// System.out.printf("0x%02X" key.toString());
+//			System.out.println("Bytes-Key: " + Integer.toBinaryString(key));
+//			// for (points[] pt : val.lPlanes) {
+//			// System.out.println("Values:" + pt[0] + " " + pt[1] + " " + pt[2] + " ");
+//			// }
+//
+//		}
+		
+		Cube cubibi = McLut.get(0b10000000);
+		Cube cubibi2 = McLut.get(0b01000000);
+				System.out.println("Cubi 1");
+		for(points[] pt : cubibi.lPlanes)	{
+			System.out.println("Values:" + pt[0] + " " + pt[1] + " " + pt[2] + " ");
 		}
-		Cube cubibubi = McLut.get(0b11111111111111111111111111111111);
-		if (cubibubi != null) {
-			System.out.println(cubibubi.corner);
-		} else {
-			System.out.println("Fail");
+		System.out.println("Cubi 2");
+		for(points[] pt : cubibi2.lPlanes)	{
+			System.out.println("Values:" + pt[0] + " " + pt[1] + " " + pt[2] + " ");
+		}
+		cubibi.lPlanes.get(0)[0] = points.p01; 
+		cubibi.lPlanes.get(0)[1] = points.p01; 
+		cubibi.lPlanes.get(0)[2] = points.p01;
+		System.out.println("Cubi 1");
+		for(points[] pt : cubibi.lPlanes)	{
+			System.out.println("Values:" + pt[0] + " " + pt[1] + " " + pt[2] + " ");
+		}
+		System.out.println("Cubi 2");
+		for(points[] pt : cubibi2.lPlanes)	{
+			System.out.println("Values:" + pt[0] + " " + pt[1] + " " + pt[2] + " ");
 		}
 	}
 
@@ -164,6 +171,8 @@ public class Main {
 		McLut.put(value, newCube);
 		Cube invertCube = newCube.invert();
 		McLut.put(invertCube.corner, invertCube);
+		System.out.println("new cube");
+
 		// Brute every orientation
 		for (int rotX = 0; rotX < 4; rotX++) {
 			for (int rotY = 0; rotY < 4; rotY++) {

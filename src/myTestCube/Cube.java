@@ -1,4 +1,5 @@
 package myTestCube;
+
 import java.util.BitSet;
 import java.util.LinkedList;
 
@@ -8,13 +9,11 @@ import javax.vecmath.Point3f;
 import myTestCube.Main;
 import myTestCube.Main.points;
 
-
-
-
 public class Cube {
 	public int corner;
 	// This list contains the enum points as an array of 3 each.
-	// Each plane/triangle is defined by eg. p45, 67, p56 => This way an order is introduced and it can be rotated
+	// Each plane/triangle is defined by eg. p45, 67, p56 => This way an order
+	// is introduced and it can be rotated
 	public LinkedList<points[]> lPlanes;
 	public TriangleArray[] planes;
 
@@ -22,30 +21,30 @@ public class Cube {
 		this.corner = corner & 0xFF;
 		this.lPlanes = lPlanes;
 		// TODO: Translate lPlanes to planes
-		planes = new TriangleArray[lPlanes.size()]; 
+		planes = new TriangleArray[lPlanes.size()];
 		populateTriangleArray();
 	}
-	
+
 	public Cube invert() {
 		BitSet newCor = BitSet.valueOf(new byte[] { (byte) (corner & 0xFF) });
-		LinkedList<points[]> newPlanes = (LinkedList<points[]>) lPlanes.clone();
+		LinkedList<points[]> newPlanes = new LinkedList<points[]>();
 
 		// Change bit value and points of plane
-		for(int i = 0; i < 8; i++)	{
+		for (int i = 0; i < 8; i++) {
 			newCor.flip(i);
 		}
-		
-//		System.out.println("cor1 " + Integer.toBinaryString(corner));
-//		System.out.println("cor2 " + Integer.toBinaryString(newCor.toByteArray()[0] & 0xFF));
+
+		// System.out.println("cor1 " + Integer.toBinaryString(corner));
+		// System.out.println("cor2 " +
+		// Integer.toBinaryString(newCor.toByteArray()[0] & 0xFF));
 
 		for (points[] pt : lPlanes) {
-			points[] threePoints = (points[]) pt.clone();
-			points helper = threePoints[0];
-			threePoints[0] = threePoints[2];
-			threePoints[2] = helper;
+			points[] threePoints = new points[pt.length];
+			threePoints[0] = pt[2];
+			threePoints[1] = pt[1];
+			threePoints[2] = pt[0];
 
 			newPlanes.add(threePoints);
-
 		}
 		return new Cube(newCor.toByteArray()[0] & 0xFF, newPlanes);
 	}
@@ -57,40 +56,40 @@ public class Cube {
 			for (int i = 0; i < 3; i++) {
 				switch (pt[i]) {
 				case p01:
-					single[i] = new Point3f(0.0f, -0.5f, -0.5f);
+					single[i] = new Point3f(0.0f, -1.0f, -1.0f);
 					break;
 				case p12:
-					single[i] = new Point3f(-0.5f, +0.5f, 0.0f);
+					single[i] = new Point3f(+1.0f, -1.0f, 0.0f);
 					break;
 				case p23:
-					single[i] = new Point3f(0.0f, -0.5f, +0.5f);
+					single[i] = new Point3f(0.0f, -1.0f, +1.0f);
 					break;
 				case p03:
-					single[i] = new Point3f(-0.5f, 0.0f, -0.5f);
+					single[i] = new Point3f(-1.0f, -1.0f, 0.0f);
 					break;
 				case p45:
-					single[i] = new Point3f(0.0f, +0.5f, -0.5f);
+					single[i] = new Point3f(0.0f, +1.0f, -1.0f);
 					break;
 				case p56:
-					single[i] = new Point3f(+0.5f, +0.5f, 0.0f);
+					single[i] = new Point3f(+1.0f, +1.0f, 0.0f);
 					break;
 				case p67:
-					single[i] = new Point3f(0.0f, +0.5f, +0.5f);
+					single[i] = new Point3f(0.0f, +1.0f, +1.0f);
 					break;
 				case p47:
-					single[i] = new Point3f(-0.5f, +0.5f, 0.0f);
+					single[i] = new Point3f(-1.0f, +1.0f, 0.0f);
 					break;
 				case p04:
-					single[i] = new Point3f(-0.5f, 0.0f, -0.5f);
+					single[i] = new Point3f(-1.0f, 0.0f, -1.0f);
 					break;
 				case p15:
-					single[i] = new Point3f(+0.5f, 0.0f, -0.5f);
+					single[i] = new Point3f(+1.0f, 0.0f, -1.0f);
 					break;
 				case p26:
-					single[i] = new Point3f(+0.5f, 00.0f, +0.5f);
+					single[i] = new Point3f(+1.0f, 0.0f, +1.0f);
 					break;
 				case p37:
-					single[i] = new Point3f(-0.5f, 0.0f, +0.5f);
+					single[i] = new Point3f(-1.0f, 0.0f, +1.0f);
 					break;
 				}
 			}
@@ -185,11 +184,22 @@ public class Cube {
 			newCor.set(7, newCor.get(6));
 			newCor.set(6, newCor.get(5));
 			newCor.set(5, helper);
-
+		}
+		
+		
+		// Rotiere Plane 
+		// Rotiere x-mal 
+		for(points[] pt : lPlanes)	{
+			points[] pointsRotated = new points[3];
+			for
+			
+		}
+		
 			// Do something with rotation planes
-
-			for (points[] pt : lPlanes) {
-				points[] pointsRotated = new points[3];
+			//points[] : 3-er Array aus main enum: poins (p01,etc)
+			points[] pointsRotated = new points[3];
+			for (points[] pt : lPlanes) {	//Cube member: LinkedList<points[]> lPlanes
+				
 				for (int index = 0; index < 3; index++) {
 					switch (pt[index]) {
 					case p01:

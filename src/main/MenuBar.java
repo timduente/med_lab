@@ -144,6 +144,10 @@ public class MenuBar extends JMenuBar {
 		_no_entries3d = new JMenuItem(new String("no segmentations yet"));
 		_no_entries3d.setEnabled(false);
 		_menu3d.add(_no_entries3d);
+		
+		item = new JMenuItem(new String("Show Cute Cube"));
+		item.addActionListener(newCuteCube);
+		_menu3d.add(item);
 
 		// -------------------------------------------------------------------------------------
 
@@ -350,15 +354,17 @@ public class MenuBar extends JMenuBar {
 	ActionListener toggleBGListener3d = new ActionListener() {
 		public void actionPerformed(ActionEvent event) {
 			ImageStack is = LabMed.get_is();
-			if (is.getNumberOfImages() == 0) {
-				JOptionPane
-						.showMessageDialog(
-								_win,
-								"Segmentierung ohne geoeffneten DICOM Datensatz nicht moeglich.",
-								"Inane error", JOptionPane.ERROR_MESSAGE);
-			} else {
-				_v3d.toggleBG();
-			}
+			_v3d.enableMarchingCube(true);
+//			if (is.getNumberOfImages() == 0) {
+//				JOptionPane
+//						.showMessageDialog(
+//								_win,
+//								"Segmentierung ohne geoeffneten DICOM Datensatz nicht moeglich.",
+//								"Inane error", JOptionPane.ERROR_MESSAGE);
+//			} else {
+//				_v3d.toggleBG();
+//				
+//			}
 		}
 	};
 
@@ -559,6 +565,65 @@ public class MenuBar extends JMenuBar {
 				}
 				_tools.showTool(changeN);
 			}
+		}
+	};
+	
+	ActionListener newCuteCube = new ActionListener() {
+		public void actionPerformed(ActionEvent event) {
+			String name = JOptionPane.showInputDialog(_win,
+					"Cube number (int)");
+			System.out.println(name);
+			int bytestring = 0; 
+			for(int i = 0; i < name.length(); i++)	{
+				bytestring = bytestring << 1; 
+				if(name.charAt(i) == '1')	{
+					bytestring += 1; 
+				}
+				
+			}
+			System.out.println(Integer.toBinaryString(bytestring));
+			_v3d.initMarchingCube(bytestring);
+			
+//			ImageStack is = LabMed.get_is();
+//			if (is.getNumberOfImages() == 0) {
+//				JOptionPane
+//						.showMessageDialog(
+//								_win,
+//								"Segmentierung ohne geoeffneten DICOM Datensatz nicht möglich.",
+//								"Inane error", JOptionPane.ERROR_MESSAGE);
+//			} else if (is.getSegmentNumber() == 3) {
+//				JOptionPane
+//						.showMessageDialog(
+//								_win,
+//								"In der Laborversion werden nicht mehr als drei Segmentierungen benötigt.",
+//								"Inane error", JOptionPane.ERROR_MESSAGE);
+//			} else {
+//				String name = JOptionPane.showInputDialog(_win,
+//						"Name der Segmentierung");
+//				if (name != null) {
+//					_no_entries2d.setVisible(false);
+//					_no_entries3d.setVisible(false);
+//					Segment seg = is.addSegment(name);
+//					seg.addObserver(_v2d);
+//					seg.addObserver(_v3d);
+//					_v2d.toggleSeg(seg);
+//					_v3d.toggleSeg(seg);
+//					JMenuItem item = new JCheckBoxMenuItem(name, true);
+//					item.addActionListener(toggleSegListener2d);
+//					_menu2d.add(item);
+//					item = new JCheckBoxMenuItem(name, false);
+//					item.addActionListener(toggleSegListener3d);
+//					_menu3d.add(item);
+//
+//					// if(toolRangeSelector == null){
+//					toolRangeSelector = new ToolRangeSelector(seg);
+//					// }else{
+//					// toolRangeSelector
+//					// }
+//
+//					_tools.showTool(toolRangeSelector);
+//				}
+//			}
 		}
 	};
 
