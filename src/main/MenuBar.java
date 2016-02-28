@@ -28,8 +28,9 @@ public class MenuBar extends JMenuBar {
 
 	private ToolRangeSelector toolRangeSelector;
 	private ToolWindowSelector toolWindowSelector;
-	//private ToolRegionGrowSelector regionGrowSelector;
-	private ToolCubeSelector toolCubeSelector; 
+	// private ToolRegionGrowSelector regionGrowSelector;
+	private ToolCubeSelector toolCubeSelector;
+	private ToolCubeSizeSelector toolCubeSizeSelector;
 	private ToolChangeN changeN;
 
 	// private JMenuItem item;
@@ -39,8 +40,7 @@ public class MenuBar extends JMenuBar {
 	private JRadioButtonMenuItem rbMenuItemF;
 
 	/**
-	 * Constructor. Needs many references, since the MenuBar has to trigger a
-	 * lot of functions.
+	 * Constructor. Needs many references, since the MenuBar has to trigger a lot of functions.
 	 * 
 	 * @param slices
 	 *            the global image stack reference
@@ -135,17 +135,20 @@ public class MenuBar extends JMenuBar {
 		item.addActionListener(orthosliceListener);
 		_menu3d.add(item);
 
-		item = new JCheckBoxMenuItem(new String("Show 2D Texture volume"),
-				false);
+		item = new JCheckBoxMenuItem(new String("Show 2D Texture volume"), false);
 		item.addActionListener(textureVolumeListener);
 		_menu3d.add(item);
+
+		item = new JMenuItem(new String("Zeige Marching Cube Segmentierung"));
+		item.addActionListener(marchingCubeListener);
+		_menuTools.add(item);
 
 		_menu3d.addSeparator();
 
 		_no_entries3d = new JMenuItem(new String("no segmentations yet"));
 		_no_entries3d.setEnabled(false);
 		_menu3d.add(_no_entries3d);
-		
+
 		item = new JMenuItem(new String("Show Cute Cube"));
 		item.addActionListener(newCuteCube);
 		_menu3d.add(item);
@@ -180,37 +183,28 @@ public class MenuBar extends JMenuBar {
 		add(_menu3d);
 		add(_menuTools);
 	}
-	
-	
+
 	ActionListener orthosliceListener = new ActionListener() {
 		public void actionPerformed(ActionEvent event) {
 			if (_v2d.currentFile() == null) {
-				JOptionPane.showMessageDialog(null,
-						"Fehler: Keine DICOM Datei geÃ¶ffnet", "Inane error",
-						JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(null, "Fehler: Keine DICOM Datei geÃ¶ffnet", "Inane error", JOptionPane.ERROR_MESSAGE);
 				return;
 			}
 			boolean state = ((JCheckBoxMenuItem) event.getSource()).getState();
 			_v3d.enableOrthoslices(state);
 		}
 	};
-	
+
 	ActionListener textureVolumeListener = new ActionListener() {
 		public void actionPerformed(ActionEvent event) {
 			if (_v2d.currentFile() == null) {
-				JOptionPane.showMessageDialog(null,
-						"Fehler: Keine DICOM Datei geÃ¶ffnet", "Inane error",
-						JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(null, "Fehler: Keine DICOM Datei geÃ¶ffnet", "Inane error", JOptionPane.ERROR_MESSAGE);
 				return;
 			}
 			boolean state = ((JCheckBoxMenuItem) event.getSource()).getState();
 			_v3d.enable2DTextureVolumeRendering(state);
 		}
 	};
-	
-	
-	
-	
 
 	/**
 	 * This function is called when someone chooses to load DICOM series.
@@ -231,8 +225,7 @@ public class MenuBar extends JMenuBar {
 	};
 
 	/**
-	 * This function is called when someone chooses to save the current project
-	 * under a new name.
+	 * This function is called when someone chooses to save the current project under a new name.
 	 */
 	ActionListener saveAsListener = new ActionListener() {
 		public void actionPerformed(ActionEvent event) {
@@ -288,15 +281,12 @@ public class MenuBar extends JMenuBar {
 	}
 
 	/**
-	 * This function is called when someone wants to see the dicome file info
-	 * window.
+	 * This function is called when someone wants to see the dicome file info window.
 	 */
 	ActionListener showInfoListener = new ActionListener() {
 		public void actionPerformed(ActionEvent event) {
 			if (_v2d.currentFile() == null) {
-				JOptionPane.showMessageDialog(null,
-						"Fehler: Keine DICOM Datei geÃ¶ffnet", "Inane error",
-						JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(null, "Fehler: Keine DICOM Datei geÃ¶ffnet", "Inane error", JOptionPane.ERROR_MESSAGE);
 				return;
 			}
 
@@ -356,16 +346,16 @@ public class MenuBar extends JMenuBar {
 		public void actionPerformed(ActionEvent event) {
 			ImageStack is = LabMed.get_is();
 			_v3d.enableMarchingCube(true);
-//			if (is.getNumberOfImages() == 0) {
-//				JOptionPane
-//						.showMessageDialog(
-//								_win,
-//								"Segmentierung ohne geoeffneten DICOM Datensatz nicht moeglich.",
-//								"Inane error", JOptionPane.ERROR_MESSAGE);
-//			} else {
-//				_v3d.toggleBG();
-//				
-//			}
+			// if (is.getNumberOfImages() == 0) {
+			// JOptionPane
+			// .showMessageDialog(
+			// _win,
+			// "Segmentierung ohne geoeffneten DICOM Datensatz nicht moeglich.",
+			// "Inane error", JOptionPane.ERROR_MESSAGE);
+			// } else {
+			// _v3d.toggleBG();
+			//
+			// }
 		}
 	};
 
@@ -393,11 +383,7 @@ public class MenuBar extends JMenuBar {
 		public void actionPerformed(ActionEvent event) {
 			ImageStack is = LabMed.get_is();
 			if (is.getNumberOfImages() == 0) {
-				JOptionPane
-						.showMessageDialog(
-								_win,
-								"Segmentierung ohne geoeffneten DICOM Datensatz nicht moeglich.",
-								"Inane error", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(_win, "Segmentierung ohne geoeffneten DICOM Datensatz nicht moeglich.", "Inane error", JOptionPane.ERROR_MESSAGE);
 			} else {
 				if (is.getSegmentNumber() > 0)
 					_tools.showTool(toolRangeSelector);
@@ -414,20 +400,11 @@ public class MenuBar extends JMenuBar {
 		public void actionPerformed(ActionEvent event) {
 			ImageStack is = LabMed.get_is();
 			if (is.getNumberOfImages() == 0) {
-				JOptionPane
-						.showMessageDialog(
-								_win,
-								"Segmentierung ohne geoeffneten DICOM Datensatz nicht möglich.",
-								"Inane error", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(_win, "Segmentierung ohne geoeffneten DICOM Datensatz nicht möglich.", "Inane error", JOptionPane.ERROR_MESSAGE);
 			} else if (is.getSegmentNumber() == 3) {
-				JOptionPane
-						.showMessageDialog(
-								_win,
-								"In der Laborversion werden nicht mehr als drei Segmentierungen benötigt.",
-								"Inane error", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(_win, "In der Laborversion werden nicht mehr als drei Segmentierungen benötigt.", "Inane error", JOptionPane.ERROR_MESSAGE);
 			} else {
-				String name = JOptionPane.showInputDialog(_win,
-						"Name der Segmentierung");
+				String name = JOptionPane.showInputDialog(_win, "Name der Segmentierung");
 				if (name != null) {
 					_no_entries2d.setVisible(false);
 					_no_entries3d.setVisible(false);
@@ -462,20 +439,11 @@ public class MenuBar extends JMenuBar {
 		public void actionPerformed(ActionEvent event) {
 			ImageStack is = LabMed.get_is();
 			if (is.getNumberOfImages() == 0) {
-				JOptionPane
-						.showMessageDialog(
-								_win,
-								"Segmentierung ohne geoeffneten DICOM Datensatz nicht möglich.",
-								"Inane error", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(_win, "Segmentierung ohne geoeffneten DICOM Datensatz nicht möglich.", "Inane error", JOptionPane.ERROR_MESSAGE);
 			} else if (is.getSegmentNumber() == 3) {
-				JOptionPane
-						.showMessageDialog(
-								_win,
-								"In der Laborversion werden nicht mehr als drei Segmentierungen benötigt.",
-								"Inane error", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(_win, "In der Laborversion werden nicht mehr als drei Segmentierungen benötigt.", "Inane error", JOptionPane.ERROR_MESSAGE);
 			} else {
-				String name = JOptionPane.showInputDialog(_win,
-						"Name der Segmentierung");
+				String name = JOptionPane.showInputDialog(_win, "Name der Segmentierung");
 				if (name != null) {
 					_no_entries2d.setVisible(false);
 					_no_entries3d.setVisible(false);
@@ -530,11 +498,7 @@ public class MenuBar extends JMenuBar {
 		public void actionPerformed(ActionEvent event) {
 			ImageStack is = LabMed.get_is();
 			if (is.getNumberOfImages() == 0) {
-				JOptionPane
-						.showMessageDialog(
-								_win,
-								"Änderung der Ansicht ohne geöffneten DICOM Datensatz nicht möglich.",
-								"Inane error", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(_win, "Änderung der Ansicht ohne geöffneten DICOM Datensatz nicht möglich.", "Inane error", JOptionPane.ERROR_MESSAGE);
 			} else {
 				SelectWindow sel_win = is.addSelectWindow("Window_Selection");
 
@@ -551,11 +515,7 @@ public class MenuBar extends JMenuBar {
 		public void actionPerformed(ActionEvent event) {
 			ImageStack is = LabMed.get_is();
 			if (is.getNumberOfImages() == 0) {
-				JOptionPane
-						.showMessageDialog(
-								_win,
-								"Änderung der Ansicht ohne geöffneten DICOM Datensatz nicht möglich.",
-								"Inane error", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(_win, "Änderung der Ansicht ohne geöffneten DICOM Datensatz nicht möglich.", "Inane error", JOptionPane.ERROR_MESSAGE);
 			} else {
 				// SelectWindow sel_win =
 				// is.addSelectWindow("Window_Selection");
@@ -568,27 +528,41 @@ public class MenuBar extends JMenuBar {
 			}
 		}
 	};
-	
+
 	ActionListener newCuteCube = new ActionListener() {
 		public void actionPerformed(ActionEvent event) {
-			String name = JOptionPane.showInputDialog(_win,
-					"Cube number (int)");
-//			System.out.println(name);
-			int bytestring = 0; 
-			for(int i = 0; i < name.length(); i++)	{
-				bytestring = bytestring << 1; 
-				if(name.charAt(i) == '1')	{
-					bytestring += 1; 
+			String name = JOptionPane.showInputDialog(_win, "Cube number (int)");
+			// System.out.println(name);
+			int bytestring = 0;
+			for (int i = 0; i < name.length(); i++) {
+				bytestring = bytestring << 1;
+				if (name.charAt(i) == '1') {
+					bytestring += 1;
 				}
-				
+
 			}
 			System.out.println(Integer.toBinaryString(bytestring));
 			_v3d.initMarchingCube(bytestring);
-			
+
 			toolCubeSelector = new ToolCubeSelector(_v3d);
 			_tools.showTool(toolCubeSelector);
-			
+
 		}
+	};
+
+	/**
+	 * ActionListener for adding a new segmentation to the global image stack.
+	 */
+	ActionListener marchingCubeListener = new ActionListener() {
+		public void actionPerformed(ActionEvent event) {
+			if (_v2d.currentFile() == null) {
+				JOptionPane.showMessageDialog(null, "Fehler: Keine DICOM Datei geÃ¶ffnet", "Inane error", JOptionPane.ERROR_MESSAGE);
+				return;
+			}
+			boolean state = ((JCheckBoxMenuItem) event.getSource()).getState();
+			_v3d.enableMarchingCube(state);
+		}
+
 	};
 
 }

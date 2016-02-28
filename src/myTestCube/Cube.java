@@ -13,7 +13,7 @@ public class Cube {
 	// Each plane/triangle is defined by eg. p45, 67, p56 => This way an order
 	// is introduced and it can be rotated
 	public LinkedList<int[]> lPlanes;
-	public TriangleArray[] planes;
+//	public TriangleArray[] planes;
 	public int[] allIndices; 
 //	public IndexedTriangleArray[] indexedPlanes; 
 
@@ -37,8 +37,8 @@ public class Cube {
 		this.corner = corner & 0xFF;
 		this.lPlanes = lPlanes;
 		// TODO: Translate lPlanes to planes
-		planes = new TriangleArray[lPlanes.size()];
-		populateTriangleArray();
+//		planes = new TriangleArray[lPlanes.size()];
+//		populateTriangleArray();
 		populateIndexedTriangleArray();
 		// System.out.println("New Cube with : " + Integer.toBinaryString(corner));
 	}
@@ -88,55 +88,55 @@ public class Cube {
 //		
 //	}
 
-	private void populateTriangleArray() {
-		int index = 0;
-		for (int[] pt : lPlanes) {
-			Point3f[] single = new Point3f[3];
-			for (int i = 0; i < 3; i++) {
-				switch (pt[i]) {
-				case p01:
-					single[i] = new Point3f(0.0f, -1.0f, -1.0f);
-					break;
-				case p12:
-					single[i] = new Point3f(+1.0f, -1.0f, 0.0f);
-					break;
-				case p23:
-					single[i] = new Point3f(0.0f, -1.0f, +1.0f);
-					break;
-				case p03:
-					single[i] = new Point3f(-1.0f, -1.0f, 0.0f);
-					break;
-				case p45:
-					single[i] = new Point3f(0.0f, +1.0f, -1.0f);
-					break;
-				case p56:
-					single[i] = new Point3f(+1.0f, +1.0f, 0.0f);
-					break;
-				case p67:
-					single[i] = new Point3f(0.0f, +1.0f, +1.0f);
-					break;
-				case p47:
-					single[i] = new Point3f(-1.0f, +1.0f, 0.0f);
-					break;
-				case p04:
-					single[i] = new Point3f(-1.0f, 0.0f, -1.0f);
-					break;
-				case p15:
-					single[i] = new Point3f(+1.0f, 0.0f, -1.0f);
-					break;
-				case p26:
-					single[i] = new Point3f(+1.0f, 0.0f, +1.0f);
-					break;
-				case p37:
-					single[i] = new Point3f(-1.0f, 0.0f, +1.0f);
-					break;
-				}
-			}
-			planes[index] = new TriangleArray(3, TriangleArray.COORDINATES);
-			planes[index].setCoordinates(0, single);
-			index++;
-		}
-	}
+//	private void populateTriangleArray() {
+//		int index = 0;
+//		for (int[] pt : lPlanes) {
+//			Point3f[] single = new Point3f[3];
+//			for (int i = 0; i < 3; i++) {
+//				switch (pt[i]) {
+//				case p01:
+//					single[i] = new Point3f(0.0f, -1.0f, -1.0f);
+//					break;
+//				case p12:
+//					single[i] = new Point3f(+1.0f, -1.0f, 0.0f);
+//					break;
+//				case p23:
+//					single[i] = new Point3f(0.0f, -1.0f, +1.0f);
+//					break;
+//				case p03:
+//					single[i] = new Point3f(-1.0f, -1.0f, 0.0f);
+//					break;
+//				case p45:
+//					single[i] = new Point3f(0.0f, +1.0f, -1.0f);
+//					break;
+//				case p56:
+//					single[i] = new Point3f(+1.0f, +1.0f, 0.0f);
+//					break;
+//				case p67:
+//					single[i] = new Point3f(0.0f, +1.0f, +1.0f);
+//					break;
+//				case p47:
+//					single[i] = new Point3f(-1.0f, +1.0f, 0.0f);
+//					break;
+//				case p04:
+//					single[i] = new Point3f(-1.0f, 0.0f, -1.0f);
+//					break;
+//				case p15:
+//					single[i] = new Point3f(+1.0f, 0.0f, -1.0f);
+//					break;
+//				case p26:
+//					single[i] = new Point3f(+1.0f, 0.0f, +1.0f);
+//					break;
+//				case p37:
+//					single[i] = new Point3f(-1.0f, 0.0f, +1.0f);
+//					break;
+//				}
+//			}
+//			planes[index] = new TriangleArray(3, TriangleArray.COORDINATES);
+//			planes[index].setCoordinates(0, single);
+//			index++;
+//		}
+//	}
 
 	public Cube getNewFromRotXAxes(int rot) {
 		BitSet newCor = BitSet.valueOf(new byte[] { (byte) corner });
@@ -374,7 +374,7 @@ public class Cube {
 		  while (binString.length() < 8) {    //pad with 16 0's
 		        binString = "0" + binString;
 		  }
-		  retVal+= binString + " with lPlanes size: " + this.lPlanes.size() + " & planes length: " + planes.length + "\n";
+		  retVal+= binString + " with lPlanes size: " + this.lPlanes.size()+ "\n";
 		for (int[] pt : lPlanes) {
 			retVal += "  Points: " + toPt(pt[0]) + " " + toPt(pt[1]) + " " + toPt(pt[2]) + "\n";
 		}

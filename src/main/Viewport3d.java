@@ -207,7 +207,10 @@ public class Viewport3d extends Viewport implements Observer {
 
 		update_view();
 	}
-
+	/**
+	 * FOR TEST USES ONLY
+	 * @param number
+	 */
 	public void initMarchingCube(int number) {
 		bgroup.removeChild(marchingNode);
 		marchingNode.detach();
@@ -313,6 +316,45 @@ public class Viewport3d extends Viewport implements Observer {
 		// + " ");
 		//
 		// }
+	}
+	/** 
+	 * Real method showing segmented data as marching cubes
+	 * @param number
+	 */
+	private void initMarchingCubes() {
+		bgroup.removeChild(marchingNode);
+		marchingNode.detach();
+		marchingNode = new BranchGroup();
+		marchingNode.setCapability(BranchGroup.ALLOW_DETACH);
+
+		ColoringAttributes color_ca = new ColoringAttributes();
+		color_ca.setColor(new Color3f(0.3f, 0.3f, 0.3f));
+		ColoringAttributes color_points_0 = new ColoringAttributes();
+		color_points_0.setColor(new Color3f(0.0f, 0.0f, 1.0f));
+		ColoringAttributes color_points_1 = new ColoringAttributes();
+		color_points_1.setColor(new Color3f(1.0f, 0.0f, 0.0f));
+		
+		Appearance app = new Appearance();
+		app.setColoringAttributes(color_ca);
+		Appearance app0 = new Appearance();
+		app0.setColoringAttributes(color_points_0);
+		Appearance app1 = new Appearance();
+		app1.setColoringAttributes(color_points_1);
+		
+		PolygonAttributes p = new PolygonAttributes(PolygonAttributes.POLYGON_FILL, PolygonAttributes.CULL_NONE, 0.0f);
+		app.setPolygonAttributes(p);
+		PointAttributes ps = new PointAttributes();
+		ps.setPointSize(10);
+		
+//		IndexedTriangleArray indtria = new IndexedTriangleArray(marchingCube.coords.length, IndexedTriangleArray.COORDINATES, cubi.allIndices.length);
+//		indtria.setCoordinates(0, marchingCube.coords);
+//		indtria.setCoordinateIndices(0, cubi.allIndices);
+
+//		Shape3D shape = new Shape3D(indtria);
+//		shape.setAppearance(app);
+//		marchingNode.addChild(shape);
+//
+//		bgroup.addChild(marchingNode);
 	}
 
 	public void enable2DTextureVolumeRendering(boolean enable) {
@@ -659,6 +701,7 @@ public class Viewport3d extends Viewport implements Observer {
 
 		if (m._type == Message.M_LOADING_IMAGES_FINISHED) {
 			initOrthoSlices();
+			initMarchingCubes();
 			addOrthoSlices(mode, mode, true);
 			initVolumeRendering();
 
