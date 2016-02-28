@@ -4,9 +4,13 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.LinkedList;
 
+import javax.vecmath.Point3f;
+
 public class MarchingCubeLUT {
 	public Hashtable<Integer, Cube> McLut = new Hashtable<Integer, Cube>();
 
+	public Point3f[] coords = { new Point3f(0.0f, -1.0f, -1.0f), new Point3f(+1.0f, -1.0f, 0.0f), new Point3f(0.0f, -1.0f, +1.0f), new Point3f(-1.0f, -1.0f, 0.0f), new Point3f(0.0f, +1.0f, -1.0f), new Point3f(+1.0f, +1.0f, 0.0f), new Point3f(0.0f, +1.0f, +1.0f), new Point3f(-1.0f, +1.0f, 0.0f),
+			new Point3f(-1.0f, 0.0f, -1.0f), new Point3f(+1.0f, 0.0f, -1.0f), new Point3f(+1.0f, 0.0f, +1.0f), new Point3f(-1.0f, 0.0f, +1.0f) };
 	// public enum points {
 	// p01, p12, p23, p03, p45, p56, p67, p47, p04, p15, p26, p37;
 	// }
@@ -42,7 +46,7 @@ public class MarchingCubeLUT {
 		LinkedList<int[]> link1 = new LinkedList<int[]>();
 		link1.add(new int[] { p01, p03, p04 });
 		addAll(0b10000000, link1);
-		add1(0b10000000, link1);
+		// add1(0b10000000, link1);
 		/** Case 2 **/
 		LinkedList<int[]> link2 = new LinkedList<int[]>();
 		link2.add(new int[] { p04, p03, p12 });
@@ -194,15 +198,15 @@ public class MarchingCubeLUT {
 		// Inverted Cube
 		Cube invertCube = newCube.invert();
 		McLut.put(invertCube.corner, invertCube);
-		
+
 		/** Test 1: Multiple rotation around 1 axes : OKAY **/
-//		 Cube cX = null, cY = null, cZ = null;
-//		System.out.println("Rot0: " + 0 + ": " + newCube.toStringLess());
-//		 for (int rotX = 1; rotX < 40; rotX++) {
-//		 cX = newCube.getNewFromRotXAxes(rotX);
-//		 System.out.println("RotX: " + rotX + ": " + cX.toStringLess());
-//		 if(rotX % 4 ==3)  System.out.println();
-//		 }
+		// Cube cX = null, cY = null, cZ = null;
+		// System.out.println("Rot0: " + 0 + ": " + newCube.toStringLess());
+		// for (int rotX = 1; rotX < 40; rotX++) {
+		// cX = newCube.getNewFromRotXAxes(rotX);
+		// System.out.println("RotX: " + rotX + ": " + cX.toStringLess());
+		// if(rotX % 4 ==3) System.out.println();
+		// }
 		// for (int rotY = 1; rotY < 4; rotY++) {
 		// cY = newCube.getNewFromRotYAxes(rotY);
 		// System.out.println("RotY: " + rotY + ": " + cY.toString());
@@ -211,49 +215,49 @@ public class MarchingCubeLUT {
 		// cZ = newCube.getNewFromRotZAxes(rotZ);
 		// System.out.println("RotZ: " + rotZ + ": " + cZ.toString());
 		// }
-		
+
 		/** Test 2: rotation around every axes 0 to 3 times : NOT OKAY **/
-//		for (int rotX = 0; rotX < 4; rotX++) {
-//			for (int rotY = 0; rotY < 4; rotY++) {
-//				for (int rotZ = 0; rotZ < 4; rotZ++) {
-//					if (rotX != 0 || rotY != 0 || rotZ != 0) {
-//						Cube cX;
-//						if (rotX != 0) {
-//							cX = newCube.getNewFromRotXAxes(rotX);
-////							System.out.println("RotX: " + rotX + ": " + cX.toStringLess());
-//						} else {
-//							cX = newCube;
-//						}
-//						Cube cY;
-//						if (rotY != 0) {
-//							cY = cX.getNewFromRotYAxes(rotY);
-////							System.out.println("RotX: " + rotX + ": " + "RotY: " + rotY + ": " + cY.toStringLess());
-//						} else {
-//							cY = cX;
-//						}
-//						Cube cZ;
-//						if (rotZ != 0) {
-//							cZ = cY.getNewFromRotZAxes(rotZ);
-////							System.out.println("RotX: " + rotX + ": " + "RotY: " + rotY + ": " + "RotZ: " + rotZ + ": " + cZ.toStringLess());
-//						} else {
-//							cZ = cY;
-//						}
-//						System.out.println("RotX: " + rotX + ": " + "RotY: " + rotY + ": " + "RotZ: " + rotZ + ": " + cZ.toStringLess());
-//					}
-//				}
-//			}
-//		}
-		
-		/** Test 3:Selected NOT OKAY rotations**/
-		 Cube cX = null, cY = null, cZ = null;
+		// for (int rotX = 0; rotX < 4; rotX++) {
+		// for (int rotY = 0; rotY < 4; rotY++) {
+		// for (int rotZ = 0; rotZ < 4; rotZ++) {
+		// if (rotX != 0 || rotY != 0 || rotZ != 0) {
+		// Cube cX;
+		// if (rotX != 0) {
+		// cX = newCube.getNewFromRotXAxes(rotX);
+		// // System.out.println("RotX: " + rotX + ": " + cX.toStringLess());
+		// } else {
+		// cX = newCube;
+		// }
+		// Cube cY;
+		// if (rotY != 0) {
+		// cY = cX.getNewFromRotYAxes(rotY);
+		// // System.out.println("RotX: " + rotX + ": " + "RotY: " + rotY + ": " + cY.toStringLess());
+		// } else {
+		// cY = cX;
+		// }
+		// Cube cZ;
+		// if (rotZ != 0) {
+		// cZ = cY.getNewFromRotZAxes(rotZ);
+		// // System.out.println("RotX: " + rotX + ": " + "RotY: " + rotY + ": " + "RotZ: " + rotZ + ": " + cZ.toStringLess());
+		// } else {
+		// cZ = cY;
+		// }
+		// System.out.println("RotX: " + rotX + ": " + "RotY: " + rotY + ": " + "RotZ: " + rotZ + ": " + cZ.toStringLess());
+		// }
+		// }
+		// }
+		// }
+
+		/** Test 3:Selected NOT OKAY rotations **/
+		Cube cX = null, cY = null, cZ = null;
 		System.out.println("Rot0: " + 0 + ": " + newCube.toStringLess());
 		Cube xrot = newCube.getNewFromRotXAxes(1);
 		Cube yrot = newCube.getNewFromRotYAxes(1);
 		Cube x0y1z3 = yrot.getNewFromRotZAxes(3);
 		Cube x1y0z3 = xrot.getNewFromRotZAxes(3);
-		
+
 		System.out.println("x: " + xrot.toStringLess());
-		System.out.println("y: "+yrot.toStringLess());
+		System.out.println("y: " + yrot.toStringLess());
 		System.out.println(x0y1z3.toStringLess());
 		System.out.println(x1y0z3.toStringLess());
 		for (int rotX = 1; rotX < 40; rotX++) {
@@ -262,15 +266,15 @@ public class MarchingCubeLUT {
 			if (rotX % 4 == 3)
 				System.out.println();
 		}
-//		for (int rotY = 1; rotY < 13; rotY++) {
-//			cY = newCube.getNewFromRotYAxes(rotY);
-//			System.out.println("RotY: " + rotY + ": " + cY.toStringLess());
-//		}
-//		for (int rotZ = 1; rotZ < 13; rotZ++) {
-//			cZ = newCube.getNewFromRotZAxes(rotZ);
-//			System.out.println("RotZ: " + rotZ + ": " + cZ.toStringLess());
-//		}
-		
+		// for (int rotY = 1; rotY < 13; rotY++) {
+		// cY = newCube.getNewFromRotYAxes(rotY);
+		// System.out.println("RotY: " + rotY + ": " + cY.toStringLess());
+		// }
+		// for (int rotZ = 1; rotZ < 13; rotZ++) {
+		// cZ = newCube.getNewFromRotZAxes(rotZ);
+		// System.out.println("RotZ: " + rotZ + ": " + cZ.toStringLess());
+		// }
+
 	}
 
 	private void debug_LUT() {

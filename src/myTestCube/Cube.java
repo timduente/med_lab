@@ -3,6 +3,7 @@ package myTestCube;
 import java.util.BitSet;
 import java.util.LinkedList;
 
+import javax.media.j3d.IndexedTriangleArray;
 import javax.media.j3d.TriangleArray;
 import javax.vecmath.Point3f;
 
@@ -13,6 +14,8 @@ public class Cube {
 	// is introduced and it can be rotated
 	public LinkedList<int[]> lPlanes;
 	public TriangleArray[] planes;
+	public int[] allIndices; 
+//	public IndexedTriangleArray[] indexedPlanes; 
 
 	/** COPIED INTO CUBE.JAVA - DO NOT CHANGE **/
 	private final int p01 = 0;
@@ -36,7 +39,21 @@ public class Cube {
 		// TODO: Translate lPlanes to planes
 		planes = new TriangleArray[lPlanes.size()];
 		populateTriangleArray();
+		populateIndexedTriangleArray();
 		// System.out.println("New Cube with : " + Integer.toBinaryString(corner));
+	}
+	
+	private void populateIndexedTriangleArray()	{
+		int counter = 0;
+		allIndices = new int[lPlanes.size()*3];		
+		for(int[] iArray : lPlanes)	{
+			allIndices[counter] = iArray[0];
+			counter++;
+			allIndices[counter] = iArray[1];
+			counter++;
+			allIndices[counter] = iArray[2];
+			counter++;
+		}
 	}
 	
 	public Cube(Cube aCube)	{
@@ -66,6 +83,10 @@ public class Cube {
 		}
 		return new Cube(newCor.toByteArray()[0] & 0xFF, newPlanes);
 	}
+	
+//	private void populateIndexedTriangleArray()	{
+//		
+//	}
 
 	private void populateTriangleArray() {
 		int index = 0;

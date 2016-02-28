@@ -19,6 +19,7 @@ import javax.media.j3d.Canvas3D;
 import javax.media.j3d.ColoringAttributes;
 import javax.media.j3d.GeometryArray;
 import javax.media.j3d.ImageComponent2D;
+import javax.media.j3d.IndexedTriangleArray;
 import javax.media.j3d.PointArray;
 import javax.media.j3d.PointAttributes;
 import javax.media.j3d.PolygonAttributes;
@@ -42,6 +43,7 @@ import com.sun.j3d.utils.behaviors.mouse.MouseRotate;
 import com.sun.j3d.utils.behaviors.mouse.MouseWheelZoom;
 import com.sun.j3d.utils.behaviors.mouse.MouseZoom;
 import com.sun.j3d.utils.universe.SimpleUniverse;
+import com.sun.prism.image.Coords;
 
 /**
  * Three dimensional viewport for viewing the dicom images + segmentations.
@@ -58,7 +60,7 @@ public class Viewport3d extends Viewport implements Observer {
 	boolean orthoEnabled = false;
 	boolean marchingCubeEnabled = false;
 	boolean TextureVolumeRenderingEnabled = false;
-	MarchingCubeLUT main = new MarchingCubeLUT();
+	MarchingCubeLUT marchingCube = new MarchingCubeLUT();
 
 	public void setV2d(Viewport2d v2d) {
 		this.v2d = v2d;
@@ -106,8 +108,7 @@ public class Viewport3d extends Viewport implements Observer {
 			super(config);
 
 			// necessary
-			BoundingBox boundBox = new BoundingBox(new Point3d(-1000, -1000,
-					-1000), new Point3d(1000, 1000, 1000));
+			BoundingBox boundBox = new BoundingBox(new Point3d(-1000, -1000, -1000), new Point3d(1000, 1000, 1000));
 
 			setMinimumSize(new Dimension(DEF_WIDTH, DEF_HEIGHT));
 			setMaximumSize(new Dimension(DEF_WIDTH, DEF_HEIGHT));
@@ -144,11 +145,10 @@ public class Viewport3d extends Viewport implements Observer {
 
 			orthoNode = new BranchGroup();
 			orthoNode.setCapability(BranchGroup.ALLOW_DETACH);
-			
+
 			marchingNode = new BranchGroup();
 			marchingNode.setCapability(BranchGroup.ALLOW_DETACH);
 
-			
 			createScene();
 			initMarchingCube(0b10000000);
 		}
@@ -195,7 +195,7 @@ public class Viewport3d extends Viewport implements Observer {
 
 	public void enableMarchingCube(boolean enable) {
 		marchingCubeEnabled = enable;
-		
+
 		if (enable) {
 			bgroup.addChild(marchingNode);
 			System.out.println("show marching cubes");
@@ -204,75 +204,77 @@ public class Viewport3d extends Viewport implements Observer {
 			marchingNode.detach();
 			System.out.println("dont show marching cubes");
 		}
-		
+
 		update_view();
 	}
-	
-	public void initMarchingCube(int number){
+
+	public void initMarchingCube(int number) {
 		bgroup.removeChild(marchingNode);
 		marchingNode.detach();
 		marchingNode = new BranchGroup();
 		marchingNode.setCapability(BranchGroup.ALLOW_DETACH);
-		
-		
-		
-//		Main main = new Main();
-		Cube cubi = this.main.McLut.get(number);
+
+		// Main main = new Main();
+		Cube cubi = this.marchingCube.McLut.get(number);
 		System.out.println(cubi.toString());
 		System.out.println("Rotated entries: \n");
-		System.out.println("X: " + Integer.toBinaryString(cubi.debug_rotateX(1) & 0xFF)   + " & Y: " + Integer.toBinaryString(cubi.debug_rotateY(1) ) + " & Z: " +Integer.toBinaryString(cubi.debug_rotateZ(1)));
-		
+		System.out.println("X: " + Integer.toBinaryString(cubi.debug_rotateX(1) & 0xFF) + " & Y: " + Integer.toBinaryString(cubi.debug_rotateY(1)) + " & Z: " + Integer.toBinaryString(cubi.debug_rotateZ(1)));
+
 		ColoringAttributes color_ca = new ColoringAttributes();
 		color_ca.setColor(new Color3f(0.3f, 0.3f, 0.3f));
-		
+
 		Appearance app = new Appearance();
 		app.setColoringAttributes(color_ca);
-		
+
 		PolygonAttributes p = new PolygonAttributes(PolygonAttributes.POLYGON_FILL, PolygonAttributes.CULL_NONE, 0.0f);
 		app.setPolygonAttributes(p);
 		PointAttributes ps = new PointAttributes();
 		ps.setPointSize(10);
-		
+
 		ColoringAttributes color_points_0 = new ColoringAttributes();
 		color_points_0.setColor(new Color3f(0.0f, 0.0f, 1.0f));
-		
+
 		ColoringAttributes color_points_1 = new ColoringAttributes();
 		color_points_1.setColor(new Color3f(1.0f, 0.0f, 0.0f));
 		Appearance app0 = new Appearance();
 		app0.setColoringAttributes(color_points_0);
 		Appearance app1 = new Appearance();
 		app1.setColoringAttributes(color_points_1);
-//		System.out.println("Size of triangle array: " + cubi.planes.length);
-		for(TriangleArray tri : cubi.planes)	{
-			Shape3D shape = new Shape3D(tri);
-			shape.setAppearance(app);
-			
-			marchingNode.addChild(shape);
-//			System.out.println("Point 1 coord:  " + tri.toString());
-		}
+		// System.out.println("Size of triangle array: " + cubi.planes.length);
+		
+		IndexedTriangleArray indtria = new IndexedTriangleArray(marchingCube.coords.length, IndexedTriangleArray.COORDINATES, cubi.allIndices.length);
+		indtria.setCoordinates(0, marchingCube.coords);
+		indtria.setCoordinateIndices(0, cubi.allIndices);
+
+		Shape3D shape = new Shape3D(indtria);
+		shape.setAppearance(app);
+
+		marchingNode.addChild(shape);
+		// System.out.println("Point 1 coord:  " + tri.toString());
+
 		TriangleArray tria = new TriangleArray(3, TriangleArray.COORDINATES);
-		tria.setCoordinates(0, new Point3f[]{ new Point3f(-1.0f, -1.0f, -1.0f), new Point3f(1.0f, -1.0f, -1.0f),new Point3f(-1.0f, 1.0f, -1.0f)});
-		Shape3D shapppp = new Shape3D(tria); 
+		tria.setCoordinates(0, new Point3f[] { new Point3f(-1.0f, -1.0f, -1.0f), new Point3f(1.0f, -1.0f, -1.0f), new Point3f(-1.0f, 1.0f, -1.0f) });
+		Shape3D shapppp = new Shape3D(tria);
 		shapppp.setAppearance(app1);
 		marchingNode.addChild(shapppp);
-		
-		
-		
+
 		boolean[] corn = new boolean[8];
-		int index = 1; 
-		int on = 0; 
-		int off = 0; 
-		for(int i = 0; i < 8; i++)	{
-			corn[7-i] = ((byte) ( cubi.corner & index))!=0; 
-			index = index << 1; 
-			if(corn[7-i]) on++;
-			else off++; 
+		int index = 1;
+		int on = 0;
+		int off = 0;
+		for (int i = 0; i < 8; i++) {
+			corn[7 - i] = ((byte) (cubi.corner & index)) != 0;
+			index = index << 1;
+			if (corn[7 - i])
+				on++;
+			else
+				off++;
 		}
-		
+
 		PointArray pointsArr_0 = new PointArray(off, PointArray.COORDINATES);
 		PointArray pointsArr_1 = new PointArray(on, PointArray.COORDINATES);
-		
-		Point3f p0 = new Point3f(-1.0f, -1.0f, -1.0f); 
+
+		Point3f p0 = new Point3f(-1.0f, -1.0f, -1.0f);
 		Point3f p1 = new Point3f(1.0f, -1.0f, -1.0f);
 		Point3f p2 = new Point3f(1.0f, -1.0f, 1.0f);
 		Point3f p3 = new Point3f(-1.0f, -1.0f, 1.0f);
@@ -280,37 +282,37 @@ public class Viewport3d extends Viewport implements Observer {
 		Point3f p5 = new Point3f(1.0f, 1.0f, -1.0f);
 		Point3f p6 = new Point3f(1.0f, 1.0f, 1.0f);
 		Point3f p7 = new Point3f(-1.0f, 1.0f, 1.0f);
-		Point3f[] allPoints = new Point3f[]{p0, p1,p2,p3,p4,p5,p6,p7};
-		
-		int c_on = 0; 
-		int c_off = 0; 
+		Point3f[] allPoints = new Point3f[] { p0, p1, p2, p3, p4, p5, p6, p7 };
+
+		int c_on = 0;
+		int c_off = 0;
 		for (int i = 0; i < 8; i++) {
-			if(corn[i])	{ //is on point
+			if (corn[i]) { // is on point
 				pointsArr_1.setCoordinate(c_on, allPoints[i]);
 				c_on++;
-			} else{
+			} else {
 				pointsArr_0.setCoordinate(c_off, allPoints[i]);
 				c_off++;
 			}
 		}
-		
+
 		app0.setPointAttributes(ps);
 		app1.setPointAttributes(ps);
 		Shape3D points_on = new Shape3D(pointsArr_1, app1);
 		Shape3D points_off = new Shape3D(pointsArr_0, app0);
-	
+
 		marchingNode.addChild(points_on);
 		marchingNode.addChild(points_off);
 		bgroup.addChild(marchingNode);
-		
+
 		/** DEBUG **/
-//		System.out.println("Cube plane (points, no triangle): ");
-//		 
-//		for (points[] pt : cubi.lPlanes) {
-//			System.out.println("Values:" + pt[0] + " " + pt[1] + " " + pt[2]
-//					+ " ");
-//		
-//		}
+		// System.out.println("Cube plane (points, no triangle): ");
+		//
+		// for (points[] pt : cubi.lPlanes) {
+		// System.out.println("Values:" + pt[0] + " " + pt[1] + " " + pt[2]
+		// + " ");
+		//
+		// }
 	}
 
 	public void enable2DTextureVolumeRendering(boolean enable) {
@@ -334,16 +336,12 @@ public class Viewport3d extends Viewport implements Observer {
 		PolygonAttributes polygonAttributs = new PolygonAttributes();
 		polygonAttributs.setCullFace(PolygonAttributes.CULL_NONE);
 		polygonAttributs.setPolygonMode(PolygonAttributes.POLYGON_FILL);
-		TransparencyAttributes tpAtt = new TransparencyAttributes(
-				TransparencyAttributes.BLENDED, .2f,
-				TransparencyAttributes.BLEND_SRC_ALPHA,
-				TransparencyAttributes.BLEND_ONE);
+		TransparencyAttributes tpAtt = new TransparencyAttributes(TransparencyAttributes.BLENDED, .2f, TransparencyAttributes.BLEND_SRC_ALPHA, TransparencyAttributes.BLEND_ONE);
 
 		float range = 0.5f;
 
 		for (int i = 0; i < _slices.getDepth(0); i++) {
-			Appearance ap = initAppearanceForOrthoPlanes(ta, color_ca,
-					polygonAttributs, tpAtt);
+			Appearance ap = initAppearanceForOrthoPlanes(ta, color_ca, polygonAttributs, tpAtt);
 			QuadArray quad = initQuadArray();
 			Shape3D onePlane = new Shape3D(quad, ap);
 			volume_slices.add(onePlane);
@@ -352,27 +350,20 @@ public class Viewport3d extends Viewport implements Observer {
 		}
 	}
 
-	private void initArea(QuadArray quad, Appearance ap, float range,
-			int view_mode, int imageIndex) {
+	private void initArea(QuadArray quad, Appearance ap, float range, int view_mode, int imageIndex) {
 		BufferedImage img_trans;
 
-		float layer = (imageIndex - _slices.getDepth(view_mode) / 2.0f)
-				/ _slices.getDepth(view_mode);
+		float layer = (imageIndex - _slices.getDepth(view_mode) / 2.0f) / _slices.getDepth(view_mode);
 
-		Point3f[] slice = { new Point3f(range, range, layer),
-				new Point3f(-range, range, layer),
-				new Point3f(-range, -range, layer),
-				new Point3f(range, -range, layer) };
+		Point3f[] slice = { new Point3f(range, range, layer), new Point3f(-range, range, layer), new Point3f(-range, -range, layer), new Point3f(range, -range, layer) };
 
 		quad.setCoordinates(0, slice);
 
 		img_trans = _slices.getImage(imageIndex, view_mode, 0x04000000);
 
-		ImageComponent2D i2d = new ImageComponent2D(
-				ImageComponent2D.FORMAT_RGBA, img_trans);
+		ImageComponent2D i2d = new ImageComponent2D(ImageComponent2D.FORMAT_RGBA, img_trans);
 
-		Texture2D tex = new Texture2D(Texture2D.BASE_LEVEL, Texture2D.RGBA,
-				img_trans.getWidth(), img_trans.getHeight());
+		Texture2D tex = new Texture2D(Texture2D.BASE_LEVEL, Texture2D.RGBA, img_trans.getWidth(), img_trans.getHeight());
 
 		tex.setImage(0, i2d);
 
@@ -380,9 +371,7 @@ public class Viewport3d extends Viewport implements Observer {
 
 	}
 
-	private Appearance initAppearanceForOrthoPlanes(TextureAttributes ta,
-			ColoringAttributes color_ca, PolygonAttributes polygonAttributs,
-			TransparencyAttributes tpAtt) {
+	private Appearance initAppearanceForOrthoPlanes(TextureAttributes ta, ColoringAttributes color_ca, PolygonAttributes polygonAttributs, TransparencyAttributes tpAtt) {
 		Appearance appearance = new Appearance();
 
 		appearance.setTextureAttributes(ta);
@@ -395,8 +384,7 @@ public class Viewport3d extends Viewport implements Observer {
 	}
 
 	private QuadArray initQuadArray() {
-		QuadArray quadArray = new QuadArray(4, QuadArray.COORDINATES
-				| GeometryArray.TEXTURE_COORDINATE_2);
+		QuadArray quadArray = new QuadArray(4, QuadArray.COORDINATES | GeometryArray.TEXTURE_COORDINATE_2);
 		quadArray.setCapability(GeometryArray.ALLOW_COORDINATE_WRITE);
 		quadArray.setTextureCoordinate(0, 0, new TexCoord2f(1.0f, 0.0f));
 		quadArray.setTextureCoordinate(0, 1, new TexCoord2f(0.0f, 0.0f));
@@ -416,21 +404,16 @@ public class Viewport3d extends Viewport implements Observer {
 		PolygonAttributes polygonAttributs = new PolygonAttributes();
 		polygonAttributs.setCullFace(PolygonAttributes.CULL_NONE);
 		polygonAttributs.setPolygonMode(PolygonAttributes.POLYGON_FILL);
-		TransparencyAttributes tpAtt = new TransparencyAttributes(
-				TransparencyAttributes.BLENDED, .4f,
-				TransparencyAttributes.BLEND_SRC_ALPHA,
-				TransparencyAttributes.BLEND_ONE);
+		TransparencyAttributes tpAtt = new TransparencyAttributes(TransparencyAttributes.BLENDED, .4f, TransparencyAttributes.BLEND_SRC_ALPHA, TransparencyAttributes.BLEND_ONE);
 
 		Shape3D[] ortho_shapes = new Shape3D[3];
 
 		for (int i = 0; i < ortho_planes.length; i++) {
 
-			app_for_ortho_planes[i] = initAppearanceForOrthoPlanes(ta,
-					color_ca, polygonAttributs, tpAtt);
+			app_for_ortho_planes[i] = initAppearanceForOrthoPlanes(ta, color_ca, polygonAttributs, tpAtt);
 			ortho_planes[i] = initQuadArray();
 
-			ortho_shapes[i] = new Shape3D(ortho_planes[i],
-					app_for_ortho_planes[i]);
+			ortho_shapes[i] = new Shape3D(ortho_planes[i], app_for_ortho_planes[i]);
 			ortho_shapes[i].setCapability(Shape3D.ALLOW_GEOMETRY_WRITE);
 
 			orthoNode.addChild(ortho_shapes[i]);
@@ -438,14 +421,10 @@ public class Viewport3d extends Viewport implements Observer {
 	}
 
 	private void addOrthoSlices(int lastMode, int newMode, boolean init) {
-		float layer = (_slices.getActiveImageID() - _slices.getDepth() / 2.0f)
-				/ _slices.getDepth();
+		float layer = (_slices.getActiveImageID() - _slices.getDepth() / 2.0f) / _slices.getDepth();
 
 		/**
-		 * What happens next: On view mode is active: The corresponding
-		 * orthoslice shall be drawn on the layer which the 2d view shows. This
-		 * slice will have (layer, 0,0) OR (0,layer,0) OR (0,0,layer) in its
-		 * points. Therefore: Ternary Op which view mode is active
+		 * What happens next: On view mode is active: The corresponding orthoslice shall be drawn on the layer which the 2d view shows. This slice will have (layer, 0,0) OR (0,layer,0) OR (0,0,layer) in its points. Therefore: Ternary Op which view mode is active
 		 * 
 		 * The other 2 view modes orthoslices will be drawn thru (0,0,0).
 		 * 
@@ -479,25 +458,19 @@ public class Viewport3d extends Viewport implements Observer {
 
 	private void initSag(float range, int view_mode, float layer) {
 		BufferedImage img_sag;
-		Point3f[] sag_slice = {
-				new Point3f((view_mode == 1) ? layer : 0.0f, range, range),
-				new Point3f((view_mode == 1) ? layer : 0.0f, -range, range),
-				new Point3f((view_mode == 1) ? layer : 0.0f, -range, -range),
-				new Point3f((view_mode == 1) ? layer : 0.0f, range, -range) };
+		Point3f[] sag_slice = { new Point3f((view_mode == 1) ? layer : 0.0f, range, range), new Point3f((view_mode == 1) ? layer : 0.0f, -range, range), new Point3f((view_mode == 1) ? layer : 0.0f, -range, -range), new Point3f((view_mode == 1) ? layer : 0.0f, range, -range) };
 
 		ortho_planes[1].setCoordinates(0, sag_slice);
 
 		if (view_mode == 1) {
 			img_sag = _slices.getImage(_slices.getActiveImageID(1), 1, 0x80000000);
 		} else {
-			img_sag = _slices.getImage(_slices.getDepth(1) / 2, 1,0x80000000);
+			img_sag = _slices.getImage(_slices.getDepth(1) / 2, 1, 0x80000000);
 		}
 
-		ImageComponent2D i2d_sag = new ImageComponent2D(
-				ImageComponent2D.FORMAT_RGBA, img_sag);
+		ImageComponent2D i2d_sag = new ImageComponent2D(ImageComponent2D.FORMAT_RGBA, img_sag);
 
-		Texture2D tex_sag = new Texture2D(Texture2D.BASE_LEVEL, Texture2D.RGBA,
-				img_sag.getWidth(), img_sag.getHeight());
+		Texture2D tex_sag = new Texture2D(Texture2D.BASE_LEVEL, Texture2D.RGBA, img_sag.getWidth(), img_sag.getHeight());
 
 		tex_sag.setImage(0, i2d_sag);
 		app_for_ortho_planes[1].setTexture(tex_sag);
@@ -506,11 +479,7 @@ public class Viewport3d extends Viewport implements Observer {
 	private void initTrans(float range, int view_mode, float layer) {
 		BufferedImage img_trans;
 
-		Point3f[] trans_slice = {
-				new Point3f(range, range, (view_mode == 0) ? layer : 0.0f),
-				new Point3f(-range, range, (view_mode == 0) ? layer : 0.0f),
-				new Point3f(-range, -range, (view_mode == 0) ? layer : 0.0f),
-				new Point3f(range, -range, (view_mode == 0) ? layer : 0.0f) };
+		Point3f[] trans_slice = { new Point3f(range, range, (view_mode == 0) ? layer : 0.0f), new Point3f(-range, range, (view_mode == 0) ? layer : 0.0f), new Point3f(-range, -range, (view_mode == 0) ? layer : 0.0f), new Point3f(range, -range, (view_mode == 0) ? layer : 0.0f) };
 
 		ortho_planes[0].setCoordinates(0, trans_slice);
 
@@ -520,11 +489,9 @@ public class Viewport3d extends Viewport implements Observer {
 			img_trans = _slices.getImage(_slices.getNumberOfImages() / 2, 0, 0x80000000);
 		}
 
-		ImageComponent2D i2d_trans = new ImageComponent2D(
-				ImageComponent2D.FORMAT_RGBA, img_trans);
+		ImageComponent2D i2d_trans = new ImageComponent2D(ImageComponent2D.FORMAT_RGBA, img_trans);
 
-		Texture2D tex_trans = new Texture2D(Texture2D.BASE_LEVEL,
-				Texture2D.RGBA, img_trans.getWidth(), img_trans.getHeight());
+		Texture2D tex_trans = new Texture2D(Texture2D.BASE_LEVEL, Texture2D.RGBA, img_trans.getWidth(), img_trans.getHeight());
 
 		tex_trans.setImage(0, i2d_trans);
 
@@ -533,11 +500,7 @@ public class Viewport3d extends Viewport implements Observer {
 	}
 
 	private void initFront(float range, int view_mode, float layer) {
-		Point3f[] fron_slice = {
-				new Point3f(range, (view_mode == 2) ? layer : 0.0f, range),
-				new Point3f(-range, (view_mode == 2) ? layer : 0.0f, range),
-				new Point3f(-range, (view_mode == 2) ? layer : 0.0f, -range),
-				new Point3f(+range, (view_mode == 2) ? layer : 0.0f, -range) };
+		Point3f[] fron_slice = { new Point3f(range, (view_mode == 2) ? layer : 0.0f, range), new Point3f(-range, (view_mode == 2) ? layer : 0.0f, range), new Point3f(-range, (view_mode == 2) ? layer : 0.0f, -range), new Point3f(+range, (view_mode == 2) ? layer : 0.0f, -range) };
 
 		ortho_planes[2].setCoordinates(0, fron_slice);
 
@@ -549,11 +512,9 @@ public class Viewport3d extends Viewport implements Observer {
 			img_front = _slices.getImage(_slices.getDepth(2) / 2, 2, 0x80000000);
 		}
 
-		ImageComponent2D i2d_front = new ImageComponent2D(
-				ImageComponent2D.FORMAT_RGBA, img_front);
+		ImageComponent2D i2d_front = new ImageComponent2D(ImageComponent2D.FORMAT_RGBA, img_front);
 
-		Texture2D tex_front = new Texture2D(Texture2D.BASE_LEVEL,
-				Texture2D.RGBA, img_front.getWidth(), img_front.getHeight());
+		Texture2D tex_front = new Texture2D(Texture2D.BASE_LEVEL, Texture2D.RGBA, img_front.getWidth(), img_front.getHeight());
 
 		tex_front.setImage(0, i2d_front);
 
@@ -580,12 +541,9 @@ public class Viewport3d extends Viewport implements Observer {
 			for (int y = 0; y < bitmask.getHeight(); y++) {
 				for (int x = 0; x < bitmask.getWidth(); x++) {
 					if (bitmask.get(x, y)) {
-						Point3f point = new Point3f((x - w2), (y - h2),
-								(i - seg.getMaskNum() / 2));
+						Point3f point = new Point3f((x - w2), (y - h2), (i - seg.getMaskNum() / 2));
 						if (addPoint(point)) {
-							point.set(point.x / bitmask.getWidth(), point.y
-									/ bitmask.getHeight(),
-									point.z / seg.getMaskNum());
+							point.set(point.x / bitmask.getWidth(), point.y / bitmask.getHeight(), point.z / seg.getMaskNum());
 							pointsToShow.add(point);
 						}
 
@@ -598,8 +556,7 @@ public class Viewport3d extends Viewport implements Observer {
 			return;
 		}
 
-		PointArray points = new PointArray(pointsToShow.size(),
-				PointArray.COORDINATES);
+		PointArray points = new PointArray(pointsToShow.size(), PointArray.COORDINATES);
 
 		for (int i = 0; i < pointsToShow.size(); i++) {
 			points.setCoordinate(i, pointsToShow.get(i));
@@ -620,8 +577,7 @@ public class Viewport3d extends Viewport implements Observer {
 			pAtts.setPointSize(1.0f);
 			ap.setPointAttributes(pAtts);
 
-			color_ca.setColor(new Color3f(red / 256.0f, green / 256.0f,
-					blue / 256.0f));
+			color_ca.setColor(new Color3f(red / 256.0f, green / 256.0f, blue / 256.0f));
 			shape = new Shape3D(points, ap);
 			shape.setCapability(Shape3D.ALLOW_GEOMETRY_WRITE);
 			shapes.put(seg.getName(), shape);
@@ -645,8 +601,7 @@ public class Viewport3d extends Viewport implements Observer {
 
 		this.setPreferredSize(new Dimension(DEF_WIDTH, DEF_HEIGHT));
 		this.setLayout(new BorderLayout());
-		GraphicsConfiguration config = SimpleUniverse
-				.getPreferredConfiguration();
+		GraphicsConfiguration config = SimpleUniverse.getPreferredConfiguration();
 		_panel3d = new Panel3d(config);
 		this.add(_panel3d, BorderLayout.CENTER);
 
@@ -663,8 +618,7 @@ public class Viewport3d extends Viewport implements Observer {
 
 	public void changeN(int n) {
 		this.n = (float) n;
-		for (Enumeration<Segment> segs = _map_name_to_seg.elements(); segs
-				.hasMoreElements();) {
+		for (Enumeration<Segment> segs = _map_name_to_seg.elements(); segs.hasMoreElements();) {
 			Segment seg = segs.nextElement();
 			addPoints(seg);
 		}
@@ -672,8 +626,7 @@ public class Viewport3d extends Viewport implements Observer {
 	}
 
 	/**
-	 * Implements the observer function update. Updates can be triggered by the
-	 * global image stack.
+	 * Implements the observer function update. Updates can be triggered by the global image stack.
 	 */
 	public void update(final Observable o, final Object obj) {
 		if (!EventQueue.isDispatchThread()) {
@@ -689,8 +642,7 @@ public class Viewport3d extends Viewport implements Observer {
 		// boolean update_needed = false;
 		Message m = (Message) obj;
 
-		if (m._type == Message.M_SEG_CHANGED
-				|| m._type == Message.M_REGION_GROW_SEG_CHANGED) {
+		if (m._type == Message.M_SEG_CHANGED || m._type == Message.M_REGION_GROW_SEG_CHANGED) {
 			String seg_name = ((Segment) (m._obj)).getName();
 			boolean update_needed = _map_name_to_seg.containsKey(seg_name);
 			if (update_needed) {
@@ -709,7 +661,7 @@ public class Viewport3d extends Viewport implements Observer {
 			initOrthoSlices();
 			addOrthoSlices(mode, mode, true);
 			initVolumeRendering();
-			
+
 			update_view();
 		}
 
