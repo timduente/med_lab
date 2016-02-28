@@ -17,7 +17,7 @@ public class ToolCubeSelector extends JPanel implements Observer {
 
 	private int _case;
 //	private Segment _seg;
-	private JSlider _variance_slider;
+	private JSlider _case_slider;
 	private JLabel _region_grow_title, _min_label;
 //	private final ImageStack slices;
 	private Viewport3d v3d;
@@ -40,11 +40,12 @@ public class ToolCubeSelector extends JPanel implements Observer {
 
 		int range_max = 254;
 		_case = 1;
+		
 
 		_min_label = new JLabel("Case");
 
-		_variance_slider = new JSlider(1, range_max, _case);
-		_variance_slider.addChangeListener(new ChangeListener() {
+		_case_slider = new JSlider(1, range_max, _case);
+		_case_slider.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
 				JSlider source = (JSlider) e.getSource();
 				if (source.getValueIsAdjusting()) {
@@ -76,7 +77,7 @@ public class ToolCubeSelector extends JPanel implements Observer {
 
 		c.gridx = 2;
 		c.gridy = 1;
-		this.add(_variance_slider, c);
+		this.add(_case_slider, c);
 
 	}
 

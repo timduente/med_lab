@@ -219,6 +219,8 @@ public class Viewport3d extends Viewport implements Observer {
 //		Main main = new Main();
 		Cube cubi = this.main.McLut.get(number);
 		System.out.println(cubi.toString());
+		System.out.println("Rotated entries: \n");
+		System.out.println("X: " + Integer.toBinaryString(cubi.debug_rotateX(1) & 0xFF)   + " & Y: " + Integer.toBinaryString(cubi.debug_rotateY(1) ) + " & Z: " +Integer.toBinaryString(cubi.debug_rotateZ(1)));
 		
 		ColoringAttributes color_ca = new ColoringAttributes();
 		color_ca.setColor(new Color3f(0.3f, 0.3f, 0.3f));
