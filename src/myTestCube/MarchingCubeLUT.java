@@ -123,6 +123,8 @@ public class MarchingCubeLUT {
 		 link14.add(new int[] { p01, p12, p56 });
 		 link14.add(new int[] { p04, p37, p01 });
 		 addAll(0b01001101, link14);
+		 
+		 System.out.println("Marching Cube LUT Size: " + McLut.size());
 		// this.debug_LUT();
 	}
 
@@ -174,6 +176,7 @@ public class MarchingCubeLUT {
 							} else {
 								cZ = cY;
 							}
+	
 							if (!McLut.containsKey(cZ.corner)) {
 								McLut.put(cZ.corner, cZ);
 							}
@@ -181,7 +184,9 @@ public class MarchingCubeLUT {
 							if (!McLut.containsKey(inverted.corner)) {
 								McLut.put(inverted.corner, inverted);
 							}
-
+							if(Integer.compare(cZ.corner, 1)==0 || Integer.compare(inverted.corner, 1)==0) {
+								System.out.println(rotX + " " + rotY + " " + rotZ);
+							}
 						}
 					}
 				}
