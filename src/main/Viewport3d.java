@@ -67,6 +67,7 @@ public class Viewport3d extends Viewport implements Observer {
 	}
 
 	private float n = 5;
+	private float marchingCubeSize = 2; 
 	// Dont need them, because changing perspective resets currently active
 	// image. IF this will be changed, the ansatz is here to remember the
 	// current image in the views.
@@ -207,8 +208,10 @@ public class Viewport3d extends Viewport implements Observer {
 
 		update_view();
 	}
+
 	/**
 	 * FOR TEST USES ONLY
+	 * 
 	 * @param number
 	 */
 	public void initMarchingCube(int number) {
@@ -244,7 +247,7 @@ public class Viewport3d extends Viewport implements Observer {
 		Appearance app1 = new Appearance();
 		app1.setColoringAttributes(color_points_1);
 		// System.out.println("Size of triangle array: " + cubi.planes.length);
-		
+
 		IndexedTriangleArray indtria = new IndexedTriangleArray(marchingCube.coords.length, IndexedTriangleArray.COORDINATES, cubi.allIndices.length);
 		indtria.setCoordinates(0, marchingCube.coords);
 		indtria.setCoordinateIndices(0, cubi.allIndices);
@@ -317,15 +320,19 @@ public class Viewport3d extends Viewport implements Observer {
 		//
 		// }
 	}
-	/** 
+
+	/**
 	 * Real method showing segmented data as marching cubes
+	 * 
 	 * @param number
 	 */
-	private void initMarchingCubes() {
+	private void initMarchingCubes(Segment seg) {
 		bgroup.removeChild(marchingNode);
 		marchingNode.detach();
 		marchingNode = new BranchGroup();
 		marchingNode.setCapability(BranchGroup.ALLOW_DETACH);
+
+		Shape3D shape = null;
 
 		ColoringAttributes color_ca = new ColoringAttributes();
 		color_ca.setColor(new Color3f(0.3f, 0.3f, 0.3f));
@@ -333,28 +340,51 @@ public class Viewport3d extends Viewport implements Observer {
 		color_points_0.setColor(new Color3f(0.0f, 0.0f, 1.0f));
 		ColoringAttributes color_points_1 = new ColoringAttributes();
 		color_points_1.setColor(new Color3f(1.0f, 0.0f, 0.0f));
-		
+
 		Appearance app = new Appearance();
 		app.setColoringAttributes(color_ca);
 		Appearance app0 = new Appearance();
 		app0.setColoringAttributes(color_points_0);
 		Appearance app1 = new Appearance();
 		app1.setColoringAttributes(color_points_1);
-		
+
 		PolygonAttributes p = new PolygonAttributes(PolygonAttributes.POLYGON_FILL, PolygonAttributes.CULL_NONE, 0.0f);
 		app.setPolygonAttributes(p);
 		PointAttributes ps = new PointAttributes();
 		ps.setPointSize(10);
-		
-//		IndexedTriangleArray indtria = new IndexedTriangleArray(marchingCube.coords.length, IndexedTriangleArray.COORDINATES, cubi.allIndices.length);
-//		indtria.setCoordinates(0, marchingCube.coords);
-//		indtria.setCoordinateIndices(0, cubi.allIndices);
 
-//		Shape3D shape = new Shape3D(indtria);
-//		shape.setAppearance(app);
-//		marchingNode.addChild(shape);
-//
-//		bgroup.addChild(marchingNode);
+		if (shapes.containsKey(seg.getName())) {
+			shape = shapes.remove(seg.getName());
+		}
+
+		int w2 = seg.getMask(0).getWidth() / 2;
+		int h2 = seg.getMask(0).getHeight() / 2;
+		for (int i = 0; i < seg.getMaskNum(); i++) {
+			BitMask bitmask = seg.getMask(i);
+			for (int y = 0; y < bitmask.getHeight(); y++) {
+				for (int x = 0; x < bitmask.getWidth(); x++) {
+					if (bitmask.get(x, y)) {
+						Point3f point = new Point3f((x - w2), (y - h2), (i - seg.getMaskNum() / 2));
+						if (addPoint(point)) {
+							
+							point.set(point.x / bitmask.getWidth(), point.y / bitmask.getHeight(), point.z / seg.getMaskNum());
+//							pointsToShow.add(point);
+						}
+
+					}
+				}
+			}
+		}
+
+		// IndexedTriangleArray indtria = new IndexedTriangleArray(marchingCube.coords.length, IndexedTriangleArray.COORDINATES, cubi.allIndices.length);
+		// indtria.setCoordinates(0, marchingCube.coords);
+		// indtria.setCoordinateIndices(0, cubi.allIndices);
+
+		// Shape3D shape = new Shape3D(indtria);
+		// shape.setAppearance(app);
+		// marchingNode.addChild(shape);
+		//
+		// bgroup.addChild(marchingNode);
 	}
 
 	public void enable2DTextureVolumeRendering(boolean enable) {
@@ -666,6 +696,15 @@ public class Viewport3d extends Viewport implements Observer {
 		}
 		update_view();
 	}
+	
+	public void changeMarchingCubeSize(float n)	{
+		this.marchingCubeSize = n;
+		for (Enumeration<Segment> segs = _map_name_to_seg.elements(); segs.hasMoreElements();) {
+			Segment seg = segs.nextElement();
+			initMarchingCubes(seg);
+		}
+		update_view();
+	}
 
 	/**
 	 * Implements the observer function update. Updates can be triggered by the global image stack.
@@ -691,6 +730,7 @@ public class Viewport3d extends Viewport implements Observer {
 
 				System.out.println("need Update");
 				addPoints((Segment) (m._obj));
+				initMarchingCubes((Segment) (m._obj));
 				update_view();
 			}
 		}
@@ -701,7 +741,6 @@ public class Viewport3d extends Viewport implements Observer {
 
 		if (m._type == Message.M_LOADING_IMAGES_FINISHED) {
 			initOrthoSlices();
-			initMarchingCubes();
 			addOrthoSlices(mode, mode, true);
 			initVolumeRendering();
 
