@@ -572,7 +572,7 @@ public class MenuBar extends JMenuBar {
 		public void actionPerformed(ActionEvent event) {
 			String name = JOptionPane.showInputDialog(_win,
 					"Cube number (int)");
-			System.out.println(name);
+//			System.out.println(name);
 			int bytestring = 0; 
 			for(int i = 0; i < name.length(); i++)	{
 				bytestring = bytestring << 1; 

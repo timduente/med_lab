@@ -6,28 +6,46 @@ import java.util.LinkedList;
 import javax.media.j3d.TriangleArray;
 import javax.vecmath.Point3f;
 
-import myTestCube.Main;
-import myTestCube.Main.points;
-
 public class Cube {
 	public int corner;
 	// This list contains the enum points as an array of 3 each.
 	// Each plane/triangle is defined by eg. p45, 67, p56 => This way an order
 	// is introduced and it can be rotated
-	public LinkedList<points[]> lPlanes;
+	public LinkedList<int[]> lPlanes;
 	public TriangleArray[] planes;
 
-	public Cube(int corner, LinkedList<points[]> lPlanes) {
+	/** COPIED INTO CUBE.JAVA - DO NOT CHANGE **/
+	private final int p01 = 0;
+	private final int p12 = 1;
+	private final int p23 = 2;
+	private final int p03 = 3;
+	private final int p45 = 4;
+	private final int p56 = 5;
+	private final int p67 = 6;
+	private final int p47 = 7;
+	private final int p04 = 8;
+	private final int p15 = 9;
+	private final int p26 = 10;
+	private final int p37 = 11;
+
+	/** STAY AWAY **/
+
+	public Cube(int corner, LinkedList<int[]> lPlanes) {
 		this.corner = corner & 0xFF;
 		this.lPlanes = lPlanes;
 		// TODO: Translate lPlanes to planes
 		planes = new TriangleArray[lPlanes.size()];
 		populateTriangleArray();
+		// System.out.println("New Cube with : " + Integer.toBinaryString(corner));
+	}
+	
+	public Cube(Cube aCube)	{
+		this(aCube.corner, aCube.lPlanes); 
 	}
 
 	public Cube invert() {
 		BitSet newCor = BitSet.valueOf(new byte[] { (byte) (corner & 0xFF) });
-		LinkedList<points[]> newPlanes = new LinkedList<points[]>();
+		LinkedList<int[]> newPlanes = new LinkedList<int[]>();
 
 		// Change bit value and points of plane
 		for (int i = 0; i < 8; i++) {
@@ -38,11 +56,11 @@ public class Cube {
 		// System.out.println("cor2 " +
 		// Integer.toBinaryString(newCor.toByteArray()[0] & 0xFF));
 
-		for (points[] pt : lPlanes) {
-			points[] threePoints = new points[pt.length];
-			threePoints[0] = pt[2];
-			threePoints[1] = pt[1];
-			threePoints[2] = pt[0];
+		for (int[] pt : lPlanes) {
+			int[] threePoints = new int[pt.length];
+			threePoints[0] = new Integer(pt[2]);
+			threePoints[1] = new Integer( pt[1]);
+			threePoints[2] = new Integer(pt[0]);
 
 			newPlanes.add(threePoints);
 		}
@@ -51,7 +69,7 @@ public class Cube {
 
 	private void populateTriangleArray() {
 		int index = 0;
-		for (points[] pt : lPlanes) {
+		for (int[] pt : lPlanes) {
 			Point3f[] single = new Point3f[3];
 			for (int i = 0; i < 3; i++) {
 				switch (pt[i]) {
@@ -101,7 +119,7 @@ public class Cube {
 
 	public Cube getNewFromRotXAxes(int rot) {
 		BitSet newCor = BitSet.valueOf(new byte[] { (byte) corner });
-		LinkedList<points[]> newPlanes = new LinkedList<points[]>();
+		LinkedList<int[]> newPlanes = new LinkedList<int[]>();
 
 		// Change bit value and points of plane
 		for (int i = 1; i <= rot; i++) {
@@ -115,62 +133,69 @@ public class Cube {
 			newCor.set(6, newCor.get(2));
 			newCor.set(2, newCor.get(1));
 			newCor.set(1, helper);
-
-			// Do something with rotation planes
-
-			for (points[] pt : lPlanes) {
-				points[] pointsRotated = new points[3];
+		}
+		for (int[] pt : lPlanes) {
+			int[] ptRot = new int[3];
+			ptRot[0] = new Integer(pt[0]);
+			ptRot[1] = new Integer(pt[1]);
+			ptRot[2] = new Integer(pt[2]);
+			for (int i = 1; i <= rot; i++) {
+				int[] ptRotTemp = new int[3]; // Needed, otherwise switch case will be changed while inside for loop.
+				ptRotTemp[0] = new Integer(ptRot[0]);
+				ptRotTemp[1] = new Integer(ptRot[1]);
+				ptRotTemp[2] = new Integer(ptRot[2]);
 				for (int index = 0; index < 3; index++) {
-					switch (pt[index]) {
+					switch (ptRotTemp[index]) {
 					case p01:
-						pointsRotated[index] = points.p45;
+						ptRot[index] = new Integer(p45);
 						break;
 					case p12:
-						pointsRotated[index] = points.p15;
+						ptRot[index] = new Integer(p15);
 						break;
 					case p23:
-						pointsRotated[index] = points.p01;
+						ptRot[index] = new Integer(p01);
 						break;
 					case p03:
-						pointsRotated[index] = points.p04;
+						ptRot[index] = new Integer(p04);
 						break;
 					case p45:
-						pointsRotated[index] = points.p67;
+						ptRot[index] = new Integer(p67);
 						break;
 					case p56:
-						pointsRotated[index] = points.p26;
+						ptRot[index] = new Integer(p26);
 						break;
 					case p67:
-						pointsRotated[index] = points.p23;
+						ptRot[index] = new Integer(p23);
 						break;
 					case p47:
-						pointsRotated[index] = points.p37;
+						ptRot[index] = new Integer(p37);
 						break;
 					case p04:
-						pointsRotated[index] = points.p47;
+						ptRot[index] = new Integer(p47);
 						break;
 					case p15:
-						pointsRotated[index] = points.p56;
+						ptRot[index] = new Integer(p56);
 						break;
 					case p26:
-						pointsRotated[index] = points.p12;
+						ptRot[index] = new Integer(p12);
 						break;
 					case p37:
-						pointsRotated[index] = points.p03;
+						ptRot[index] = new Integer(p03);
 						break;
 					default:
 						System.out.println("Error rotating cubes on y-axis");
 					}
 				}
-				newPlanes.add(pointsRotated);
 			}
+			newPlanes.add(ptRot);
+
 		}
 		return new Cube(newCor.toByteArray()[0], newPlanes);
 	}
 
 	public Cube getNewFromRotYAxes(int rot) {
 		BitSet newCor = BitSet.valueOf(new byte[] { (byte) corner });
-		LinkedList<points[]> newPlanes = new LinkedList<points[]>();
+		LinkedList<int[]> newPlanes = new LinkedList<int[]>();
 
 		// Change bit value and points of plane
 		for (int i = 1; i <= rot; i++) {
@@ -185,72 +210,70 @@ public class Cube {
 			newCor.set(6, newCor.get(5));
 			newCor.set(5, helper);
 		}
-		
-		
-		// Rotiere Plane 
-		// Rotiere x-mal 
-		for(points[] pt : lPlanes)	{
-			points[] pointsRotated = new points[3];
-			for
-			
-		}
-		
-			// Do something with rotation planes
-			//points[] : 3-er Array aus main enum: poins (p01,etc)
-			points[] pointsRotated = new points[3];
-			for (points[] pt : lPlanes) {	//Cube member: LinkedList<points[]> lPlanes
-				
+		// Rotiere Plane
+		// Rotiere x-mal
+		for (int[] pt : lPlanes) {
+			int[] ptRot = new int[3];
+			ptRot[0] = new Integer(pt[0]);
+			ptRot[1] = new Integer(pt[1]);
+			ptRot[2] = new Integer(pt[2]);
+			for (int i = 1; i <= rot; i++) {
+				int[] ptRotTemp = new int[3]; // Needed, otherwise switch case will be changed while inside for loop.
+				ptRotTemp[0] = new Integer(ptRot[0]);
+				ptRotTemp[1] = new Integer(ptRot[1]);
+				ptRotTemp[2] = new Integer(ptRot[2]);
 				for (int index = 0; index < 3; index++) {
-					switch (pt[index]) {
+					switch (ptRotTemp[index]) {
 					case p01:
-						pointsRotated[index] = points.p03;
+						ptRot[index] = new Integer(p03);
 						break;
 					case p12:
-						pointsRotated[index] = points.p01;
+						ptRot[index] = new Integer(p01);
 						break;
 					case p23:
-						pointsRotated[index] = points.p12;
+						ptRot[index] = new Integer(p12);
 						break;
 					case p03:
-						pointsRotated[index] = points.p23;
+						ptRot[index] = new Integer(p23);
 						break;
 					case p45:
-						pointsRotated[index] = points.p47;
+						ptRot[index] = new Integer(p47);
 						break;
 					case p56:
-						pointsRotated[index] = points.p45;
+						ptRot[index] = new Integer(p45);
 						break;
 					case p67:
-						pointsRotated[index] = points.p56;
+						ptRot[index] = new Integer(p56);
 						break;
 					case p47:
-						pointsRotated[index] = points.p67;
+						ptRot[index] = new Integer(p67);
 						break;
 					case p04:
-						pointsRotated[index] = points.p37;
+						ptRot[index] = new Integer(p37);
 						break;
 					case p15:
-						pointsRotated[index] = points.p04;
+						ptRot[index] = new Integer(p04);
 						break;
 					case p26:
-						pointsRotated[index] = points.p15;
+						ptRot[index] = new Integer(p15);
 						break;
 					case p37:
-						pointsRotated[index] = points.p26;
+						ptRot[index] = new Integer(p26);
 						break;
 					default:
 						System.out.println("Error rotating cubes on y-axis");
 					}
 				}
-				newPlanes.add(pointsRotated);
 			}
+			newPlanes.add(ptRot);
+
 		}
 		return new Cube(newCor.toByteArray()[0], newPlanes);
 	}
 
 	public Cube getNewFromRotZAxes(int rot) {
 		BitSet newCor = BitSet.valueOf(new byte[] { (byte) corner });
-		LinkedList<points[]> newPlanes = new LinkedList<points[]>();
+		LinkedList<int[]> newPlanes = new LinkedList<int[]>();
 
 		// Change bit value and points of plane
 		for (int i = 1; i <= rot; i++) {
@@ -264,57 +287,73 @@ public class Cube {
 			newCor.set(2, newCor.get(6));
 			newCor.set(6, newCor.get(7));
 			newCor.set(7, helper);
-
-			// Do something with rotation planes
-
-			for (points[] pt : lPlanes) {
-				points[] pointsRotated = new points[3];
+		}
+		for (int[] pt : lPlanes) {
+			int[] ptRot = new int[3];
+			ptRot[0] = new Integer(pt[0]);
+			ptRot[1] = new Integer(pt[1]);
+			ptRot[2] = new Integer(pt[2]);
+			for (int i = 1; i <= rot; i++) {
+				int[] ptRotTemp = new int[3];
+				ptRotTemp[0] = new Integer(ptRot[0]);
+				ptRotTemp[1] = new Integer(ptRot[1]);
+				ptRotTemp[2] = new Integer(ptRot[2]);
 				for (int index = 0; index < 3; index++) {
-					switch (pt[index]) {
+					switch (ptRotTemp[index]) {
 					case p01:
-						pointsRotated[index] = points.p15;
+						ptRot[index] = new Integer(p15);
 						break;
 					case p12:
-						pointsRotated[index] = points.p56;
+						ptRot[index] = new Integer(p56);
 						break;
 					case p23:
-						pointsRotated[index] = points.p26;
+						ptRot[index] = new Integer(p26);
 						break;
 					case p03:
-						pointsRotated[index] = points.p12;
+						ptRot[index] = new Integer(p12);
 						break;
 					case p45:
-						pointsRotated[index] = points.p04;
+						ptRot[index] = new Integer(p04);
 						break;
 					case p56:
-						pointsRotated[index] = points.p47;
+						ptRot[index] = new Integer(p47);
 						break;
 					case p67:
-						pointsRotated[index] = points.p37;
+						ptRot[index] = new Integer(p37);
 						break;
 					case p47:
-						pointsRotated[index] = points.p03;
+						ptRot[index] = new Integer(p03);
 						break;
 					case p04:
-						pointsRotated[index] = points.p01;
+						ptRot[index] = new Integer(p01);
 						break;
 					case p15:
-						pointsRotated[index] = points.p45;
+						ptRot[index] = new Integer(p45);
 						break;
 					case p26:
-						pointsRotated[index] = points.p67;
+						ptRot[index] = new Integer(p67);
 						break;
 					case p37:
-						pointsRotated[index] = points.p23;
+						ptRot[index] = new Integer(p23);
 						break;
 					default:
 						System.out.println("Error rotating cubes on z-axis");
 					}
 				}
-				newPlanes.add(pointsRotated);
 			}
+			newPlanes.add(ptRot);
+
 		}
 		return new Cube(newCor.toByteArray()[0], newPlanes);
+	}
+
+	public String toString() {
+		String retVal = "Cube: " + Integer.toBinaryString(corner & 0xFF) + " with lPlanes size: " + this.lPlanes.size() + " & planes length: " + planes.length + "\n";
+		for (int[] pt : lPlanes) {
+			retVal += "  Points: " + pt[0] + " " + pt[1] + " " + pt[2] + "\n";
+		}
+		return retVal;
+
 	}
 
 }

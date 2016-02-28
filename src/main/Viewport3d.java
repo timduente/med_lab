@@ -36,8 +36,7 @@ import javax.vecmath.TexCoord2f;
 
 import misc.BitMask;
 import myTestCube.Cube;
-import myTestCube.Main;
-import myTestCube.Main.points;
+import myTestCube.MarchingCubeLUT;
 
 import com.sun.j3d.utils.behaviors.mouse.MouseRotate;
 import com.sun.j3d.utils.behaviors.mouse.MouseWheelZoom;
@@ -59,6 +58,7 @@ public class Viewport3d extends Viewport implements Observer {
 	boolean orthoEnabled = false;
 	boolean marchingCubeEnabled = false;
 	boolean TextureVolumeRenderingEnabled = false;
+	MarchingCubeLUT main = new MarchingCubeLUT();
 
 	public void setV2d(Viewport2d v2d) {
 		this.v2d = v2d;
@@ -216,8 +216,9 @@ public class Viewport3d extends Viewport implements Observer {
 		
 		
 		
-		Main main = new Main();
-		Cube cubi = main.McLut.get(number);
+//		Main main = new Main();
+		Cube cubi = this.main.McLut.get(number);
+		System.out.println(cubi.toString());
 		
 		ColoringAttributes color_ca = new ColoringAttributes();
 		color_ca.setColor(new Color3f(0.3f, 0.3f, 0.3f));
@@ -239,13 +240,13 @@ public class Viewport3d extends Viewport implements Observer {
 		app0.setColoringAttributes(color_points_0);
 		Appearance app1 = new Appearance();
 		app1.setColoringAttributes(color_points_1);
-		System.out.println("Size of triangle array: " + cubi.planes.length);
+//		System.out.println("Size of triangle array: " + cubi.planes.length);
 		for(TriangleArray tri : cubi.planes)	{
 			Shape3D shape = new Shape3D(tri);
 			shape.setAppearance(app);
 			
 			marchingNode.addChild(shape);
-			System.out.println("Point 1 coord:  " + tri.toString());
+//			System.out.println("Point 1 coord:  " + tri.toString());
 		}
 		TriangleArray tria = new TriangleArray(3, TriangleArray.COORDINATES);
 		tria.setCoordinates(0, new Point3f[]{ new Point3f(-1.0f, -1.0f, -1.0f), new Point3f(1.0f, -1.0f, -1.0f),new Point3f(-1.0f, 1.0f, -1.0f)});
@@ -301,13 +302,13 @@ public class Viewport3d extends Viewport implements Observer {
 		bgroup.addChild(marchingNode);
 		
 		/** DEBUG **/
-		System.out.println("Cube plane (points, no triangle): ");
-		 
-		for (points[] pt : cubi.lPlanes) {
-			System.out.println("Values:" + pt[0] + " " + pt[1] + " " + pt[2]
-					+ " ");
-		
-		}
+//		System.out.println("Cube plane (points, no triangle): ");
+//		 
+//		for (points[] pt : cubi.lPlanes) {
+//			System.out.println("Values:" + pt[0] + " " + pt[1] + " " + pt[2]
+//					+ " ");
+//		
+//		}
 	}
 
 	public void enable2DTextureVolumeRendering(boolean enable) {
