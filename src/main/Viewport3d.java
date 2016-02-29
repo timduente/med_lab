@@ -9,6 +9,7 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.LinkedList;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -37,6 +38,7 @@ import javax.vecmath.TexCoord2f;
 import javax.vecmath.Tuple3f;
 
 import misc.BitMask;
+import myTestCube.BennyOneByte;
 import myTestCube.Cube;
 import myTestCube.MarchingCubeLUT;
 
@@ -58,7 +60,7 @@ public class Viewport3d extends Viewport implements Observer {
 
 	Viewport2d v2d;
 
-	boolean pointcloudEnabled = false; 
+	boolean pointcloudEnabled = false;
 	boolean orthoEnabled = false;
 	boolean marchingCubeEnabled = false;
 	boolean TextureVolumeRenderingEnabled = false;
@@ -92,13 +94,6 @@ public class Viewport3d extends Viewport implements Observer {
 	QuadArray[] ortho_planes = new QuadArray[3];
 	Appearance[] app_for_ortho_planes = new Appearance[3];
 
-	// QuadArray trans_plane; 0
-	// QuadArray sag_plane; 1
-	// QuadArray fron_plane; 2
-
-	// Appearance ap_trans; 0
-	// Appearance ap_sag; 1
-	// Appearance ap_front; 2
 
 	/**
 	 * Private class, implementing the GUI element for displaying the 3d data.
@@ -184,11 +179,12 @@ public class Viewport3d extends Viewport implements Observer {
 			}
 		}
 	}
+
 	public void enablePointCloud(boolean enable) {
 		pointcloudEnabled = enable;
 		update_view();
 	}
-	
+
 	public void enableOrthoslices(boolean enable) {
 		orthoEnabled = enable;
 		if (enable) {
@@ -223,16 +219,17 @@ public class Viewport3d extends Viewport implements Observer {
 	 * @param number
 	 */
 	public void initMarchingCube(int number) {
-		// bgroup.removeChild(marchingNode);
-		// marchingNode.detach();
-		// marchingNode = new BranchGroup();
-		// marchingNode.setCapability(BranchGroup.ALLOW_DETACH);
+		bgroup.removeChild(marchingNode);
+		marchingNode.detach();
+		marchingNode = new BranchGroup();
+		marchingNode.setCapability(BranchGroup.ALLOW_DETACH);
 
 		// Main main = new Main();
 		Cube cubi = this.marchingCube.McLut.get(number);
 		System.out.println(cubi.toString());
 		System.out.println("Rotated entries: \n");
-		System.out.println("X: " + Integer.toBinaryString(cubi.debug_rotateX(1) & 0xFF) + " & Y: " + Integer.toBinaryString(cubi.debug_rotateY(1)) + " & Z: " + Integer.toBinaryString(cubi.debug_rotateZ(1)));
+		System.out.println("X: " + Integer.toBinaryString(cubi.debug_rotateX(1) & 0xFF) + " & Y: " + Integer.toBinaryString(cubi.debug_rotateY(1)) + " & Z: "
+				+ Integer.toBinaryString(cubi.debug_rotateZ(1)));
 
 		ColoringAttributes color_ca = new ColoringAttributes();
 		color_ca.setColor(new Color3f(0.3f, 0.3f, 0.3f));
@@ -240,7 +237,7 @@ public class Viewport3d extends Viewport implements Observer {
 		Appearance app = new Appearance();
 		app.setColoringAttributes(color_ca);
 
-		PolygonAttributes p = new PolygonAttributes(PolygonAttributes.POLYGON_FILL, PolygonAttributes.CULL_NONE, 0.0f);
+		PolygonAttributes p = new PolygonAttributes(PolygonAttributes.POLYGON_FILL, PolygonAttributes.CULL_BACK, 0.0f);
 		app.setPolygonAttributes(p);
 		PointAttributes ps = new PointAttributes();
 		ps.setPointSize(10);
@@ -342,7 +339,7 @@ public class Viewport3d extends Viewport implements Observer {
 		color_points_1.setColor(new Color3f(1.0f, 0.0f, 0.0f));
 
 		Appearance app = new Appearance();
-		app.setColoringAttributes(color_ca);
+		app.setColoringAttributes(color_points_1);
 		Appearance app0 = new Appearance();
 		app0.setColoringAttributes(color_points_0);
 		Appearance app1 = new Appearance();
@@ -356,56 +353,89 @@ public class Viewport3d extends Viewport implements Observer {
 		if (shapes.containsKey(seg.getName())) {
 			shapes.remove(seg.getName());
 		}
-		// shape.setAppearance(app);
 
-		int w2 = seg.getMask(0).getWidth() / 2;
-		int h2 = seg.getMask(0).getHeight() / 2;
-		for (int i = 0; i < seg.getMaskNum() - 1; i += 2) {
+		
+
+		float w2 = seg.getMask(0).getWidth() / 2;
+		float h2 = seg.getMask(0).getHeight() / 2;
+		
+		LinkedList<Point3f> allPoints = new LinkedList<Point3f>();
+		LinkedList<Integer> allIndexedPlanes = new LinkedList<Integer>();
+		
+		for (int i = 0; i < seg.getMaskNum() - marchingCubeSize; i += marchingCubeSize) {
 			BitMask upper_bitmask = seg.getMask(i);
-			BitMask lower_bitmask = seg.getMask(i + 1);
+			BitMask lower_bitmask = seg.getMask(i + marchingCubeSize);
 			for (int y = 0; y < upper_bitmask.getHeight() - marchingCubeSize; y += marchingCubeSize) {
-				for (int x = 0; x < upper_bitmask.getWidth() - marchingCubeSize; x += marchingCubeSize) {
-					// Grab 8 points
-					boolean[] onArray = new boolean[8];
-					onArray[0] = lower_bitmask.get(x + marchingCubeSize, y);
-					onArray[1] = lower_bitmask.get(x + marchingCubeSize, y + marchingCubeSize);
-					onArray[2] = upper_bitmask.get(x + marchingCubeSize, y + marchingCubeSize);
-					onArray[3] = upper_bitmask.get(x + marchingCubeSize, y);
-					onArray[4] = lower_bitmask.get(x, y);
-					onArray[5] = lower_bitmask.get(x + marchingCubeSize, y);
-					onArray[6] = upper_bitmask.get(x + marchingCubeSize, y);
-					onArray[7] = upper_bitmask.get(x, y);
-					int cornerVal = 0;
-					for (int ind = 0; ind < 8; ind++) {
-						if (onArray[0]) {
-							cornerVal += Math.pow(10, ind);
-						}
-					}
+				for (int x = 0; x < upper_bitmask.getWidth() - marchingCubeSize; x += marchingCubeSize) {					
+					BennyOneByte onArray = new BennyOneByte(0);
+					onArray.set(0, lower_bitmask.get(x + marchingCubeSize, y));
+					onArray.set(1, lower_bitmask.get(x + marchingCubeSize, y + marchingCubeSize));
+					onArray.set(2, upper_bitmask.get(x + marchingCubeSize, y + marchingCubeSize));
+					onArray.set(3, upper_bitmask.get(x + marchingCubeSize, y));
+					onArray.set(4, lower_bitmask.get(x, y));
+					onArray.set(5, lower_bitmask.get(x + marchingCubeSize, y));
+					onArray.set(6, upper_bitmask.get(x + marchingCubeSize, y));
+					onArray.set(7, upper_bitmask.get(x, y));
+					int cornerVal = onArray.getAsInt();
+
 					Cube cubi = marchingCube.McLut.get(cornerVal & 0xFF);
 					if (cubi.allIndices.length != 0) {
-						IndexedTriangleArray indtria = new IndexedTriangleArray(marchingCube.coords.length, IndexedTriangleArray.COORDINATES, cubi.allIndices.length);
+						Point3f save_point = new Point3f((x - w2 + marchingCubeSize /2.0f) / upper_bitmask.getWidth(), (y - h2 + marchingCubeSize /2.0f) / upper_bitmask.getHeight(),
+								(marchingCubeSize /2.0f + i - seg.getMaskNum() / 2.0f) / seg.getMaskNum());
+						allPoints.add(save_point);
+						
+						Point3f shift_point = new Point3f((x - w2) / upper_bitmask.getWidth(), (y - h2) / upper_bitmask.getHeight(),
+								(i - seg.getMaskNum() / 2.0f) / seg.getMaskNum());
+
+						
 						Point3f[] cubeCoords = new Point3f[12];
 						for (int j = 0; j < 12; j++) {
 							cubeCoords[j] = new Point3f(marchingCube.coords[j]);
-							cubeCoords[j].scale(1 / seg.getMask(0).getWidth());
-							cubeCoords[j].add(new Point3f(x / seg.getMask(0).getWidth(), y / seg.getMask(0).getWidth(), i / seg.getMask(0).getWidth()));
+							cubeCoords[j].scale(marchingCubeSize * 1.0f / seg.getMask(0).getWidth());
+							cubeCoords[j].add(shift_point);
 						}
-
-						indtria.setCoordinates(0, cubeCoords);
-						indtria.setCoordinateIndices(0, cubi.allIndices);
-						// shapes.put(seg.getName()+"m", new Shape3D(indtria));
-						Shape3D shapp = new Shape3D(indtria, app);
-						marchingNode.addChild(shapp);
+						for(int[] indexCubiPlane : cubi.lPlanes)	{	// 3 4 5 => p12, p15, p37
+							allIndexedPlanes.push(getIndexOfLinkedList(allPoints, cubeCoords[indexCubiPlane[0]]));
+							allIndexedPlanes.push(getIndexOfLinkedList(allPoints, cubeCoords[indexCubiPlane[1]]));
+							allIndexedPlanes.push(getIndexOfLinkedList(allPoints, cubeCoords[indexCubiPlane[2]]));
+						}
 					}
 				}
 			}
+		}		
+		Point3f[] allPointsArray = new Point3f[allPoints.size()];
+		int counter2 = 0; 
+		for(Point3f pt : allPoints)	{
+			allPointsArray[counter2++] = pt; 
+		}
+		System.out.println("Size of allPointsArray " + allPointsArray.length + " of " + allPoints.size());
+		
+		int[] allIndices = new int[allIndexedPlanes.size()];
+		int counter = 0; 
+		for(int intii : allIndexedPlanes)	{
+			allIndices[counter++] = intii; 
 		}
 
-		// Shape3D shape = new Shape3D(indtria);
-		// shape.setAppearance(app);
-		// marchingNode.addChild(shape);
-		//
+		System.out.println("Greatness of POWER: " + allIndexedPlanes.size() + " and has " + allIndices.length);
+		IndexedTriangleArray indtria = new IndexedTriangleArray(allPointsArray.length, IndexedTriangleArray.COORDINATES,allIndices.length );
+		indtria.setCoordinates(0, allPointsArray); // TODO: Program start or  enable marching cube
+		indtria.setCoordinateIndices(0, allIndices);
+		Shape3D shapp = new Shape3D(indtria, app);
+		marchingNode.addChild(shapp);
 		bgroup.addChild(marchingNode);
+		System.out.println("initMarchingCubes(Segment seg) ended");
+	}
+	
+	private int getIndexOfLinkedList(LinkedList<Point3f> llp3f, Point3f ptsearched)	{
+		int counter = 0; 
+		for(Point3f pt : llp3f)	{
+			if(pt.epsilonEquals(ptsearched, 0.1f))	{
+				return counter; 
+			}
+			counter++; 			
+		}	
+		System.out.println("BAD Error");
+		return -1; 
 	}
 
 	public void enable2DTextureVolumeRendering(boolean enable) {
@@ -429,7 +459,8 @@ public class Viewport3d extends Viewport implements Observer {
 		PolygonAttributes polygonAttributs = new PolygonAttributes();
 		polygonAttributs.setCullFace(PolygonAttributes.CULL_NONE);
 		polygonAttributs.setPolygonMode(PolygonAttributes.POLYGON_FILL);
-		TransparencyAttributes tpAtt = new TransparencyAttributes(TransparencyAttributes.BLENDED, .2f, TransparencyAttributes.BLEND_SRC_ALPHA, TransparencyAttributes.BLEND_ONE);
+		TransparencyAttributes tpAtt = new TransparencyAttributes(TransparencyAttributes.BLENDED, .2f, TransparencyAttributes.BLEND_SRC_ALPHA,
+				TransparencyAttributes.BLEND_ONE);
 
 		float range = 0.5f;
 
@@ -448,7 +479,8 @@ public class Viewport3d extends Viewport implements Observer {
 
 		float layer = (imageIndex - _slices.getDepth(view_mode) / 2.0f) / _slices.getDepth(view_mode);
 
-		Point3f[] slice = { new Point3f(range, range, layer), new Point3f(-range, range, layer), new Point3f(-range, -range, layer), new Point3f(range, -range, layer) };
+		Point3f[] slice = { new Point3f(range, range, layer), new Point3f(-range, range, layer), new Point3f(-range, -range, layer),
+				new Point3f(range, -range, layer) };
 
 		quad.setCoordinates(0, slice);
 
@@ -464,7 +496,8 @@ public class Viewport3d extends Viewport implements Observer {
 
 	}
 
-	private Appearance initAppearanceForOrthoPlanes(TextureAttributes ta, ColoringAttributes color_ca, PolygonAttributes polygonAttributs, TransparencyAttributes tpAtt) {
+	private Appearance initAppearanceForOrthoPlanes(TextureAttributes ta, ColoringAttributes color_ca, PolygonAttributes polygonAttributs,
+			TransparencyAttributes tpAtt) {
 		Appearance appearance = new Appearance();
 
 		appearance.setTextureAttributes(ta);
@@ -497,7 +530,8 @@ public class Viewport3d extends Viewport implements Observer {
 		PolygonAttributes polygonAttributs = new PolygonAttributes();
 		polygonAttributs.setCullFace(PolygonAttributes.CULL_NONE);
 		polygonAttributs.setPolygonMode(PolygonAttributes.POLYGON_FILL);
-		TransparencyAttributes tpAtt = new TransparencyAttributes(TransparencyAttributes.BLENDED, .4f, TransparencyAttributes.BLEND_SRC_ALPHA, TransparencyAttributes.BLEND_ONE);
+		TransparencyAttributes tpAtt = new TransparencyAttributes(TransparencyAttributes.BLENDED, .4f, TransparencyAttributes.BLEND_SRC_ALPHA,
+				TransparencyAttributes.BLEND_ONE);
 
 		Shape3D[] ortho_shapes = new Shape3D[3];
 
@@ -517,7 +551,10 @@ public class Viewport3d extends Viewport implements Observer {
 		float layer = (_slices.getActiveImageID() - _slices.getDepth() / 2.0f) / _slices.getDepth();
 
 		/**
-		 * What happens next: On view mode is active: The corresponding orthoslice shall be drawn on the layer which the 2d view shows. This slice will have (layer, 0,0) OR (0,layer,0) OR (0,0,layer) in its points. Therefore: Ternary Op which view mode is active
+		 * What happens next: On view mode is active: The corresponding
+		 * orthoslice shall be drawn on the layer which the 2d view shows. This
+		 * slice will have (layer, 0,0) OR (0,layer,0) OR (0,0,layer) in its
+		 * points. Therefore: Ternary Op which view mode is active
 		 * 
 		 * The other 2 view modes orthoslices will be drawn thru (0,0,0).
 		 * 
@@ -551,7 +588,8 @@ public class Viewport3d extends Viewport implements Observer {
 
 	private void initSag(float range, int view_mode, float layer) {
 		BufferedImage img_sag;
-		Point3f[] sag_slice = { new Point3f((view_mode == 1) ? layer : 0.0f, range, range), new Point3f((view_mode == 1) ? layer : 0.0f, -range, range), new Point3f((view_mode == 1) ? layer : 0.0f, -range, -range), new Point3f((view_mode == 1) ? layer : 0.0f, range, -range) };
+		Point3f[] sag_slice = { new Point3f((view_mode == 1) ? layer : 0.0f, range, range), new Point3f((view_mode == 1) ? layer : 0.0f, -range, range),
+				new Point3f((view_mode == 1) ? layer : 0.0f, -range, -range), new Point3f((view_mode == 1) ? layer : 0.0f, range, -range) };
 
 		ortho_planes[1].setCoordinates(0, sag_slice);
 
@@ -572,7 +610,8 @@ public class Viewport3d extends Viewport implements Observer {
 	private void initTrans(float range, int view_mode, float layer) {
 		BufferedImage img_trans;
 
-		Point3f[] trans_slice = { new Point3f(range, range, (view_mode == 0) ? layer : 0.0f), new Point3f(-range, range, (view_mode == 0) ? layer : 0.0f), new Point3f(-range, -range, (view_mode == 0) ? layer : 0.0f), new Point3f(range, -range, (view_mode == 0) ? layer : 0.0f) };
+		Point3f[] trans_slice = { new Point3f(range, range, (view_mode == 0) ? layer : 0.0f), new Point3f(-range, range, (view_mode == 0) ? layer : 0.0f),
+				new Point3f(-range, -range, (view_mode == 0) ? layer : 0.0f), new Point3f(range, -range, (view_mode == 0) ? layer : 0.0f) };
 
 		ortho_planes[0].setCoordinates(0, trans_slice);
 
@@ -593,7 +632,8 @@ public class Viewport3d extends Viewport implements Observer {
 	}
 
 	private void initFront(float range, int view_mode, float layer) {
-		Point3f[] fron_slice = { new Point3f(range, (view_mode == 2) ? layer : 0.0f, range), new Point3f(-range, (view_mode == 2) ? layer : 0.0f, range), new Point3f(-range, (view_mode == 2) ? layer : 0.0f, -range), new Point3f(+range, (view_mode == 2) ? layer : 0.0f, -range) };
+		Point3f[] fron_slice = { new Point3f(range, (view_mode == 2) ? layer : 0.0f, range), new Point3f(-range, (view_mode == 2) ? layer : 0.0f, range),
+				new Point3f(-range, (view_mode == 2) ? layer : 0.0f, -range), new Point3f(+range, (view_mode == 2) ? layer : 0.0f, -range) };
 
 		ortho_planes[2].setCoordinates(0, fron_slice);
 
@@ -728,7 +768,8 @@ public class Viewport3d extends Viewport implements Observer {
 	}
 
 	/**
-	 * Implements the observer function update. Updates can be triggered by the global image stack.
+	 * Implements the observer function update. Updates can be triggered by the
+	 * global image stack.
 	 */
 	public void update(final Observable o, final Object obj) {
 		if (!EventQueue.isDispatchThread()) {

@@ -43,5 +43,19 @@ public class BennyOneByte {
 	public byte getAsByte() {
 		return stored;
 	}
+	
+	public byte invGetByte(){
+		return (byte)~stored;
+	}
+	
+	public void inv(){
+		stored = (byte)~stored;
+	}
+	
+	public BennyOneByte invGetThis(){
+		this.inv();
+		return this;
+	}
+	
 
 }

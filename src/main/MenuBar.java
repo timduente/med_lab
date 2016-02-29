@@ -149,9 +149,11 @@ public class MenuBar extends JMenuBar {
 		_no_entries3d.setEnabled(false);
 		_menu3d.add(_no_entries3d);
 
-//		item = new JMenuItem(new String("Show Cute Cube"));
-//		item.addActionListener(newCuteCube);
-//		_menu3d.add(item);
+		
+		//Show Cubes
+		item = new JMenuItem(new String("Show cubes"));
+		item.addActionListener(cubeListener);
+		_menu3d.add(item);
 
 		// -------------------------------------------------------------------------------------
 
@@ -244,6 +246,7 @@ public class MenuBar extends JMenuBar {
 	 *            true if the dialog should be a save file dialog, false if not
 	 */
 	private void openDialog(boolean save) {
+		LabMed.get_is().initFromDirectory("C:\\Users\\Tim Dünte\\Dropbox\\Leibnitz_Universität_Hannover\\MA_Semester_3\\Graphische 3D Datenverarbeitung in der Medizin\\lab_med\\ct_head_ex");
 		int returnVal;
 		File file;
 		JFileChooser chooser;
@@ -533,26 +536,26 @@ public class MenuBar extends JMenuBar {
 		}
 	};
 
-//	ActionListener newCuteCube = new ActionListener() {
-//		public void actionPerformed(ActionEvent event) {
-//			String name = JOptionPane.showInputDialog(_win, "Cube number (int)");
-//			// System.out.println(name);
-//			int bytestring = 0;
-//			for (int i = 0; i < name.length(); i++) {
-//				bytestring = bytestring << 1;
-//				if (name.charAt(i) == '1') {
-//					bytestring += 1;
-//				}
-//
-//			}
-//			System.out.println(Integer.toBinaryString(bytestring));
-//			_v3d.initMarchingCube(bytestring);
-//
-//			toolCubeSelector = new ToolCubeSelector(_v3d);
-//			_tools.showTool(toolCubeSelector);
-//
-//		}
-//	};
+	ActionListener cubeListener = new ActionListener() {
+		public void actionPerformed(ActionEvent event) {
+			String name = JOptionPane.showInputDialog(_win, "Cube number (int)");
+			// System.out.println(name);
+			int bytestring = 0;
+			for (int i = 0; i < name.length(); i++) {
+				bytestring = bytestring << 1;
+				if (name.charAt(i) == '1') {
+					bytestring += 1;
+				}
+
+			}
+			System.out.println(Integer.toBinaryString(bytestring));
+			_v3d.initMarchingCube(bytestring);
+
+			toolCubeSelector = new ToolCubeSelector(_v3d);
+			_tools.showTool(toolCubeSelector);
+
+		}
+	};
 
 	/**
 	 * ActionListener for adding a new segmentation to the global image stack.

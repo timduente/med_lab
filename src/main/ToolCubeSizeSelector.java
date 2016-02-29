@@ -39,7 +39,7 @@ public class ToolCubeSizeSelector extends JPanel implements Observer {
 		_region_grow_title = new JLabel("Cube Selector");
 
 		int range_max = 5;
-		_size = 1;
+		_size = 2;
 		
 
 		_min_label = new JLabel("Case");
