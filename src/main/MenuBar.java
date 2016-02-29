@@ -139,9 +139,9 @@ public class MenuBar extends JMenuBar {
 		item.addActionListener(textureVolumeListener);
 		_menu3d.add(item);
 
-		item = new JMenuItem(new String("Zeige Marching Cube Segmentierung"));
+		item = new JCheckBoxMenuItem(new String("Zeige Marching Cube Segmentierung"));
 		item.addActionListener(marchingCubeListener);
-		_menuTools.add(item);
+		_menu3d.add(item);
 
 		_menu3d.addSeparator();
 
@@ -149,9 +149,9 @@ public class MenuBar extends JMenuBar {
 		_no_entries3d.setEnabled(false);
 		_menu3d.add(_no_entries3d);
 
-		item = new JMenuItem(new String("Show Cute Cube"));
-		item.addActionListener(newCuteCube);
-		_menu3d.add(item);
+//		item = new JMenuItem(new String("Show Cute Cube"));
+//		item.addActionListener(newCuteCube);
+//		_menu3d.add(item);
 
 		// -------------------------------------------------------------------------------------
 
@@ -174,6 +174,10 @@ public class MenuBar extends JMenuBar {
 
 		item = new JMenuItem(new String("Ändere Raumgitter"));
 		item.addActionListener(changeNListener);
+		_menuTools.add(item);
+		
+		item = new JCheckBoxMenuItem(new String("Ändere Marching Cube size"));
+		item.addActionListener(marchingCubeSizeListener);
 		_menuTools.add(item);
 
 		// -------------------------------------------------------------------------------------
@@ -345,7 +349,7 @@ public class MenuBar extends JMenuBar {
 	ActionListener toggleBGListener3d = new ActionListener() {
 		public void actionPerformed(ActionEvent event) {
 			ImageStack is = LabMed.get_is();
-			_v3d.enableMarchingCube(true);
+//			_v3d.enableMarchingCube(true);
 			// if (is.getNumberOfImages() == 0) {
 			// JOptionPane
 			// .showMessageDialog(
@@ -529,26 +533,26 @@ public class MenuBar extends JMenuBar {
 		}
 	};
 
-	ActionListener newCuteCube = new ActionListener() {
-		public void actionPerformed(ActionEvent event) {
-			String name = JOptionPane.showInputDialog(_win, "Cube number (int)");
-			// System.out.println(name);
-			int bytestring = 0;
-			for (int i = 0; i < name.length(); i++) {
-				bytestring = bytestring << 1;
-				if (name.charAt(i) == '1') {
-					bytestring += 1;
-				}
-
-			}
-			System.out.println(Integer.toBinaryString(bytestring));
-			_v3d.initMarchingCube(bytestring);
-
-			toolCubeSelector = new ToolCubeSelector(_v3d);
-			_tools.showTool(toolCubeSelector);
-
-		}
-	};
+//	ActionListener newCuteCube = new ActionListener() {
+//		public void actionPerformed(ActionEvent event) {
+//			String name = JOptionPane.showInputDialog(_win, "Cube number (int)");
+//			// System.out.println(name);
+//			int bytestring = 0;
+//			for (int i = 0; i < name.length(); i++) {
+//				bytestring = bytestring << 1;
+//				if (name.charAt(i) == '1') {
+//					bytestring += 1;
+//				}
+//
+//			}
+//			System.out.println(Integer.toBinaryString(bytestring));
+//			_v3d.initMarchingCube(bytestring);
+//
+//			toolCubeSelector = new ToolCubeSelector(_v3d);
+//			_tools.showTool(toolCubeSelector);
+//
+//		}
+//	};
 
 	/**
 	 * ActionListener for adding a new segmentation to the global image stack.
@@ -562,7 +566,31 @@ public class MenuBar extends JMenuBar {
 			boolean state = ((JCheckBoxMenuItem) event.getSource()).getState();
 			_v3d.enableMarchingCube(state);
 		}
-
 	};
-
+	
+	ActionListener pointsListener = new ActionListener() {
+		public void actionPerformed(ActionEvent event) {
+			if (_v2d.currentFile() == null) {
+				JOptionPane.showMessageDialog(null, "Fehler: Keine DICOM Datei geÃ¶ffnet", "Inane error", JOptionPane.ERROR_MESSAGE);
+				return;
+			}
+			boolean state = ((JCheckBoxMenuItem) event.getSource()).getState();
+			_v3d.enablePointCloud(state);
+		}
+	};
+	
+	
+	ActionListener marchingCubeSizeListener = new ActionListener() {
+		public void actionPerformed(ActionEvent event) {
+			if (_v2d.currentFile() == null) {
+				JOptionPane.showMessageDialog(null, "Fehler: Keine DICOM Datei geÃ¶ffnet", "Inane error", JOptionPane.ERROR_MESSAGE);
+				return;
+			}
+			if (toolCubeSizeSelector == null) {
+				// sel_win.addObserver(_v2d);
+				toolCubeSizeSelector = new ToolCubeSizeSelector(_v3d);
+			}
+			_tools.showTool(toolCubeSizeSelector);
+		}
+	};
 }

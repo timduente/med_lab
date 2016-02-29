@@ -15,7 +15,7 @@ import javax.swing.event.ChangeListener;
 @SuppressWarnings("serial")
 public class ToolCubeSizeSelector extends JPanel implements Observer {
 
-	private int _case;
+	private int _size;
 //	private Segment _seg;
 	private JSlider _case_slider;
 	private JLabel _region_grow_title, _min_label;
@@ -38,18 +38,18 @@ public class ToolCubeSizeSelector extends JPanel implements Observer {
 
 		_region_grow_title = new JLabel("Cube Selector");
 
-		int range_max = 254;
-		_case = 1;
+		int range_max = 5;
+		_size = 1;
 		
 
 		_min_label = new JLabel("Case");
 
-		_case_slider = new JSlider(1, range_max, _case);
+		_case_slider = new JSlider(1, range_max, _size);
 		_case_slider.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
 				JSlider source = (JSlider) e.getSource();
 				if (source.getValueIsAdjusting()) {
-					_case = (int) source.getValue();
+					_size = (int) source.getValue();
 					changeRange();
 				}
 			}
@@ -82,7 +82,7 @@ public class ToolCubeSizeSelector extends JPanel implements Observer {
 	}
 
 	private void changeRange() {
-		v3d.initMarchingCube(_case);
+		v3d.changeMarchingCubeSize(_size);
 //		System.out.println("changeRange");
 
 	}
@@ -91,7 +91,7 @@ public class ToolCubeSizeSelector extends JPanel implements Observer {
 	public void update(Observable o, Object arg) {
 		Message m = (Message) arg;
 
-		if (m._type == Message.M_REGION_GROW_NEW_SEED) {
+		if (m._type == Message.M_CUBE_SIZE_CHANGED) {
 			changeRange();
 		}
 	}

@@ -17,6 +17,7 @@ public class Message {
 	public static final int M_WINDOW_CHANGED = 400;
 	public static final int M_REGION_GROW_SEG_CHANGED = 500;
 	public static final int M_REGION_GROW_NEW_SEED = 501;
+	public static final int M_CUBE_SIZE_CHANGED = 600;
 
 	public int _type;
 	public Object _obj;
