@@ -82,7 +82,7 @@ public class ToolCubeSelector extends JPanel implements Observer {
 	}
 
 	private void changeRange() {
-		v3d.initMarchingCubeTest(_case);
+		v3d.showMarchingCubeWithNumberBin(_case);
 //		System.out.println("changeRange");
 
 	}

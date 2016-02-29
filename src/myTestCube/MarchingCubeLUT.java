@@ -9,7 +9,7 @@ import javax.vecmath.Point3f;
 public class MarchingCubeLUT {
 	public Hashtable<Integer, Cube> McLut = new Hashtable<Integer, Cube>();
 
-	public Point3f[] coords = { new Point3f(0.0f, -1.0f, -1.0f), new Point3f(+1.0f, -1.0f, 0.0f), new Point3f(0.0f, -1.0f, +1.0f), new Point3f(-1.0f, -1.0f, 0.0f), new Point3f(0.0f, +1.0f, -1.0f), new Point3f(+1.0f, +1.0f, 0.0f), new Point3f(0.0f, +1.0f, +1.0f), new Point3f(-1.0f, +1.0f, 0.0f),
+	public static final Point3f[] coords = { new Point3f(0.0f, -1.0f, -1.0f), new Point3f(+1.0f, -1.0f, 0.0f), new Point3f(0.0f, -1.0f, +1.0f), new Point3f(-1.0f, -1.0f, 0.0f), new Point3f(0.0f, +1.0f, -1.0f), new Point3f(+1.0f, +1.0f, 0.0f), new Point3f(0.0f, +1.0f, +1.0f), new Point3f(-1.0f, +1.0f, 0.0f),
 			new Point3f(-1.0f, 0.0f, -1.0f), new Point3f(+1.0f, 0.0f, -1.0f), new Point3f(+1.0f, 0.0f, +1.0f), new Point3f(-1.0f, 0.0f, +1.0f) };
 
 	/** COPIED INTO CUBE.JAVA - DO NOT CHANGE **/

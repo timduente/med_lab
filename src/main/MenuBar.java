@@ -565,23 +565,25 @@ public class MenuBar extends JMenuBar {
 
 	ActionListener marchingCubeTestListener = new ActionListener() {
 		public void actionPerformed(ActionEvent event) {
-			String name = JOptionPane.showInputDialog(_win, "Cube number (int)");
-
-			int bytestring = 0;
-			for (int i = 0; i < name.length(); i++) {
-				bytestring = bytestring << 1;
-				if (name.charAt(i) == '1') {
-					bytestring += 1;
-				}
-
-			}
-			System.out.println(Integer.toBinaryString(bytestring));
 			boolean enabled = ((JCheckBoxMenuItem) (event.getSource())).getState();
 			_v3d.enableMarchingCubeTest(enabled);
 			if (enabled) {
-				_v3d.initMarchingCubeTest(bytestring);
-				toolCubeSelector = new ToolCubeSelector(_v3d);
-				_tools.showTool(toolCubeSelector);
+				String name = JOptionPane.showInputDialog(_win, "Cube number (int)");
+				if (name != null && name.length() > 0) {
+					int bytestring = 0;
+					for (int i = 0; i < name.length(); i++) {
+						bytestring = bytestring << 1;
+						if (name.charAt(i) == '1') {
+							bytestring += 1;
+						}
+
+					}
+					System.out.println(Integer.toBinaryString(bytestring));
+
+					_v3d.showMarchingCubeWithNumberBin(bytestring);
+					toolCubeSelector = new ToolCubeSelector(_v3d);
+					_tools.showTool(toolCubeSelector);
+				}
 			}
 
 		}

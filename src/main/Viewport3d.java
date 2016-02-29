@@ -141,8 +141,9 @@ public class Viewport3d extends Viewport implements Observer {
 
 			marchingCubeTestNode = new BranchGroup();
 			marchingCubeTestNode.setCapability(BranchGroup.ALLOW_DETACH);
-			
+
 			initMarchingCubeTestOnceAtStartUp();
+			initMarchinCubesOnceAtStartUp();
 
 			createScene();
 		}
@@ -203,12 +204,23 @@ public class Viewport3d extends Viewport implements Observer {
 		update_view();
 	}
 
+	public void enable2DTextureVolumeRendering(boolean enable) {
+		TextureVolumeRenderingEnabled = enable;
+		if (enable) {
+			bgroup.addChild(volume2DRendering);
+		} else {
+			bgroup.removeChild(volume2DRendering);
+			volume2DRendering.detach();
+		}
+		update_view();
+	}
+
 	public void enableMarchingCube(boolean enable) {
 		marchingCubeEnabled = enable;
 
 		if (enable) {
-			bgroup.removeChild(marchingNode);
-			marchingNode.detach();
+			// bgroup.removeChild(marchingNode);
+			// marchingNode.detach();
 			bgroup.addChild(marchingNode);
 			System.out.println("enableMarchingCube(boolean enable) called");
 		} else {
@@ -280,7 +292,7 @@ public class Viewport3d extends Viewport implements Observer {
 		marchingCubeTestNode.addChild(points_off);
 	}
 
-	public void initMarchingCubeTest(int number) {
+	public void showMarchingCubeWithNumberBin(int number) {
 		Cube cubi = this.marchingCube.McLut.get(number);
 
 		IndexedTriangleArray indtria = new IndexedTriangleArray(marchingCube.coords.length, IndexedTriangleArray.COORDINATES, cubi.allIndices.length);
@@ -319,6 +331,25 @@ public class Viewport3d extends Viewport implements Observer {
 		points_off.setGeometry(pointsArr_0);
 	}
 
+	Shape3D shapp;
+	ColoringAttributes color_points_1;
+
+	private void initMarchinCubesOnceAtStartUp() {
+		shapp = new Shape3D();
+		shapp.setCapability(Shape3D.ALLOW_GEOMETRY_WRITE);
+
+		Appearance app = new Appearance();
+		color_points_1 = new ColoringAttributes();
+		color_points_1.setCapability(ColoringAttributes.ALLOW_COLOR_WRITE);
+		app.setColoringAttributes(color_points_1);
+
+		PolygonAttributes p = new PolygonAttributes(PolygonAttributes.POLYGON_FILL, PolygonAttributes.CULL_NONE, 0.0f);
+		app.setPolygonAttributes(p);
+		shapp.setAppearance(app);
+		marchingNode.addChild(shapp);
+
+	}
+
 	/**
 	 * Real method showing segmented data as marching cubes
 	 * 
@@ -326,29 +357,18 @@ public class Viewport3d extends Viewport implements Observer {
 	 */
 	private void initMarchingCubes(Segment seg) {
 		System.out.println("initMarchingCubes(Segment seg) called");
-		bgroup.removeChild(marchingNode);
-		marchingNode.detach();
-		marchingNode = new BranchGroup();
-		marchingNode.setCapability(BranchGroup.ALLOW_DETACH);
+		System.out.println("MarchingCubeSize = "+ marchingCubeSize);
+		
+		
+		int color = seg.getColor();
 
-		ColoringAttributes color_ca = new ColoringAttributes();
-		color_ca.setColor(new Color3f(0.3f, 0.3f, 0.3f));
-		ColoringAttributes color_points_0 = new ColoringAttributes();
-		color_points_0.setColor(new Color3f(0.0f, 0.0f, 1.0f));
-		ColoringAttributes color_points_1 = new ColoringAttributes();
-		color_points_1.setColor(new Color3f(1.0f, 0.0f, 0.0f));
+		int red = (color >> 16) & 0xff;
+		int green = (color >> 8) & 0xff;
+		int blue = color & 0xff;
+		
+		//System.out.println("red: "+ red + " green: " + green);
 
-		Appearance app = new Appearance();
-		app.setColoringAttributes(color_points_1);
-		Appearance app0 = new Appearance();
-		app0.setColoringAttributes(color_points_0);
-		Appearance app1 = new Appearance();
-		app1.setColoringAttributes(color_points_1);
-
-		PolygonAttributes p = new PolygonAttributes(PolygonAttributes.POLYGON_FILL, PolygonAttributes.CULL_NONE, 0.0f);
-		app.setPolygonAttributes(p);
-		PointAttributes ps = new PointAttributes();
-		ps.setPointSize(10);
+		color_points_1.setColor(red / 255.0f, green / 255.0f, blue / 255.0f);
 
 		if (shapes.containsKey(seg.getName())) {
 			shapes.remove(seg.getName());
@@ -360,44 +380,65 @@ public class Viewport3d extends Viewport implements Observer {
 		LinkedList<Point3f> allPoints = new LinkedList<Point3f>();
 		LinkedList<Integer> allIndexedPlanes = new LinkedList<Integer>();
 
+		BitMask upper_bitmask, lower_bitmask;
+		BennyOneByte onArray = new BennyOneByte(0);
+
 		for (int i = 0; i < seg.getMaskNum() - marchingCubeSize; i += marchingCubeSize) {
-			BitMask upper_bitmask = seg.getMask(i);
-			BitMask lower_bitmask = seg.getMask(i + marchingCubeSize);
+			upper_bitmask = seg.getMask(i);
+			lower_bitmask = seg.getMask(i + marchingCubeSize);
 			for (int y = 0; y < upper_bitmask.getHeight() - marchingCubeSize; y += marchingCubeSize) {
 				for (int x = 0; x < upper_bitmask.getWidth() - marchingCubeSize; x += marchingCubeSize) {
-					BennyOneByte onArray = new BennyOneByte(0);
 					onArray.set(0, lower_bitmask.get(x + marchingCubeSize, y));
 					onArray.set(1, lower_bitmask.get(x + marchingCubeSize, y + marchingCubeSize));
 					onArray.set(2, upper_bitmask.get(x + marchingCubeSize, y + marchingCubeSize));
 					onArray.set(3, upper_bitmask.get(x + marchingCubeSize, y));
 					onArray.set(4, lower_bitmask.get(x, y));
-					onArray.set(5, lower_bitmask.get(x + marchingCubeSize, y));
-					onArray.set(6, upper_bitmask.get(x + marchingCubeSize, y));
+					onArray.set(5, lower_bitmask.get(x , y + marchingCubeSize));
+					onArray.set(6, upper_bitmask.get(x , y + marchingCubeSize));
 					onArray.set(7, upper_bitmask.get(x, y));
-					int cornerVal = onArray.getAsInt();
+					
+//					if(onArray.getAsInt() != 0)
+//					System.out.println("byte: " + onArray.getAsByte());
 
-					Cube cubi = marchingCube.McLut.get(cornerVal & 0xFF);
-					if (cubi.allIndices.length != 0) {
+					Cube cubi = marchingCube.McLut.get(onArray.getAsInt());
+					if (cubi != null && cubi.allIndices.length != 0) {
 						Point3f save_point = new Point3f((x - w2 + marchingCubeSize / 2.0f) / upper_bitmask.getWidth(), (y - h2 + marchingCubeSize / 2.0f)
 								/ upper_bitmask.getHeight(), (marchingCubeSize / 2.0f + i - seg.getMaskNum() / 2.0f) / seg.getMaskNum());
-						allPoints.add(save_point);
+						//allPoints.add(save_point);
 
+						
+						
 						Point3f shift_point = new Point3f((x - w2) / upper_bitmask.getWidth(), (y - h2) / upper_bitmask.getHeight(),
 								(i - seg.getMaskNum() / 2.0f) / seg.getMaskNum());
+						
+						//Tim
+						ArrayList<Point3f> list = cubi.getAllTriangles();
+						for(int tri = 0; tri< list.size(); tri++){
+							Point3f temp = list.get(tri);
+							temp.scale(marchingCubeSize * 1.0f / seg.getMask(0).getWidth());
+							temp.add(shift_point);	
+							int index = getIndexOfLinkedList(allPoints, temp);
+							if(index == -1){
+								allPoints.add(temp);
+								index = allPoints.size()-1; // Index is last index
+							}
+							allIndexedPlanes.push(index);
+						}
+						//Tim
 
-						Point3f[] cubeCoords = new Point3f[12];
-						for (int j = 0; j < 12; j++) {
-							cubeCoords[j] = new Point3f(marchingCube.coords[j]);
-							cubeCoords[j].scale(marchingCubeSize * 1.0f / seg.getMask(0).getWidth());
-							cubeCoords[j].add(shift_point);
-						}
-						for (int[] indexCubiPlane : cubi.lPlanes) { // 3 4 5 =>
-																	// p12, p15,
-																	// p37
-							allIndexedPlanes.push(getIndexOfLinkedList(allPoints, cubeCoords[indexCubiPlane[0]]));
-							allIndexedPlanes.push(getIndexOfLinkedList(allPoints, cubeCoords[indexCubiPlane[1]]));
-							allIndexedPlanes.push(getIndexOfLinkedList(allPoints, cubeCoords[indexCubiPlane[2]]));
-						}
+//						Point3f[] cubeCoords = new Point3f[12];
+//						for (int j = 0; j < 12; j++) {
+//							cubeCoords[j] = new Point3f(marchingCube.coords[j]);
+//							cubeCoords[j].scale(marchingCubeSize * 1.0f / seg.getMask(0).getWidth());
+//							cubeCoords[j].add(shift_point);
+//						}
+//						for (int[] indexCubiPlane : cubi.lPlanes) { // 3 4 5 =>
+//																	// p12, p15,
+//																	// p37
+//							allIndexedPlanes.push(getIndexOfLinkedList(allPoints, cubeCoords[indexCubiPlane[0]]));
+//							allIndexedPlanes.push(getIndexOfLinkedList(allPoints, cubeCoords[indexCubiPlane[1]]));
+//							allIndexedPlanes.push(getIndexOfLinkedList(allPoints, cubeCoords[indexCubiPlane[2]]));
+//						}
 					}
 				}
 			}
@@ -420,9 +461,8 @@ public class Viewport3d extends Viewport implements Observer {
 		indtria.setCoordinates(0, allPointsArray); // TODO: Program start or
 													// enable marching cube
 		indtria.setCoordinateIndices(0, allIndices);
-		Shape3D shapp = new Shape3D(indtria, app);
-		marchingNode.addChild(shapp);
-		bgroup.addChild(marchingNode);
+		shapp.setGeometry(indtria);
+
 		System.out.println("initMarchingCubes(Segment seg) ended");
 	}
 
@@ -434,19 +474,8 @@ public class Viewport3d extends Viewport implements Observer {
 			}
 			counter++;
 		}
-		System.out.println("BAD Error");
+		//System.out.println("BAD Error");
 		return -1;
-	}
-
-	public void enable2DTextureVolumeRendering(boolean enable) {
-		TextureVolumeRenderingEnabled = enable;
-		if (enable) {
-			bgroup.addChild(volume2DRendering);
-		} else {
-			bgroup.removeChild(volume2DRendering);
-			volume2DRendering.detach();
-		}
-		update_view();
 	}
 
 	private boolean addPoint(Point3f point) {
