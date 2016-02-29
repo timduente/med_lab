@@ -1,9 +1,11 @@
 package main;
 
 import java.awt.event.*;
+
 import javax.swing.*;
 
 import misc.DiFileFilter;
+
 import java.io.*;
 
 /**
@@ -40,7 +42,8 @@ public class MenuBar extends JMenuBar {
 	private JRadioButtonMenuItem rbMenuItemF;
 
 	/**
-	 * Constructor. Needs many references, since the MenuBar has to trigger a lot of functions.
+	 * Constructor. Needs many references, since the MenuBar has to trigger a
+	 * lot of functions.
 	 * 
 	 * @param slices
 	 *            the global image stack reference
@@ -131,6 +134,10 @@ public class MenuBar extends JMenuBar {
 		item.addActionListener(toggleBGListener3d);
 		_menu3d.add(item);
 
+		item = new JCheckBoxMenuItem(new String("Show Point Cloud"), false);
+		item.addActionListener(pointCloudListener);
+		_menu3d.add(item);
+
 		item = new JCheckBoxMenuItem(new String("Show Ortho Slices"), false);
 		item.addActionListener(orthosliceListener);
 		_menu3d.add(item);
@@ -143,17 +150,16 @@ public class MenuBar extends JMenuBar {
 		item.addActionListener(marchingCubeListener);
 		_menu3d.add(item);
 
+		// Show Cubes
+		item = new JCheckBoxMenuItem(new String("Show cubes"), false);
+		item.addActionListener(marchingCubeTestListener);
+		_menu3d.add(item);
+
 		_menu3d.addSeparator();
 
 		_no_entries3d = new JMenuItem(new String("no segmentations yet"));
 		_no_entries3d.setEnabled(false);
 		_menu3d.add(_no_entries3d);
-
-		
-		//Show Cubes
-		item = new JMenuItem(new String("Show cubes"));
-		item.addActionListener(cubeListener);
-		_menu3d.add(item);
 
 		// -------------------------------------------------------------------------------------
 
@@ -177,7 +183,7 @@ public class MenuBar extends JMenuBar {
 		item = new JMenuItem(new String("Ändere Raumgitter"));
 		item.addActionListener(changeNListener);
 		_menuTools.add(item);
-		
+
 		item = new JCheckBoxMenuItem(new String("Ändere Marching Cube size"));
 		item.addActionListener(marchingCubeSizeListener);
 		_menuTools.add(item);
@@ -190,10 +196,23 @@ public class MenuBar extends JMenuBar {
 		add(_menuTools);
 	}
 
+	ActionListener pointCloudListener = new ActionListener() {
+
+		@Override
+		public void actionPerformed(ActionEvent event) {
+			if (_v2d.currentFile() == null) {
+				JOptionPane.showMessageDialog(null, "Fehler: Keine DICOM Datei geoeffnet", "Inane error", JOptionPane.ERROR_MESSAGE);
+				return;
+			}
+			boolean state = ((JCheckBoxMenuItem) event.getSource()).getState();
+			_v3d.enablePointCloud(state);
+		}
+	};
+
 	ActionListener orthosliceListener = new ActionListener() {
 		public void actionPerformed(ActionEvent event) {
 			if (_v2d.currentFile() == null) {
-				JOptionPane.showMessageDialog(null, "Fehler: Keine DICOM Datei geÃ¶ffnet", "Inane error", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(null, "Fehler: Keine DICOM Datei geoeffnet", "Inane error", JOptionPane.ERROR_MESSAGE);
 				return;
 			}
 			boolean state = ((JCheckBoxMenuItem) event.getSource()).getState();
@@ -231,7 +250,8 @@ public class MenuBar extends JMenuBar {
 	};
 
 	/**
-	 * This function is called when someone chooses to save the current project under a new name.
+	 * This function is called when someone chooses to save the current project
+	 * under a new name.
 	 */
 	ActionListener saveAsListener = new ActionListener() {
 		public void actionPerformed(ActionEvent event) {
@@ -246,7 +266,9 @@ public class MenuBar extends JMenuBar {
 	 *            true if the dialog should be a save file dialog, false if not
 	 */
 	private void openDialog(boolean save) {
-		LabMed.get_is().initFromDirectory("C:\\Users\\Tim Dünte\\Dropbox\\Leibnitz_Universität_Hannover\\MA_Semester_3\\Graphische 3D Datenverarbeitung in der Medizin\\lab_med\\ct_head_ex");
+		LabMed.get_is()
+				.initFromDirectory(
+						"C:\\Users\\Tim Dünte\\Dropbox\\Leibnitz_Universität_Hannover\\MA_Semester_3\\Graphische 3D Datenverarbeitung in der Medizin\\lab_med\\ct_head_ex");
 		int returnVal;
 		File file;
 		JFileChooser chooser;
@@ -288,7 +310,8 @@ public class MenuBar extends JMenuBar {
 	}
 
 	/**
-	 * This function is called when someone wants to see the dicome file info window.
+	 * This function is called when someone wants to see the dicome file info
+	 * window.
 	 */
 	ActionListener showInfoListener = new ActionListener() {
 		public void actionPerformed(ActionEvent event) {
@@ -352,7 +375,7 @@ public class MenuBar extends JMenuBar {
 	ActionListener toggleBGListener3d = new ActionListener() {
 		public void actionPerformed(ActionEvent event) {
 			ImageStack is = LabMed.get_is();
-//			_v3d.enableMarchingCube(true);
+			// _v3d.enableMarchingCube(true);
 			// if (is.getNumberOfImages() == 0) {
 			// JOptionPane
 			// .showMessageDialog(
@@ -409,7 +432,8 @@ public class MenuBar extends JMenuBar {
 			if (is.getNumberOfImages() == 0) {
 				JOptionPane.showMessageDialog(_win, "Segmentierung ohne geoeffneten DICOM Datensatz nicht möglich.", "Inane error", JOptionPane.ERROR_MESSAGE);
 			} else if (is.getSegmentNumber() == 3) {
-				JOptionPane.showMessageDialog(_win, "In der Laborversion werden nicht mehr als drei Segmentierungen benötigt.", "Inane error", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(_win, "In der Laborversion werden nicht mehr als drei Segmentierungen benötigt.", "Inane error",
+						JOptionPane.ERROR_MESSAGE);
 			} else {
 				String name = JOptionPane.showInputDialog(_win, "Name der Segmentierung");
 				if (name != null) {
@@ -448,7 +472,8 @@ public class MenuBar extends JMenuBar {
 			if (is.getNumberOfImages() == 0) {
 				JOptionPane.showMessageDialog(_win, "Segmentierung ohne geoeffneten DICOM Datensatz nicht möglich.", "Inane error", JOptionPane.ERROR_MESSAGE);
 			} else if (is.getSegmentNumber() == 3) {
-				JOptionPane.showMessageDialog(_win, "In der Laborversion werden nicht mehr als drei Segmentierungen benötigt.", "Inane error", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(_win, "In der Laborversion werden nicht mehr als drei Segmentierungen benötigt.", "Inane error",
+						JOptionPane.ERROR_MESSAGE);
 			} else {
 				String name = JOptionPane.showInputDialog(_win, "Name der Segmentierung");
 				if (name != null) {
@@ -505,7 +530,8 @@ public class MenuBar extends JMenuBar {
 		public void actionPerformed(ActionEvent event) {
 			ImageStack is = LabMed.get_is();
 			if (is.getNumberOfImages() == 0) {
-				JOptionPane.showMessageDialog(_win, "Änderung der Ansicht ohne geöffneten DICOM Datensatz nicht möglich.", "Inane error", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(_win, "Änderung der Ansicht ohne geöffneten DICOM Datensatz nicht möglich.", "Inane error",
+						JOptionPane.ERROR_MESSAGE);
 			} else {
 				SelectWindow sel_win = is.addSelectWindow("Window_Selection");
 
@@ -522,7 +548,8 @@ public class MenuBar extends JMenuBar {
 		public void actionPerformed(ActionEvent event) {
 			ImageStack is = LabMed.get_is();
 			if (is.getNumberOfImages() == 0) {
-				JOptionPane.showMessageDialog(_win, "Änderung der Ansicht ohne geöffneten DICOM Datensatz nicht möglich.", "Inane error", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(_win, "Änderung der Ansicht ohne geöffneten DICOM Datensatz nicht möglich.", "Inane error",
+						JOptionPane.ERROR_MESSAGE);
 			} else {
 				// SelectWindow sel_win =
 				// is.addSelectWindow("Window_Selection");
@@ -536,10 +563,10 @@ public class MenuBar extends JMenuBar {
 		}
 	};
 
-	ActionListener cubeListener = new ActionListener() {
+	ActionListener marchingCubeTestListener = new ActionListener() {
 		public void actionPerformed(ActionEvent event) {
 			String name = JOptionPane.showInputDialog(_win, "Cube number (int)");
-			// System.out.println(name);
+
 			int bytestring = 0;
 			for (int i = 0; i < name.length(); i++) {
 				bytestring = bytestring << 1;
@@ -549,10 +576,13 @@ public class MenuBar extends JMenuBar {
 
 			}
 			System.out.println(Integer.toBinaryString(bytestring));
-			_v3d.initMarchingCube(bytestring);
-
-			toolCubeSelector = new ToolCubeSelector(_v3d);
-			_tools.showTool(toolCubeSelector);
+			boolean enabled = ((JCheckBoxMenuItem) (event.getSource())).getState();
+			_v3d.enableMarchingCubeTest(enabled);
+			if (enabled) {
+				_v3d.initMarchingCubeTest(bytestring);
+				toolCubeSelector = new ToolCubeSelector(_v3d);
+				_tools.showTool(toolCubeSelector);
+			}
 
 		}
 	};
@@ -570,7 +600,7 @@ public class MenuBar extends JMenuBar {
 			_v3d.enableMarchingCube(state);
 		}
 	};
-	
+
 	ActionListener pointsListener = new ActionListener() {
 		public void actionPerformed(ActionEvent event) {
 			if (_v2d.currentFile() == null) {
@@ -581,8 +611,7 @@ public class MenuBar extends JMenuBar {
 			_v3d.enablePointCloud(state);
 		}
 	};
-	
-	
+
 	ActionListener marchingCubeSizeListener = new ActionListener() {
 		public void actionPerformed(ActionEvent event) {
 			if (_v2d.currentFile() == null) {
