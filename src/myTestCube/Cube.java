@@ -16,6 +16,8 @@ public class Cube {
 //	public TriangleArray[] planes;
 	public int[] allIndices; 
 //	public IndexedTriangleArray[] indexedPlanes; 
+	
+	
 
 	/** COPIED INTO CUBE.JAVA - DO NOT CHANGE **/
 	private final int p01 = 0;

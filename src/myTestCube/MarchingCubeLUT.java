@@ -25,6 +25,17 @@ public class MarchingCubeLUT {
 	private final int p15 = 9;
 	private final int p26 = 10;
 	private final int p37 = 11;
+	
+	
+	public final static Point3f p0 = new Point3f(-1.0f, -1.0f, -1.0f);
+	public final static Point3f p1 = new Point3f(1.0f, -1.0f, -1.0f);
+	public final static Point3f p2 = new Point3f(1.0f, -1.0f, 1.0f);
+	public final static Point3f p3 = new Point3f(-1.0f, -1.0f, 1.0f);
+	public final static Point3f p4 = new Point3f(-1.0f, 1.0f, -1.0f);
+	public final static Point3f p5 = new Point3f(1.0f, 1.0f, -1.0f);
+	public final static Point3f p6 = new Point3f(1.0f, 1.0f, 1.0f);
+	public final static Point3f p7 = new Point3f(-1.0f, 1.0f, 1.0f);
+	public final static Point3f[] allPoints = new Point3f[] { p0, p1, p2, p3, p4, p5, p6, p7 };
 
 	/** STAY AWAY **/
 
