@@ -14,6 +14,8 @@ public class Cube {
 	public LinkedList<int[]> lPlanes;
 	// public TriangleArray[] planes;
 	public int[] allIndices;
+	ArrayList<Point3f> trianglePoints;
+
 	// public IndexedTriangleArray[] indexedPlanes;
 
 	/** COPIED INTO CUBE.JAVA - DO NOT CHANGE **/
@@ -46,13 +48,22 @@ public class Cube {
 	private void populateIndexedTriangleArray() {
 		int counter = 0;
 		allIndices = new int[lPlanes.size() * 3];
+		trianglePoints = new ArrayList<Point3f>();
 		for (int[] iArray : lPlanes) {
-			allIndices[counter] = iArray[0];
-			counter++;
-			allIndices[counter] = iArray[1];
-			counter++;
-			allIndices[counter] = iArray[2];
-			counter++;
+
+			// allIndices[counter] = iArray[1];
+			// counter++;
+			// allIndices[counter] = iArray[2];
+			// counter++;
+
+			for (int i = 0; i < iArray.length; i++) {
+				Point3f temp = MarchingCubeLUT.coords[iArray[i]];
+				Point3f point =  new Point3f(temp);
+				point.scale(0.5f);
+				trianglePoints.add(point);
+				allIndices[counter] = iArray[i];
+				counter++;
+			}
 		}
 	}
 
@@ -431,13 +442,9 @@ public class Cube {
 
 	public ArrayList<Point3f> getAllTriangles() {
 		ArrayList<Point3f> list = new ArrayList<Point3f>();
-		for (int i = 0; i < lPlanes.size(); i++) {
-			for (int j = 0; j < 3; j++) {
-				Point3f temp = MarchingCubeLUT.coords[allIndices[i * 3 + j]];
-				list.add(new Point3f(temp));
-			}
+		for(Point3f point : trianglePoints){
+			list.add(new Point3f(point));
 		}
-
 		return list;
 	}
 }

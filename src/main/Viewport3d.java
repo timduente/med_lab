@@ -74,7 +74,7 @@ public class Viewport3d extends Viewport implements Observer {
 
 	private OrthoViews orthoViews = new OrthoViews();
 	private float n = 5;
-	private int marchingCubeSize = 1;
+	private int marchingCubeSize = 4;
 
 	Hashtable<String, Shape3D> shapes = new Hashtable<String, Shape3D>();
 
@@ -295,8 +295,8 @@ public class Viewport3d extends Viewport implements Observer {
 	public void showMarchingCubeWithNumberBin(int number) {
 		Cube cubi = this.marchingCube.McLut.get(number);
 
-		IndexedTriangleArray indtria = new IndexedTriangleArray(marchingCube.coords.length, IndexedTriangleArray.COORDINATES, cubi.allIndices.length);
-		indtria.setCoordinates(0, marchingCube.coords);
+		IndexedTriangleArray indtria = new IndexedTriangleArray(MarchingCubeLUT.coords.length, IndexedTriangleArray.COORDINATES, cubi.allIndices.length);
+		indtria.setCoordinates(0, MarchingCubeLUT.coords);
 		indtria.setCoordinateIndices(0, cubi.allIndices);
 
 		shape.setGeometry(indtria);
@@ -343,7 +343,7 @@ public class Viewport3d extends Viewport implements Observer {
 		color_points_1.setCapability(ColoringAttributes.ALLOW_COLOR_WRITE);
 		app.setColoringAttributes(color_points_1);
 
-		PolygonAttributes p = new PolygonAttributes(PolygonAttributes.POLYGON_FILL, PolygonAttributes.CULL_NONE, 0.0f);
+		PolygonAttributes p = new PolygonAttributes(PolygonAttributes.POLYGON_FILL, PolygonAttributes.CULL_BACK, 0.0f);
 		app.setPolygonAttributes(p);
 		shapp.setAppearance(app);
 		marchingNode.addChild(shapp);
@@ -374,20 +374,33 @@ public class Viewport3d extends Viewport implements Observer {
 			shapes.remove(seg.getName());
 		}
 
-		float w2 = seg.getMask(0).getWidth() / 2;
-		float h2 = seg.getMask(0).getHeight() / 2;
+		float w2 = seg.getMask(0).getWidth() / 2.0f;
+		float h2 = seg.getMask(0).getHeight() / 2.0f;
+		float z2 = seg.getMaskNum() / 2.0f;
 
 		LinkedList<Point3f> allPoints = new LinkedList<Point3f>();
+		
+		Hashtable<Point3f, Integer> allPointsHash = new Hashtable<>();
+		
+		
+		
+		
 		LinkedList<Integer> allIndexedPlanes = new LinkedList<Integer>();
 
 		BitMask upper_bitmask, lower_bitmask;
 		BennyOneByte onArray = new BennyOneByte(0);
+		
+		float scaleFactor = (float)marchingCubeSize / seg.getMask(0).getWidth();
+		float scaleFactorZ = (float)marchingCubeSize/seg.getMaskNum();
 
 		for (int i = 0; i < seg.getMaskNum() - marchingCubeSize; i += marchingCubeSize) {
 			upper_bitmask = seg.getMask(i);
 			lower_bitmask = seg.getMask(i + marchingCubeSize);
+			
 			for (int y = 0; y < upper_bitmask.getHeight() - marchingCubeSize; y += marchingCubeSize) {
 				for (int x = 0; x < upper_bitmask.getWidth() - marchingCubeSize; x += marchingCubeSize) {
+					
+					
 					onArray.set(0, lower_bitmask.get(x + marchingCubeSize, y));
 					onArray.set(1, lower_bitmask.get(x + marchingCubeSize, y + marchingCubeSize));
 					onArray.set(2, upper_bitmask.get(x + marchingCubeSize, y + marchingCubeSize));
@@ -396,33 +409,42 @@ public class Viewport3d extends Viewport implements Observer {
 					onArray.set(5, lower_bitmask.get(x , y + marchingCubeSize));
 					onArray.set(6, upper_bitmask.get(x , y + marchingCubeSize));
 					onArray.set(7, upper_bitmask.get(x, y));
-					
-//					if(onArray.getAsInt() != 0)
-//					System.out.println("byte: " + onArray.getAsByte());
 
 					Cube cubi = marchingCube.McLut.get(onArray.getAsInt());
 					if (cubi != null && cubi.allIndices.length != 0) {
-						Point3f save_point = new Point3f((x - w2 + marchingCubeSize / 2.0f) / upper_bitmask.getWidth(), (y - h2 + marchingCubeSize / 2.0f)
-								/ upper_bitmask.getHeight(), (marchingCubeSize / 2.0f + i - seg.getMaskNum() / 2.0f) / seg.getMaskNum());
+//						Point3f save_point = new Point3f((x - w2 + marchingCubeSize / 2.0f) / upper_bitmask.getWidth(), (y - h2 + marchingCubeSize / 2.0f)
+//								/ upper_bitmask.getHeight(), (marchingCubeSize / 2.0f + i - seg.getMaskNum() / 2.0f) / seg.getMaskNum());
 						//allPoints.add(save_point);
 
 						
 						
-						Point3f shift_point = new Point3f((x - w2) / upper_bitmask.getWidth(), (y - h2) / upper_bitmask.getHeight(),
-								(i - seg.getMaskNum() / 2.0f) / seg.getMaskNum());
+						Point3f shift_point = new Point3f((float)x / upper_bitmask.getWidth() - 0.5f, (float)y  / upper_bitmask.getHeight()-0.5f,
+								(float)i / seg.getMaskNum() - 0.5f);
 						
 						//Tim
 						ArrayList<Point3f> list = cubi.getAllTriangles();
 						for(int tri = 0; tri< list.size(); tri++){
 							Point3f temp = list.get(tri);
-							temp.scale(marchingCubeSize * 1.0f / seg.getMask(0).getWidth());
+							float z = temp.z;
+							temp.scale(scaleFactor);
+							temp.setZ(z * scaleFactorZ);
 							temp.add(shift_point);	
-							int index = getIndexOfLinkedList(allPoints, temp);
-							if(index == -1){
+							Integer index = allPointsHash.get(temp);
+							if(index == null){
+								index = allPoints.size();
+								allPointsHash.put(temp, index);
 								allPoints.add(temp);
-								index = allPoints.size()-1; // Index is last index
 							}
-							allIndexedPlanes.push(index);
+							
+//							int index = getIndexOfLinkedList(allPoints, temp);
+//							if(index == -1){
+//								allPoints.add(temp);
+//								index = allPoints.size()-1; // Index is last index
+//							}
+							
+							
+							allIndexedPlanes.add(index);
+							//allIndexedPlanes.push(index);
 						}
 						//Tim
 
@@ -466,17 +488,17 @@ public class Viewport3d extends Viewport implements Observer {
 		System.out.println("initMarchingCubes(Segment seg) ended");
 	}
 
-	private int getIndexOfLinkedList(LinkedList<Point3f> llp3f, Point3f ptsearched) {
-		int counter = 0;
-		for (Point3f pt : llp3f) {
-			if (pt.epsilonEquals(ptsearched, 0.1f)) {
-				return counter;
-			}
-			counter++;
-		}
-		//System.out.println("BAD Error");
-		return -1;
-	}
+//	private int getIndexOfLinkedList(LinkedList<Point3f> llp3f, Point3f ptsearched) {
+//		int counter = 0;
+//		for (Point3f pt : llp3f) {
+//			if (pt.x == ptsearched.x && pt.y == ptsearched.y && pt.z == ptsearched.z) {
+//				return counter;
+//			}
+//			counter++;
+//		}
+//		// System.out.println("BAD Error");
+//		return -1;
+//	}
 
 	private boolean addPoint(Point3f point) {
 		return (point.x % n == 0 && point.y % n == 0 && point.z % n == 0);
