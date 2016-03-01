@@ -620,7 +620,7 @@ public class MenuBar extends JMenuBar {
 				return;
 			}
 			int cube_size = Integer.parseInt(JOptionPane.showInputDialog(_win, "Cube size (1 - 5)"));
-			if (cube_size > 0 && cube_size < 6) {
+			if (_v3d.marchingCubeSize != cube_size && cube_size > 0 && cube_size < 6) {
 				_v3d.changeMarchingCubeSize(cube_size);
 			}
 		}

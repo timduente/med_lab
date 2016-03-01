@@ -74,7 +74,7 @@ public class Viewport3d extends Viewport implements Observer {
 
 	private OrthoViews orthoViews = new OrthoViews();
 	private float n = 5;
-	private int marchingCubeSize = 4;
+	public int marchingCubeSize = 4;
 
 	Hashtable<String, Shape3D> shapes = new Hashtable<String, Shape3D>();
 
