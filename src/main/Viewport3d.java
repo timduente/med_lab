@@ -380,11 +380,9 @@ public class Viewport3d extends Viewport implements Observer {
 
 		LinkedList<Point3f> allPoints = new LinkedList<Point3f>();
 		
+		//Point3f auf Index wo der Punkt in der Liste liegt.
 		Hashtable<Point3f, Integer> allPointsHash = new Hashtable<>();
-		
-		
-		
-		
+
 		LinkedList<Integer> allIndexedPlanes = new LinkedList<Integer>();
 
 		BitMask upper_bitmask, lower_bitmask;
