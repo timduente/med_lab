@@ -268,7 +268,7 @@ public class MenuBar extends JMenuBar {
 	private void openDialog(boolean save) {
 		LabMed.get_is()
 				.initFromDirectory(
-						"C:\\Users\\Tim Dünte\\Dropbox\\Leibnitz_Universität_Hannover\\MA_Semester_3\\Graphische 3D Datenverarbeitung in der Medizin\\lab_med\\ct_head_ex");
+						"ct_head_ex");
 		int returnVal;
 		File file;
 		JFileChooser chooser;
