@@ -266,9 +266,7 @@ public class MenuBar extends JMenuBar {
 	 *            true if the dialog should be a save file dialog, false if not
 	 */
 	private void openDialog(boolean save) {
-		LabMed.get_is()
-				.initFromDirectory(
-						"ct_head_ex");
+		LabMed.get_is().initFromDirectory("ct_head_ex");
 		int returnVal;
 		File file;
 		JFileChooser chooser;
@@ -598,6 +596,7 @@ public class MenuBar extends JMenuBar {
 				JOptionPane.showMessageDialog(null, "Fehler: Keine DICOM Datei geöffnet", "Inane error", JOptionPane.ERROR_MESSAGE);
 				return;
 			}
+
 			boolean state = ((JCheckBoxMenuItem) event.getSource()).getState();
 			_v3d.enableMarchingCube(state);
 		}
@@ -620,11 +619,10 @@ public class MenuBar extends JMenuBar {
 				JOptionPane.showMessageDialog(null, "Fehler: Keine DICOM Datei geöffnet", "Inane error", JOptionPane.ERROR_MESSAGE);
 				return;
 			}
-			if (toolCubeSizeSelector == null) {
-				// sel_win.addObserver(_v2d);
-				toolCubeSizeSelector = new ToolCubeSizeSelector(_v3d);
+			int cube_size = Integer.parseInt(JOptionPane.showInputDialog(_win, "Cube size (1 - 5)"));
+			if (_v3d.marchingCubeSize != cube_size && cube_size > 0 && cube_size < 6) {
+				_v3d.changeMarchingCubeSize(cube_size);
 			}
-			_tools.showTool(toolCubeSizeSelector);
 		}
 	};
 }
