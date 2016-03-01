@@ -6,6 +6,8 @@ import java.util.LinkedList;
 
 import javax.vecmath.Point3f;
 
+import com.sun.j3d.utils.geometry.NormalGenerator;
+
 public class Cube {
 	public int corner;
 	// This list contains the enum points as an array of 3 each.
@@ -64,6 +66,8 @@ public class Cube {
 				allIndices[counter] = iArray[i];
 				counter++;
 			}
+
+			
 		}
 	}
 

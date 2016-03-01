@@ -45,6 +45,7 @@ public class ToolCubeSelector extends JPanel implements Observer {
 		_min_label = new JLabel("Case");
 
 		_case_slider = new JSlider(1, range_max, _case);
+		
 		_case_slider.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
 				JSlider source = (JSlider) e.getSource();
