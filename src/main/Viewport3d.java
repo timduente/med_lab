@@ -431,7 +431,7 @@ public class Viewport3d extends Viewport implements Observer {
 					onArray.set(5, lower_bitmask.get(x, y + marchingCubeSize));
 					onArray.set(6, upper_bitmask.get(x, y + marchingCubeSize));
 					onArray.set(7, upper_bitmask.get(x, y));
-
+//					if(!(onArray.getAsInt() == 0) && !(onArray.getAsInt() == 255))	{
 					Cube cubi = marchingCube.McLut.get(onArray.getAsInt());
 					if (cubi != null && cubi.allIndices.length != 0) {
 						Point3f shift_point = new Point3f((float) x / upper_bitmask.getWidth() - 0.5f, (float) y / upper_bitmask.getHeight() - 0.5f, (float) i
