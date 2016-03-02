@@ -65,7 +65,7 @@ public class ToolRangeSelector extends JPanel implements Observer {
 						_min = (int) Math.pow(2, slices.getBitsStored() - 1);
 						_min_slider.setMaximum((int) Math.pow(2,
 								slices.getBitsStored()));
-						_min_slider.setMinimum(0);
+						_min_slider.setMinimum(0);					
 						_min_slider.setValue(_seg.get_min());
 						_max_slider.setVisible(true);
 						_max_slider.setValue(_seg.get_max());
@@ -113,6 +113,9 @@ public class ToolRangeSelector extends JPanel implements Observer {
 		int range_max = (int) Math.pow(2, slices.getBitsStored());
 		_min = (int) Math.pow(2, slices.getBitsStored() - 1);
 		_max = (int) Math.pow(2, slices.getBitsStored() - 1);
+		
+		_seg.setMax(_max);
+		_seg.setMin(_min);
 
 		_min_label = new JLabel("Min:");
 		_max_label = new JLabel("Max:");

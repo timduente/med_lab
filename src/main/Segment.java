@@ -33,6 +33,14 @@ public class Segment extends Observable {
 		return _max;
 	}
 	
+	public void setMin(int min){
+		_min = min;
+	}
+	
+	public void setMax(int max){
+		_max = max;
+	}
+	
 
 	private int _max;
 
