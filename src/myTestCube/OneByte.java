@@ -1,13 +1,13 @@
 package myTestCube;
 
-public class BennyOneByte {
+public class OneByte {
 	byte stored = 0;
 
-	public BennyOneByte(int intToOneByte) {
+	public OneByte(int intToOneByte) {
 		stored = (byte) (intToOneByte & 0xff);
 	}
 
-	public BennyOneByte(byte byteToStore) {
+	public OneByte(byte byteToStore) {
 		stored = byteToStore;
 	}
 
@@ -52,7 +52,7 @@ public class BennyOneByte {
 		stored = (byte)~stored;
 	}
 	
-	public BennyOneByte invGetThis(){
+	public OneByte invGetThis(){
 		this.inv();
 		return this;
 	}

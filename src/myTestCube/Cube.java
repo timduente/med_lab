@@ -76,7 +76,7 @@ public class Cube {
 	}
 
 	public Cube invert() {
-		BennyOneByte newCor = new BennyOneByte(corner);
+		OneByte newCor = new OneByte(corner);
 		LinkedList<int[]> newPlanes = new LinkedList<int[]>();
 
 		// Change bit value and points of plane
@@ -94,7 +94,7 @@ public class Cube {
 	}
 
 	public Cube getNewFromRotXAxes(int rot) {
-		BennyOneByte newCor = new BennyOneByte(corner);
+		OneByte newCor = new OneByte(corner);
 		LinkedList<int[]> newPlanes = new LinkedList<int[]>();
 
 		// Change bit value and points of plane
@@ -388,7 +388,7 @@ public class Cube {
 	}
 
 	public int debug_rotateX(int rot) {
-		BennyOneByte newCor = new BennyOneByte(corner);
+		OneByte newCor = new OneByte(corner);
 		// Change bit value and points of plane
 		for (int i = 1; i <= rot; i++) {
 			boolean helper = newCor.get(0);
@@ -407,7 +407,7 @@ public class Cube {
 	}
 
 	public int debug_rotateY(int rot) {
-		BennyOneByte newCor = new BennyOneByte(corner);
+		OneByte newCor = new OneByte(corner);
 
 		// Change bit value and points of plane
 		for (int i = 1; i <= rot; i++) {
@@ -426,7 +426,7 @@ public class Cube {
 	}
 
 	public int debug_rotateZ(int rot) {
-		BennyOneByte newCor = new BennyOneByte(corner);
+		OneByte newCor = new OneByte(corner);
 
 		// Change bit value and points of plane
 		for (int i = 1; i <= rot; i++) {

@@ -34,7 +34,7 @@ import javax.vecmath.Point3f;
 import javax.vecmath.Vector3f;
 
 import misc.BitMask;
-import myTestCube.BennyOneByte;
+import myTestCube.OneByte;
 import myTestCube.Cube;
 import myTestCube.MarchingCubeLUT;
 
@@ -410,7 +410,7 @@ public class Viewport3d extends Viewport implements Observer {
 		LinkedList<Integer> allIndexedPlanes = new LinkedList<Integer>();
 
 		BitMask upper_bitmask, lower_bitmask;
-		BennyOneByte onArray = new BennyOneByte(0);
+		OneByte onArray = new OneByte(0);
 
 		float scaleFactor = (float) marchingCubeSize / seg.getMask(0).getWidth();
 		float scaleFactorZ = (float) marchingCubeSize / seg.getMaskNum();
@@ -423,14 +423,26 @@ public class Viewport3d extends Viewport implements Observer {
 			for (int y = 0; y < upper_bitmask.getHeight() - marchingCubeSize; y += marchingCubeSize) {
 				for (int x = 0; x < upper_bitmask.getWidth() - marchingCubeSize; x += marchingCubeSize) {
 
-					onArray.set(0, lower_bitmask.get(x + marchingCubeSize, y));
+//					OLD
+//					onArray.set(0, lower_bitmask.get(x + marchingCubeSize, y));
+//					onArray.set(1, lower_bitmask.get(x + marchingCubeSize, y + marchingCubeSize));
+//					onArray.set(2, upper_bitmask.get(x + marchingCubeSize, y + marchingCubeSize));
+//					onArray.set(3, upper_bitmask.get(x + marchingCubeSize, y));
+//					onArray.set(4, lower_bitmask.get(x, y));
+//					onArray.set(5, lower_bitmask.get(x, y + marchingCubeSize));
+//					onArray.set(6, upper_bitmask.get(x, y + marchingCubeSize));
+//					onArray.set(7, upper_bitmask.get(x, y));
+//					OLD
+					
+					onArray.set(0, lower_bitmask.get(x , y + marchingCubeSize));
 					onArray.set(1, lower_bitmask.get(x + marchingCubeSize, y + marchingCubeSize));
-					onArray.set(2, upper_bitmask.get(x + marchingCubeSize, y + marchingCubeSize));
-					onArray.set(3, upper_bitmask.get(x + marchingCubeSize, y));
 					onArray.set(4, lower_bitmask.get(x, y));
-					onArray.set(5, lower_bitmask.get(x, y + marchingCubeSize));
-					onArray.set(6, upper_bitmask.get(x, y + marchingCubeSize));
-					onArray.set(7, upper_bitmask.get(x, y));
+					onArray.set(5, lower_bitmask.get(x + marchingCubeSize, y ));
+					
+					onArray.set(3, upper_bitmask.get(x ,y + marchingCubeSize));
+					onArray.set(2, upper_bitmask.get(x + marchingCubeSize, y + marchingCubeSize));										
+					onArray.set(6, upper_bitmask.get(x + marchingCubeSize, y ));
+					onArray.set(7, upper_bitmask.get(x, y ));
 //					if(!(onArray.getAsInt() == 0) && !(onArray.getAsInt() == 255))	{
 					Cube cubi = marchingCube.McLut.get(onArray.getAsInt());
 					if (cubi != null && cubi.allIndices.length != 0) {
