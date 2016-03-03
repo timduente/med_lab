@@ -655,9 +655,9 @@ public class Viewport3d extends Viewport implements Observer {
 				// if (pointcloudEnabled) {
 				addPoints((Segment) (m._obj));
 				// }
-				// if (marchingCubeEnabled) {
+				 if (marchingCubeEnabled) {
 				initMarchingCubes((Segment) (m._obj));
-				// }
+				 }
 				update_view();
 			}
 		}

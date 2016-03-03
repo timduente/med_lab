@@ -266,7 +266,7 @@ public class MenuBar extends JMenuBar {
 	 *            true if the dialog should be a save file dialog, false if not
 	 */
 	private void openDialog(boolean save) {
-		LabMed.get_is().initFromDirectory("ct_head_ex");
+//		LabMed.get_is().initFromDirectory("ct_head_ex");
 		int returnVal;
 		File file;
 		JFileChooser chooser;
